@@ -74,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/suggestions', [SuggestionController::class, 'store']);
     Route::post('/suggestions/{id}/vote', [SuggestionController::class, 'vote']);
     Route::put('/suggestions/{id}/status', [SuggestionController::class, 'updateStatus']);
+    Route::delete('/suggestions/{id}', [SuggestionController::class, 'destroy']);
 
     // Announcements (Novedades)
     Route::get('/announcements', [AnnouncementController::class, 'index']);

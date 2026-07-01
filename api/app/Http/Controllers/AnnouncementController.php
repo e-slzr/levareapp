@@ -15,7 +15,7 @@ class AnnouncementController extends Controller
     public function index(Request $request)
     {
         $announcements = Announcement::orderBy('created_at', 'desc')
-            ->take(15)
+            ->take(10)
             ->get();
 
         return response()->json($announcements);

@@ -151,4 +151,30 @@ class SuggestionController extends Controller
             'suggestion' => $suggestion
         ]);
     }
+
+    /**
+     * Delete suggestion (Only if suggested by this user or leader/admin)
+     */
+    public function destroy(Request $request, $id)
+    {
+        $user = $request->user();
+        $groupId = config('tenant.group_id');
+
+        $suggestion = Suggestion::where('group_id', $groupId)->findOrFail($id);
+
+        $role = DB::table('group_user')
+            ->where('user_id', $user->id)
+            ->where('group_id', $groupId)
+            ->value('role');
+
+        if ($suggestion->suggested_by !== $user->id && $user->account_type !== 'superadmin' && $role !== 'Líder') {
+            return response()->json(['message' => 'No autorizado para eliminar esta sugerencia.'], 403);
+        }
+
+        $suggestion->delete();
+
+        return response()->json([
+            'message' => 'Sugerencia eliminada correctamente.'
+        ]);
+    }
 }
