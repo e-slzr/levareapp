@@ -1,0 +1,580 @@
+/* ==========================================================================
+   WorshipApp — SONGS CATALOG & LYRICS VISOR STYLES
+   ========================================================================== */
+
+.action-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.search-box {
+    flex: 1;
+    position: relative;
+}
+.search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+.search-box input[type="text"] {
+    padding-left: 42px;
+}
+
+.songs-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.song-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+.song-card:hover {
+    transform: translateX(4px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.song-card-info h4 {
+    font-size: 1.05rem;
+    margin-bottom: 4px;
+}
+
+.song-card-info p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.song-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.song-key-badge {
+    background-color: var(--bg-hover);
+    color: var(--primary);
+    border: 1px solid var(--border-color);
+    font-family: var(--font-secondary);
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    min-width: 40px;
+    text-align: center;
+}
+
+.song-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+}
+.song-action-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+}
+
+/* Visor Detail Layout */
+.detail-header-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    transition: color var(--transition-fast);
+}
+.btn-back:hover {
+    color: var(--text-main);
+}
+
+/* Zona fija: nav + meta + controles (no recibe scroll horizontal) */
+.song-detail-fixed {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    /* No overflow:hidden aquí — no queremos cortar el select de velocidad */
+}
+
+/* Card oculta en este layout — legacy desktop fallback */
+.song-detail-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+}
+
+.song-meta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+}
+
+.song-detail-title {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+}
+
+.song-detail-artist {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.song-tonality-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+.song-tonality-badge .label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.song-tonality-badge .value {
+    background-color: var(--primary-soft);
+    color: var(--primary);
+    font-family: var(--font-secondary);
+    font-weight: 800;
+    font-size: 1.2rem;
+    padding: 4px 12px;
+    border-radius: var(--radius-sm);
+}
+
+/* Transpose & Auto-Scroll widget bar */
+.song-controls-bar {
+    background-color: var(--bg-hover);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.control-group label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.transpose-widget {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+.transpose-widget button {
+    border: none;
+    border-radius: 0;
+    padding: 8px 12px;
+}
+.transpose-widget .current-key-display {
+    padding: 0 16px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--secondary);
+}
+
+.scroll-widget {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-select-sm {
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+}
+
+/* Chords and Chords Container */
+.lyrics-view-wrapper {
+    max-height: 100vh;
+    overflow: auto;
+    padding: 18px;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    -webkit-overflow-scrolling: touch;
+}
+
+.chords-lyrics-pre {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    line-height: 2.2; /* Taller line height to accommodate stacked chords */
+    white-space: pre;
+    color: var(--text-main);
+    padding: 10px 0;
+}
+
+.lyrics-line {
+    display: block;
+    margin-bottom: 6px;
+    white-space: nowrap; /* Avoid automatic breaking that desynchronizes chords */
+}
+
+.lyrics-section-header {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-top: 24px;
+    margin-bottom: 12px;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 4px;
+    letter-spacing: 0.05em;
+}
+
+.lyrics-empty-line {
+    height: 1.2em;
+}
+
+.chord-segment {
+    display: inline-flex;
+    flex-direction: column;
+    vertical-align: bottom;
+    line-height: 1.1;
+}
+
+.chord-el {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--primary);
+    height: 1.3em;
+    user-select: none;
+    display: inline-block;
+    padding: 0;
+    margin-bottom: 1px;
+}
+
+.chord-el.empty-chord {
+    height: 1.3em;
+    visibility: hidden;
+}
+
+.lyric-el {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    color: var(--text-main);
+    white-space: pre;
+}
+
+/* Instrumental-only lines (Intro, Solo, etc.) */
+.instrumental-line {
+    display: block;
+    font-family: var(--font-mono);
+    white-space: pre; /* Essential to respect spaces written by user */
+    margin-bottom: 6px;
+    line-height: 1.6;
+}
+
+.instrumental-line .chord-el {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary);
+    background-color: var(--primary-soft);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: 0;
+    height: auto; /* Override fixed height of lyrics display */
+    user-select: none;
+}
+
+/* Song Form Monospace Textarea */
+#song-form-content {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre;
+    overflow: auto;
+}
+
+/* Short/Long text variations for responsive buttons */
+.btn-text-short {
+    display: none;
+}
+.btn-text-long {
+    display: inline;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+    .songs-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Modal de agregar/editar canción más ancho y alto en desktop */
+    #modal-song .modal-card {
+        max-width: 850px;
+        max-height: 95vh;
+    }
+
+    #song-form-content {
+        min-height: 380px; /* Textarea de letra más alto para mayor comodidad */
+    }
+}
+
+/* Mobile Responsive Styles for Songs Detail View (Reference: 375px) */
+@media (max-width: 767px) {
+    .btn-text-short {
+        display: inline;
+    }
+    .btn-text-long {
+        display: none;
+    }
+
+    /* =====================================================================
+       ARQUITECTURA MÓVIL DEL VISOR DE CANCION:
+       #subpanel-song-detail es un flex-column que ocupa toda la pantalla.
+       La zona superior (song-detail-fixed) NO se desplaza horizontalmente.
+       La zona de letra (lyrics-view-wrapper) tiene su propio scroll aislado.
+       ===================================================================== */
+    #subpanel-song-detail {
+        display: flex;
+        flex-direction: column;
+        /* Altura = pantalla completa menos header (64px) y bottom nav (64px) */
+        height: calc(100vh - 64px - 64px);
+        overflow: hidden; /* El panel en sí NUNCA se desplaza */
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;      /* Crucial para aislar el ancho horizontal frente a flexbox */
+        box-sizing: border-box;
+    }
+
+    /* ZONA SUPERIOR FIJA: siempre al ancho del móvil, sin scroll horizontal */
+    .song-detail-fixed {
+        flex-shrink: 0;          /* No comprime ni crece: toma su altura natural */
+        background-color: var(--bg-card);
+        border: none;
+        border-bottom: 1px solid var(--border-color);
+        border-radius: 0;
+        padding: 8px 16px 8px;
+        box-shadow: none;
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;      /* Jamás desborda horizontalmente */
+    }
+
+    .detail-header-nav {
+        margin-bottom: 6px;
+    }
+
+    .song-meta-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: none;
+        padding-bottom: 4px;
+        margin-bottom: 6px;
+        gap: 8px;
+    }
+
+    .song-detail-title {
+        font-size: 1.1rem;
+        margin-bottom: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 210px;
+    }
+
+    .song-detail-artist {
+        font-size: 0.8rem;
+    }
+
+    .song-tonality-badge {
+        flex-direction: row;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .song-tonality-badge .label {
+        display: none;
+    }
+
+    .song-tonality-badge .value {
+        font-size: 0.9rem;
+        padding: 3px 7px;
+    }
+
+    .song-controls-bar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 0;
+        margin-bottom: 0;
+        background: transparent;
+        border-radius: 0;
+        flex-wrap: nowrap;
+        width: 100%;
+    }
+
+    .control-group {
+        flex-direction: row;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .control-group.scroll-group {
+        justify-content: flex-end;
+    }
+
+    .control-group label.control-label {
+        display: none;
+    }
+
+    .transpose-widget {
+        display: flex;
+        align-items: center;
+        background-color: var(--bg-hover);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+    }
+
+    .transpose-widget button {
+        padding: 5px 9px;
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+
+    .transpose-widget .current-key-display {
+        padding: 0 7px;
+        font-size: 0.85rem;
+    }
+
+    #btn-transpose-reset {
+        padding: 5px 8px;
+        font-size: 0.78rem;
+        margin-top: 0;
+    }
+
+    .scroll-widget {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .scroll-widget button {
+        padding: 5px 9px;
+        font-size: 0.9rem;
+    }
+
+    .scroll-widget select {
+        padding: 4px 5px;
+        font-size: 0.8rem;
+        width: 46px;
+    }
+
+    /* ZONA DE LETRA AISLADA:
+       - Toma todo el espacio restante (flex: 1)
+       - Su scroll horizontal es INDEPENDIENTE de la página
+       - La zona superior nunca se ve afectada por el scroll de la letra */
+    .lyrics-view-wrapper {
+        flex: 1;                    /* Ocupa todo el espacio restante */
+        overflow-x: auto;           /* Scroll horizontal SOLO aquí */
+        overflow-y: auto;           /* Scroll vertical SOLO aquí */
+        -webkit-overflow-scrolling: touch;
+        padding: 12px 0 12px 12px;
+        border: none;
+        border-radius: 0;
+        background-color: transparent;
+        box-shadow: none;
+        /* Ancho fijo: nunca más ancho que el panel */
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;               /* Clave para aislar el ancho horizontal frente a flexbox */
+        box-sizing: border-box;
+        /* Eliminar el max-height anterior — ahora flex:1 controla la altura */
+        max-height: none;
+        height: auto;
+    }
+
+    .chords-lyrics-pre {
+        font-size: 0.9rem;
+        line-height: 1.9;
+        /* El contenido puede ser más ancho que el viewport sin romper el layout */
+        min-width: max-content;
+        /* Eliminar padding que pudiera desalinear acordes */
+        padding: 0;
+    }
+}
+
+/* ==========================================================================
+   MÓVIL: MODO VISOR DE LETRA EXPANDIDO
+   Quita el padding lateral del app-content para que el visor ocupe
+   todo el ancho de la pantalla (375px en iPhone 11).
+   ========================================================================== */
+@media (max-width: 767px) {
+    /* Selector moderno :has() */
+    .app-content:has(#subpanel-song-detail:not(.hidden)) {
+        padding-left: 0;
+        padding-right: 0;
+        padding-top: 0;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: hidden; /* Aísla completamente el scroll horizontal */
+    }
+    /* Fallback JS: clase .song-detail-mode añadida desde songs.js */
+    .app-content.song-detail-mode {
+        padding-left: 0;
+        padding-right: 0;
+        padding-top: 0;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: hidden; /* Aísla completamente el scroll horizontal */
+    }
+}

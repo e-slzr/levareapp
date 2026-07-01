@@ -1,0 +1,35 @@
+/* ==========================================================================
+   WorshipApp — USER PROFILE STYLES
+   ========================================================================== */
+
+.profile-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 30px;
+    box-shadow: var(--shadow-md);
+}
+
+#profile-avatar-container {
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+#profile-avatar-container:hover {
+    transform: scale(1.03);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Tab Switching buttons style in Profile view */
+.profile-card button.btn-outline {
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+.profile-card button.btn-outline.active-tab-btn {
+    background-color: var(--primary-soft);
+    color: var(--primary);
+    border-color: var(--primary);
+    font-weight: 700;
+}
+.profile-card button.btn-outline:hover:not(.active-tab-btn) {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+}

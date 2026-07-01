@@ -1,0 +1,94 @@
+/* ==========================================================================
+   WorshipApp — SETLISTS (REPERTORIOS) STYLES
+   ========================================================================== */
+
+.setlists-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.setlist-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+.setlist-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.setlist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.setlist-header h3 {
+    font-size: 1.15rem;
+}
+
+.setlist-date-badge {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background-color: var(--bg-hover);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+}
+
+.setlist-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.setlist-songs-list-preview {
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+}
+
+.setlist-songs-list-preview h5 {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.songs-preview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.song-preview-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    background-color: var(--bg-hover);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+.song-preview-item:hover {
+    background-color: rgba(139, 92, 246, 0.08);
+}
+.song-preview-item .title {
+    font-weight: 600;
+}
+.song-preview-item .key {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+    .setlists-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

@@ -1,0 +1,133 @@
+<!-- Subpanel 1: Setlists Grid List View -->
+<div id="subpanel-setlists-list" class="sub-view">
+    <div class="action-bar" style="flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h2>Listas de Repertorios</h2>
+        </div>
+        <div style="display: flex; gap: 10px; flex: 1; justify-content: flex-end; align-items: center; min-width: 280px;">
+            <!-- Search filter by name -->
+            <input type="text" id="setlists-search-input" placeholder="Buscar por título..." class="form-select-sm" style="flex: 1; max-width: 250px; padding: 8px 12px; height: 38px;">
+            
+            <button class="btn btn-primary" id="btn-create-setlist" style="display: none; height: 38px; padding: 0 16px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Crear</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Setlists Grid -->
+    <div class="setlists-grid" id="setlists-container" style="margin-top: 15px;">
+        <!-- Setlists generated dynamically -->
+    </div>
+</div>
+
+<!-- Subpanel 2: Setlist Presentation (Split-Screen View) -->
+<div id="subpanel-setlist-presentation" class="sub-view hidden">
+    <div class="setlist-presentation-layout">
+        <!-- Sidebar: Setlist info & songs -->
+        <aside class="presentation-sidebar">
+            <div class="presentation-sidebar-header">
+                <button class="btn btn-outline btn-block" id="btn-presentation-back" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 0.85rem; padding: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <span>Cerrar Repertorio</span>
+                </button>
+                <div>
+                    <h3 class="presentation-setlist-title" id="presentation-setlist-title">Repertorio</h3>
+                    <p class="presentation-setlist-desc" id="presentation-setlist-desc">Sin descripción</p>
+                </div>
+            </div>
+            <div class="presentation-songs-list" id="presentation-songs-list-container">
+                <!-- Populated dynamically -->
+            </div>
+        </aside>
+
+        <!-- Right Side: Song Viewer -->
+        <section class="presentation-song-viewer">
+            <!-- Controls bar -->
+            <div class="presentation-viewer-header">
+                <div style="display:flex; align-items:center; gap:15px; overflow:hidden;">
+                    <!-- Toggle list button -->
+                    <button class="btn btn-outline btn-sm" id="btn-toggle-presentation-songs" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; height:36px; flex-shrink:0;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        <span id="btn-toggle-songs-text" style="font-size:0.75rem; font-weight:700;">Ocultar Lista</span>
+                    </button>
+                    
+                    <div class="presentation-viewer-title-group">
+                        <h2 class="presentation-viewer-title" id="pres-song-title">Cargando canción...</h2>
+                        <p class="presentation-viewer-artist" id="pres-song-artist">...</p>
+                    </div>
+                </div>
+
+                <!-- Chords & Autoscroll Widgets -->
+                <div class="presentation-viewer-controls">
+                    <!-- Tonality control widget -->
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Tono:</span>
+                        <div class="transpose-widget" style="display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; background: var(--bg-card);">
+                            <button class="btn btn-sm" id="btn-pres-transpose-down" style="padding: 6px 12px; font-weight:700; border:none; background:transparent;">-</button>
+                            <span class="current-key-display" id="pres-song-current-key" style="min-width: 32px; text-align: center; font-weight: 700; font-size: 0.95rem; color: var(--primary);">C</span>
+                            <button class="btn btn-sm" id="btn-pres-transpose-up" style="padding: 6px 12px; font-weight:700; border:none; background:transparent;">+</button>
+                        </div>
+                        <button class="btn btn-outline btn-sm" id="btn-pres-transpose-reset" style="padding: 6px 10px; font-size:0.75rem;">Rest.</button>
+                    </div>
+
+                    <!-- Autoscroll widget -->
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Scroll:</span>
+                        <div class="scroll-widget" style="display:flex; align-items:center; gap:6px;">
+                            <button class="btn btn-control btn-sm" id="btn-pres-scroll-toggle" style="padding: 6px 10px; display:inline-flex; align-items:center; justify-content:center; height:34px; border:1px solid var(--border-color); background:var(--bg-card);"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></button>
+                            <select id="pres-scroll-speed-select" class="form-select-sm" style="height:34px; padding:0 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); font-weight:600;">
+                                <option value="1">x1</option>
+                                <option value="2" selected>x2</option>
+                                <option value="3">x3</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrollable lyrics area -->
+            <div class="lyrics-view-wrapper" id="pres-lyrics-container" style="flex:1; overflow-y:auto; overflow-x:auto; padding:24px; box-sizing:border-box;">
+                <pre class="chords-lyrics-pre" id="pres-chords-lyrics-content" style="margin:0; font-family:var(--font-mono); line-height:2.2; font-size:1rem;">
+                    <!-- Populated dynamically -->
+                </pre>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- CREATE SETLIST MODAL -->
+<div class="modal-backdrop hidden" id="modal-setlist">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="setlist-modal-title">Crear Nuevo Repertorio</h3>
+            <button class="btn-close-modal" id="btn-close-setlist-modal-x">&times;</button>
+        </div>
+        <form id="setlist-form">
+            <input type="hidden" id="setlist-form-id">
+            <div class="form-group">
+                <label for="setlist-form-name">Nombre del Repertorio</label>
+                <input type="text" id="setlist-form-name" placeholder="Ej. Repertorio de Concierto" required>
+            </div>
+            <div class="form-group">
+                <label for="setlist-form-desc">Notas o Descripción</label>
+                <input type="text" id="setlist-form-desc" placeholder="Ej. Ensayo general el sábado previo a las 6 PM">
+            </div>
+            <div class="form-group">
+                <label for="setlist-song-search">Buscar Canciones en el Catálogo</label>
+                <input type="text" id="setlist-song-search" placeholder="Escribe al menos 3 letras del título o artista..." class="form-select-sm" style="width:100%; padding:8px 12px; height:38px; margin-bottom:10px;">
+            </div>
+            <div class="form-group">
+                <label>Seleccionar Canciones (Marca las que deseas incluir)</label>
+                <div class="checkbox-list scrollable-y max-h-200" id="setlist-form-songs-selection">
+                    <!-- Populated dynamically with songs -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="btn-delete-setlist" style="color:var(--danger); border-color:rgba(239,68,68,0.2); margin-right:auto; display:none;">Eliminar Repertorio</button>
+                <button type="button" class="btn btn-outline btn-close-modal" id="btn-close-setlist-modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="btn-submit-setlist">Crear Lista</button>
+            </div>
+        </form>
+    </div>
+</div>

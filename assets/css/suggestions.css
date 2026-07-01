@@ -1,0 +1,109 @@
+/* ==========================================================================
+   WorshipApp — SUGGESTIONS STYLES
+   ========================================================================== */
+
+.suggestion-intro {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: space-between;
+}
+.suggestion-intro p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.suggestion-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.suggestion-vote-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-vote {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+}
+.btn-vote:hover {
+    background-color: rgba(239, 68, 68, 0.08);
+    color: var(--danger);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+.btn-vote.voted {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
+.vote-count {
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: var(--font-secondary);
+}
+
+.suggestion-info-block {
+    flex: 1;
+}
+.suggestion-info-block h4 {
+    font-size: 1.05rem;
+    margin-bottom: 2px;
+}
+.suggestion-info-block .artist {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+.suggestion-info-block .notes {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    background-color: var(--bg-main);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+}
+.suggestion-info-block .author {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+.suggestion-info-block .author strong {
+    color: var(--text-main);
+}
+
+.suggestion-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}

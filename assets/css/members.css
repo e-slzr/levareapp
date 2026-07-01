@@ -1,0 +1,123 @@
+/* ==========================================================================
+   WorshipApp — MEMBERS DIRECTORY & SIMULATOR STYLES
+   ========================================================================== */
+
+.team-simulator-card {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 24px;
+}
+.team-simulator-card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+    color: var(--secondary);
+}
+.team-simulator-card p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-bottom: 16px;
+}
+
+.simulator-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.simulator-selector label {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.simulator-selector select {
+    max-width: 250px;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.member-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: border-color var(--transition-fast);
+}
+.member-card:hover {
+    border-color: var(--primary-soft);
+}
+
+.member-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.member-details h4 {
+    font-size: 1rem;
+    margin-bottom: 2px;
+}
+.member-details p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.member-actions-row {
+    display: flex;
+    gap: 6px;
+}
+
+.member-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    background-color: var(--bg-hover);
+    transition: all var(--transition-fast);
+}
+.member-action-btn:hover {
+    color: var(--text-main);
+    background-color: var(--border-color);
+}
+.member-action-btn.danger:hover {
+    color: var(--danger);
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Role item layout in Manage Roles modal */
+.role-badge-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+}
+.role-badge-item button {
+    color: var(--danger);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+    .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

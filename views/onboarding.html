@@ -1,0 +1,54 @@
+<div class="auth-card onboarding-card">
+    <div class="auth-header">
+        <div class="logo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10c1.7 0 3.2-.4 4.5-1.1L22 22l-1.1-5.5c.7-1.3 1.1-2.8 1.1-4.5A10 10 0 0 0 12 2z"/><path d="M12 7v10"/><path d="M8 11h8"/></svg>
+            <span>Levare</span>
+        </div>
+        <h1>Configuración de Cuenta</h1>
+        <p>Para comenzar a usar Levare necesitas pertenecer a una banda o grupo musical.</p>
+    </div>
+
+    <!-- Mode Selector Buttons -->
+    <div class="onboarding-choices">
+        <button type="button" class="btn btn-primary btn-block" id="btn-choice-create">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Crear una nueva banda</span>
+        </button>
+        <button type="button" class="btn btn-outline btn-block" id="btn-choice-join" style="margin-top: 12px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+            <span>Unirme con código de invitación</span>
+        </button>
+    </div>
+
+    <!-- FORM: CREATE GROUP -->
+    <form id="form-create-group" class="hidden" style="margin-top: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Crear Banda / Grupo</h3>
+        <div class="form-group">
+            <label for="new-group-name">Nombre de la Banda / Grupo</label>
+            <input type="text" id="new-group-name" placeholder="Ej. Los Redoblantes" required>
+        </div>
+        <div class="form-group">
+            <label for="new-group-desc">Descripción (Opcional)</label>
+            <textarea id="new-group-desc" rows="3" placeholder="Ej. Banda de rock alternativo..."></textarea>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="button" class="btn btn-outline btn-block" id="btn-back-to-choices-create">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-block">Crear Banda</button>
+        </div>
+    </form>
+
+    <!-- FORM: JOIN GROUP -->
+    <form id="form-join-group" class="hidden" style="margin-top: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Unirme a Banda</h3>
+        <div class="form-group">
+            <label for="invite-code-input">Código de Invitación</label>
+            <input type="text" id="invite-code-input" placeholder="Ej. 482951" required
+                maxlength="6" inputmode="numeric" pattern="[0-9]{6}">
+            <small class="form-help">Ingresa el código de 6 dígitos que te compartió el líder de la banda.</small>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="button" class="btn btn-outline btn-block" id="btn-back-to-choices-join">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-block">Unirme</button>
+        </div>
+    </form>
+</div>

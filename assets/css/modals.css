@@ -1,0 +1,109 @@
+/* ==========================================================================
+   WorshipApp — MODALS COMMON STYLES
+   ========================================================================== */
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end; /* Slides up from bottom on mobile */
+    justify-content: center;
+    animation: fadeIn 0.25s ease-out;
+}
+
+.modal-card {
+    width: 100%;
+    max-width: 550px;
+    max-height: 90vh;
+    background-color: var(--bg-card);
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+.modal-header h3 {
+    font-size: 1.25rem;
+    font-family: var(--font-secondary);
+}
+.btn-close-modal {
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: var(--text-muted);
+    transition: color var(--transition-fast);
+    line-height: 1;
+}
+.btn-close-modal:hover {
+    color: var(--text-main);
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 16px;
+}
+
+/* Detailed modal metadata layout fields (Event visor, members etc.) */
+.modal-detail-section {
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    padding-bottom: 12px;
+}
+.modal-detail-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+.modal-detail-section h4 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    letter-spacing: 0.03em;
+}
+.modal-detail-section p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Desktop sizing for modals */
+@media (min-width: 768px) {
+    .modal-backdrop {
+        align-items: center; /* Centered on desktop */
+    }
+    
+    .modal-card {
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+    }
+}

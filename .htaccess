@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # 1. Si la petición empieza con "api/", mandarla internamente a la carpeta public de Laravel
+    RewriteCond %{REQUEST_URI} ^/api/ [NC]
+    RewriteRule ^api/(.*)$ api/public/index.php [L]
+
+    # 2. Para todo lo demás, si el archivo o carpeta física no existe, servir el index.html
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.html [L]
+</IfModule>

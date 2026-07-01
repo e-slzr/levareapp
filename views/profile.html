@@ -1,0 +1,103 @@
+<div class="song-detail-card profile-card" style="max-width: 600px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 25px;">
+        <!-- Avatar preview container -->
+        <div id="profile-avatar-container" class="avatar" style="width: 100px; height: 100px; font-size: 2.5rem; margin: 0 auto 12px auto; box-shadow: var(--shadow-md);">
+            CM
+        </div>
+        <h3 id="profile-full-name">Carlos Mendoza</h3>
+        <span class="badge badge-primary" id="profile-system-role-badge" style="margin-top:6px;">Líder</span>
+        
+        <!-- Upload Photo form control -->
+        <div style="margin-top:15px;">
+            <label for="profile-avatar-upload" class="btn btn-outline btn-sm" style="display:inline-flex; cursor:pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>Subir Foto</span>
+            </label>
+            <input type="file" id="profile-avatar-upload" accept="image/*" class="hidden">
+            <button class="btn btn-outline btn-sm" id="btn-remove-avatar" style="display:none; color:var(--danger); border-color:rgba(239,68,68,0.2); margin-left:8px;">Eliminar</button>
+        </div>
+    </div>
+
+    <!-- Tab selection inside Profile (Datos vs Password) -->
+    <div style="display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px;">
+        <button class="btn btn-sm btn-outline active-tab-btn" id="btn-profile-tab-info" style="flex:1;">Información Básica</button>
+        <button class="btn btn-sm btn-outline" id="btn-profile-tab-pw" style="flex:1;">Cambiar Contraseña</button>
+    </div>
+
+    <!-- Section 1: Info Form -->
+    <form id="profile-info-form">
+        <div class="form-row">
+            <div class="form-group col-6">
+                <label for="profile-input-name">Nombre</label>
+                <input type="text" id="profile-input-name" required>
+            </div>
+            <div class="form-group col-6">
+                <label for="profile-input-lastname">Apellido</label>
+                <input type="text" id="profile-input-lastname" required>
+            </div>
+        </div>
+        
+        <div class="form-group" id="profile-email-container">
+            <label for="profile-input-email">Correo Electrónico</label>
+            <input type="email" id="profile-input-email" placeholder="ejemplo@worshipapp.com">
+        </div>
+        
+        <div class="form-group">
+            <label for="profile-input-username">Nombre de Usuario (@username)</label>
+            <div style="position:relative;">
+                <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-weight:600;">@</span>
+                <input type="text" id="profile-input-username" required style="padding-left:28px;">
+            </div>
+        </div>
+        
+        <div class="form-group" style="margin-top: 20px;">
+            <label style="display:block; margin-bottom:10px; font-weight: 600;">Color de Acento (Tema de la App)</label>
+            <div id="accent-theme-selectors" style="display:flex; gap:12px; align-items:center;">
+                <button type="button" class="accent-dot-btn" data-accent="purple" title="Morado" style="width:32px; height:32px; border-radius:50%; background:hsl(263, 85%, 65%); border:2px solid transparent; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:#fff;"></button>
+                <button type="button" class="accent-dot-btn" data-accent="green" title="Verde" style="width:32px; height:32px; border-radius:50%; background:hsl(142, 70%, 45%); border:2px solid transparent; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:#fff;"></button>
+                <button type="button" class="accent-dot-btn" data-accent="yellow" title="Amarillo" style="width:32px; height:32px; border-radius:50%; background:hsl(45, 93%, 47%); border:2px solid transparent; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:#fff;"></button>
+                <button type="button" class="accent-dot-btn" data-accent="aqua" title="Aqua" style="width:32px; height:32px; border-radius:50%; background:hsl(190, 90%, 45%); border:2px solid transparent; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:#fff;"></button>
+                <button type="button" class="accent-dot-btn" data-accent="red" title="Rojo" style="width:32px; height:32px; border-radius:50%; background:hsl(0, 84%, 60%); border:2px solid transparent; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:#fff;"></button>
+                <button type="button" class="accent-dot-btn" data-accent="white" title="Blanco / Gris" style="width:32px; height:32px; border-radius:50%; background:hsl(0, 0%, 90%); border:2px solid #bbb; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:#333;"></button>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;">Guardar Cambios</button>
+    </form>
+
+    <!-- Section 2: Password Form -->
+    <form id="profile-password-form" class="hidden">
+        <!-- Optional Current Password validation for security, but simple input for prototype is fine -->
+        <div class="form-group">
+            <label for="profile-pw-current">Contraseña Actual</label>
+            <input type="password" id="profile-pw-current" placeholder="••••••••" required>
+        </div>
+        <div class="form-group">
+            <label for="profile-pw-new">Nueva Contraseña</label>
+            <input type="password" id="profile-pw-new" placeholder="Mínimo 6 caracteres" required minlength="6">
+        </div>
+        <div class="form-group">
+            <label for="profile-pw-confirm">Confirmar Nueva Contraseña</label>
+            <input type="password" id="profile-pw-confirm" placeholder="••••••••" required minlength="6">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 10px;">Actualizar Contraseña</button>
+    </form>
+</div>
+
+<!-- Modal Confirm Delete Avatar -->
+<div class="modal-backdrop hidden" id="modal-confirm-remove-avatar">
+    <div class="modal-card" style="max-width: 420px;">
+        <div class="modal-header">
+            <h3>Eliminar Foto de Perfil</h3>
+            <button class="btn-close-modal" id="btn-close-remove-avatar-modal-x">&times;</button>
+        </div>
+        <div style="padding: 20px 24px;">
+            <p style="font-size: 0.95rem; color: var(--text-secondary);">¿Confirmas que deseas eliminar tu foto de perfil actual?</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline btn-close-modal" id="btn-cancel-remove-avatar">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="btn-confirm-remove-avatar">Eliminar Foto</button>
+        </div>
+    </div>
+</div>
