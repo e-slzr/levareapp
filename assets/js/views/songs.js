@@ -8,6 +8,7 @@ let transposeOffset = 0;
 let scrollInterval = null;
 let isScrolling = false;
 let cachedSongs = [];
+let songIdToDelete = null;
 
 function initSongsView() {
     const currentUser = getData('currentUser');
@@ -50,6 +51,19 @@ function initSongsView() {
     document.getElementById('btn-close-song-modal-x').onclick = () => {
         document.getElementById('modal-song').classList.add('hidden');
     };
+
+    // Confirm Delete Song Modal triggers
+    document.querySelectorAll('#modal-delete-song-confirm .btn-close-modal').forEach(btn => {
+        btn.onclick = () => document.getElementById('modal-delete-song-confirm').classList.add('hidden');
+    });
+    const closeXDeleteSong = document.getElementById('btn-close-delete-song-modal-x');
+    if (closeXDeleteSong) {
+        closeXDeleteSong.onclick = () => document.getElementById('modal-delete-song-confirm').classList.add('hidden');
+    }
+    const confirmDeleteSongBtn = document.getElementById('btn-confirm-delete-song');
+    if (confirmDeleteSongBtn) {
+        confirmDeleteSongBtn.onclick = executeDeleteSong;
+    }
     
     // Song form submit
     document.getElementById('song-form').onsubmit = handleSongFormSubmit;
@@ -138,6 +152,9 @@ async function renderSongsCatalog(forceRefresh = false) {
                 <button class="song-action-btn btn-edit-song-trigger" data-id="${s.id}" title="Editar" style="display: ${editAllowed ? 'flex' : 'none'};">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                 </button>
+                <button class="song-action-btn btn-delete-song-trigger" data-id="${s.id}" title="Eliminar" style="display: ${editAllowed ? 'flex' : 'none'}; color: var(--danger); margin-left: 4px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                </button>
             </div>
         `;
 
@@ -150,6 +167,10 @@ async function renderSongsCatalog(forceRefresh = false) {
             card.querySelector('.btn-edit-song-trigger').onclick = (e) => {
                 e.stopPropagation();
                 openEditSongModal(s.id);
+            };
+            card.querySelector('.btn-delete-song-trigger').onclick = (e) => {
+                e.stopPropagation();
+                handleDeleteSong(s.id, s.title);
             };
         }
 
@@ -200,12 +221,32 @@ function openEditSongModal(songId) {
     document.getElementById('modal-song').classList.remove('hidden');
 }
 
+function formatMusicalKey(val) {
+    if (!val) return '';
+    val = val.trim();
+    if (val.length === 0) return '';
+    
+    let first = val.charAt(0).toUpperCase();
+    
+    if (val.length > 1) {
+        let second = val.charAt(1);
+        if (second === '#' || second === 's' || second === 'S') {
+            second = '#';
+        } else if (second === 'b' || second === 'B') {
+            second = 'b';
+        }
+        return first + second + val.substring(2);
+    }
+    
+    return first;
+}
+
 async function handleSongFormSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('song-form-id').value;
     const suggestionId = document.getElementById('song-form-suggestion-id').value;
     const title = document.getElementById('song-form-title').value.trim();
-    const key = document.getElementById('song-form-key').value.toUpperCase().trim();
+    const key = formatMusicalKey(document.getElementById('song-form-key').value);
     const artist = document.getElementById('song-form-artist').value.trim();
     const url = document.getElementById('song-form-url').value.trim();
     const content = document.getElementById('song-form-content').value.trim();
@@ -247,20 +288,41 @@ async function handleSongFormSubmit(e) {
     }
 }
 
-async function handleDeleteSong(songId, songTitle) {
-    if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente la canción "${songTitle}"?`)) {
-        return;
+function handleDeleteSong(songId, songTitle) {
+    songIdToDelete = songId;
+    
+    const modalNameEl = document.getElementById('delete-song-modal-name');
+    if (modalNameEl) {
+        modalNameEl.textContent = songTitle;
     }
+    
+    document.getElementById('modal-delete-song-confirm').classList.remove('hidden');
+}
+
+async function executeDeleteSong() {
+    if (!songIdToDelete) return;
+
+    const btn = document.getElementById('btn-confirm-delete-song');
+    btn.disabled = true;
+    btn.textContent = 'Eliminando...';
 
     try {
-        await apiFetch(`/songs/${songId}`, {
+        await apiFetch(`/songs/${songIdToDelete}`, {
             method: 'DELETE'
         });
+        
         showToast("Canción eliminada del catálogo");
+        
+        document.getElementById('modal-delete-song-confirm').classList.add('hidden');
         document.getElementById('modal-song').classList.add('hidden');
+        
         await renderSongsCatalog(true);
     } catch (err) {
         showToast(err.message, "danger");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Eliminar';
+        songIdToDelete = null;
     }
 }
 

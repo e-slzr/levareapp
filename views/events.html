@@ -108,3 +108,21 @@
         </form>
     </div>
 </div>
+
+<!-- Modal Confirm Cancel/Delete Event -->
+<div class="modal-backdrop hidden" id="modal-delete-event-confirm" style="z-index: 2200;">
+    <div class="modal-card" style="max-width: 420px;">
+        <div class="modal-header">
+            <h3>Eliminar Evento</h3>
+            <button class="btn-close-modal" id="btn-close-delete-event-modal-x">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>¿Estás seguro de que deseas cancelar y eliminar permanentemente el evento "<strong id="delete-event-modal-name">---</strong>"?</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Esta acción removerá el evento del calendario y liberará a todos los músicos asignados en el roster.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline btn-close-modal" id="btn-cancel-delete-event">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="btn-confirm-delete-event">Eliminar Evento</button>
+        </div>
+    </div>
+</div>

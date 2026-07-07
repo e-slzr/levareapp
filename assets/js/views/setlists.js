@@ -222,23 +222,42 @@ async function renderSetlists(forceRefresh = false) {
         let editBtnHTML = '';
         if (canEdit()) {
             editBtnHTML = `
-                <button class="btn-edit-setlist" style="
-                    background: transparent;
-                    border: none;
-                    color: var(--text-muted);
-                    cursor: pointer;
-                    padding: 6px;
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: var(--radius-sm);
-                    transition: all 0.2s;
-                " onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'" title="Editar repertorio">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                </button>
+                <div style="display: flex; gap: 4px;">
+                    <button class="btn-edit-setlist" style="
+                        background: transparent;
+                        border: none;
+                        color: var(--text-muted);
+                        cursor: pointer;
+                        padding: 6px;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: var(--radius-sm);
+                        transition: all 0.2s;
+                    " onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'" title="Editar repertorio">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button class="btn-delete-setlist-card" style="
+                        background: transparent;
+                        border: none;
+                        color: var(--text-muted);
+                        cursor: pointer;
+                        padding: 6px;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: var(--radius-sm);
+                        transition: all 0.2s;
+                    " onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'" title="Eliminar repertorio">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
             `;
         }
 
@@ -268,6 +287,13 @@ async function renderSetlists(forceRefresh = false) {
                 editBtn.onclick = (e) => {
                     e.stopPropagation();
                     openEditSetlistModal(s.id);
+                };
+            }
+            const deleteCardBtn = card.querySelector('.btn-delete-setlist-card');
+            if (deleteCardBtn) {
+                deleteCardBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    handleDeleteSetlistCard(s.id, s.name);
                 };
             }
         }
@@ -788,6 +814,17 @@ async function handleSetlistFormSubmit(e) {
     } catch (err) {
         showToast(err.message, "danger");
     }
+}
+
+function handleDeleteSetlistCard(setlistId, setlistName) {
+    setlistIdToDelete = setlistId;
+
+    const modalNameEl = document.getElementById('delete-setlist-modal-name');
+    if (modalNameEl) {
+        modalNameEl.textContent = `"${setlistName}"`;
+    }
+
+    document.getElementById('modal-delete-setlist-confirm').classList.remove('hidden');
 }
 
 function handleDeleteSetlist() {

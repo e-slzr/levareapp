@@ -126,3 +126,21 @@
         </form>
     </div>
 </div>
+
+<!-- Modal Confirm Delete Song -->
+<div class="modal-backdrop hidden" id="modal-delete-song-confirm" style="z-index: 2100;">
+    <div class="modal-card" style="max-width: 420px;">
+        <div class="modal-header">
+            <h3>Eliminar Canción</h3>
+            <button class="btn-close-modal" id="btn-close-delete-song-modal-x">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>¿Estás seguro de que deseas eliminar permanentemente la canción "<strong id="delete-song-modal-name">---</strong>" del catálogo?</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">Esta acción se propagará y removerá automáticamente la canción de todos los repertorios donde se encuentre agregada.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline btn-close-modal" id="btn-cancel-delete-song">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="btn-confirm-delete-song">Eliminar</button>
+        </div>
+    </div>
+</div>

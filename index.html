@@ -14,6 +14,7 @@
     <!-- Main Styles -->
     <link rel="stylesheet" href="assets/css/main.css?v=1.2.1">
     <!-- PWA Manifest & Meta Tags -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="manifest" href="manifest.json?v=1.0.1">
     <meta name="theme-color" content="#7c3aed">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -617,8 +618,9 @@
             <div class="modal-body" id="event-detail-modal-body">
                 <!-- Loaded dynamically -->
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary btn-close-modal btn-block" id="btn-close-event-detail-modal">Cerrar</button>
+            <div class="modal-footer" style="display: flex; gap: 10px;">
+                <button type="button" class="btn btn-outline" id="btn-delete-event" style="color: var(--danger); border-color: rgba(239,68,68,0.25); margin-right: auto; display: none;">Eliminar Evento</button>
+                <button type="button" class="btn btn-primary btn-close-modal" id="btn-close-event-detail-modal" style="flex: 1;">Cerrar</button>
             </div>
         </div>
     </div>
