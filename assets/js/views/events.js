@@ -5,6 +5,7 @@
 let calendarCurrentYear = new Date().getFullYear();
 let calendarCurrentMonth = new Date().getMonth(); // 0-11
 let cachedEvents = [];
+let eventIdToDelete = null;
 
 function initEventsView() {
     const currentUser = getData('currentUser');
@@ -74,6 +75,19 @@ function initEventsView() {
     document.getElementById('btn-close-schedule-event-modal-x').onclick = () => {
         document.getElementById('modal-schedule-event').classList.add('hidden');
     };
+
+    // Confirm Delete Event Modal triggers
+    document.querySelectorAll('#modal-delete-event-confirm .btn-close-modal').forEach(btn => {
+        btn.onclick = () => document.getElementById('modal-delete-event-confirm').classList.add('hidden');
+    });
+    const closeXDeleteEvent = document.getElementById('btn-close-delete-event-modal-x');
+    if (closeXDeleteEvent) {
+        closeXDeleteEvent.onclick = () => document.getElementById('modal-delete-event-confirm').classList.add('hidden');
+    }
+    const confirmDeleteEventBtn = document.getElementById('btn-confirm-delete-event');
+    if (confirmDeleteEventBtn) {
+        confirmDeleteEventBtn.onclick = executeDeleteEvent;
+    }
 
     // Populate event type dropdown
     const typeSelect = document.getElementById('event-form-type');
@@ -224,16 +238,18 @@ function renderCalendar() {
         const dayEvents = cachedEvents.filter(e => e.date === dateStr);
 
         if (dayEvents.length > 0) {
-            const dotsContainer = document.createElement('div');
-            dotsContainer.className = 'calendar-events-dots';
+            const badgesContainer = document.createElement('div');
+            badgesContainer.className = 'calendar-event-badges-container';
             
             dayEvents.forEach(ev => {
-                const dot = document.createElement('span');
-                dot.className = `event-dot ${ev.type}`;
-                dotsContainer.appendChild(dot);
+                const badge = document.createElement('div');
+                const typeDetails = EVENT_TYPES.find(t => t.value === ev.type) || { label: 'Otro' };
+                badge.className = `calendar-event-badge ${ev.type}`;
+                badge.textContent = typeDetails.label;
+                badgesContainer.appendChild(badge);
             });
             
-            cell.appendChild(dotsContainer);
+            cell.appendChild(badgesContainer);
             
             cell.onclick = () => {
                 if (dayEvents.length === 1) {
@@ -349,6 +365,17 @@ async function viewEventDetails(eventId) {
         }
     };
 
+    // Mostrar/ocultar botón de eliminar evento según permisos
+    const deleteBtn = document.getElementById('btn-delete-event');
+    if (deleteBtn) {
+        if (canEdit()) {
+            deleteBtn.style.display = 'inline-flex';
+            deleteBtn.onclick = () => handleDeleteEvent(ev.id, ev.name);
+        } else {
+            deleteBtn.style.display = 'none';
+        }
+    }
+
     document.getElementById('modal-event-detail').classList.remove('hidden');
 }
 
@@ -380,6 +407,11 @@ function viewDayEventsDetails(dateStr, dayEvents) {
 
         body.appendChild(div);
     });
+
+    const deleteBtn = document.getElementById('btn-delete-event');
+    if (deleteBtn) {
+        deleteBtn.style.display = 'none';
+    }
 
     document.getElementById('modal-event-detail').classList.remove('hidden');
 }
@@ -495,5 +527,43 @@ async function handleEventScheduleFormSubmit(e) {
         await renderEvents(true); // force reload
     } catch (err) {
         showToast(err.message, "danger");
+    }
+}
+
+function handleDeleteEvent(eventId, eventName) {
+    eventIdToDelete = eventId;
+    
+    const modalNameEl = document.getElementById('delete-event-modal-name');
+    if (modalNameEl) {
+        modalNameEl.textContent = eventName;
+    }
+    
+    document.getElementById('modal-delete-event-confirm').classList.remove('hidden');
+}
+
+async function executeDeleteEvent() {
+    if (!eventIdToDelete) return;
+
+    const btn = document.getElementById('btn-confirm-delete-event');
+    btn.disabled = true;
+    btn.textContent = 'Eliminando...';
+
+    try {
+        await apiFetch(`/events/${eventIdToDelete}`, {
+            method: 'DELETE'
+        });
+        
+        showToast("Evento cancelado y eliminado correctamente");
+        
+        document.getElementById('modal-delete-event-confirm').classList.add('hidden');
+        document.getElementById('modal-event-detail').classList.add('hidden');
+        
+        await renderEvents(true); // force reload
+    } catch (err) {
+        showToast(err.message, "danger");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Eliminar Evento';
+        eventIdToDelete = null;
     }
 }

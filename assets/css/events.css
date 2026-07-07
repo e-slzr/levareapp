@@ -203,22 +203,65 @@
     font-weight: 700;
 }
 
-.calendar-events-dots {
+.calendar-event-badges-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     gap: 3px;
+    width: 100%;
     margin-top: auto;
 }
 
-.event-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: var(--radius-full);
+.calendar-event-badge {
+    display: block;
+    width: 100%;
+    padding: 2px 6px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all var(--transition-fast);
 }
-.event-dot.culto { background-color: var(--success); }
-.event-dot.ensayo { background-color: var(--primary); }
-.event-dot.especial { background-color: var(--warning); }
-.event-dot.otro { background-color: var(--danger); }
+
+.calendar-event-badge.ensayo {
+    background-color: var(--primary-soft);
+    color: var(--primary);
+}
+
+.calendar-event-badge.concierto {
+    background-color: var(--success-soft);
+    color: var(--success);
+}
+
+.calendar-event-badge.culto {
+    background-color: rgba(6, 182, 212, 0.15);
+    color: var(--secondary);
+}
+
+.calendar-event-badge.especial {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+}
+
+.calendar-event-badge.otro {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+/* Responsividad para móviles y pantallas muy pequeñas */
+@media (max-width: 680px) {
+    .calendar-event-badge {
+        font-size: 0;
+        height: 6px;
+        padding: 0;
+        border-radius: var(--radius-full);
+        margin-top: 1px;
+    }
+}
 
 /* Roster creation styling in schedule event form */
 .roster-setup-list {
