@@ -13,6 +13,13 @@
         rel="stylesheet">
     <!-- Main Styles -->
     <link rel="stylesheet" href="assets/css/main.css?v=1.2.1">
+    <!-- PWA Manifest & Meta Tags -->
+    <link rel="manifest" href="manifest.json?v=1.0.1">
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Levare">
+    <link rel="apple-touch-icon" href="icon.svg?v=1.0.1">
 </head>
 
 <body class="dark-theme">
@@ -600,21 +607,48 @@
         </div>
     </div>
 
+    <!-- DETAILED EVENT VIEW & ASSIGNMENTS MODAL -->
+    <div class="modal-backdrop hidden" id="modal-event-detail" style="z-index: 2000;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="event-detail-modal-name">Servicio Dominical</h3>
+                <button class="btn-close-modal" id="btn-close-event-detail-modal-x">&times;</button>
+            </div>
+            <div class="modal-body" id="event-detail-modal-body">
+                <!-- Loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary btn-close-modal btn-block" id="btn-close-event-detail-modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Core Levare JS modules -->
-    <script src="assets/js/db.js?v=1.2.1"></script>
-    <script src="assets/js/utils.js?v=1.2.1"></script>
-    <script src="assets/js/transposer.js?v=1.2.1"></script>
-    <script src="assets/js/app.js?v=1.2.1"></script>
+    <script src="assets/js/db.js?v=1.2.3"></script>
+    <script src="assets/js/utils.js?v=1.2.3"></script>
+    <script src="assets/js/transposer.js?v=1.2.3"></script>
+    <script src="assets/js/app.js?v=1.2.3"></script>
 
     <!-- View Controllers -->
-    <script src="assets/js/views/dashboard.js?v=1.2.1"></script>
-    <script src="assets/js/views/songs.js?v=1.2.1"></script>
-    <script src="assets/js/views/setlists.js?v=1.2.1"></script>
-    <script src="assets/js/views/events.js?v=1.2.1"></script>
-    <script src="assets/js/views/suggestions.js?v=1.2.1"></script>
-    <script src="assets/js/views/members.js?v=1.2.1"></script>
-    <script src="assets/js/views/profile.js?v=1.2.1"></script>
-    <script src="assets/js/views/admin.js?v=1.2.1"></script>
+    <script src="assets/js/views/dashboard.js?v=1.2.3"></script>
+    <script src="assets/js/views/songs.js?v=1.2.3"></script>
+    <script src="assets/js/views/setlists.js?v=1.2.3"></script>
+    <script src="assets/js/views/events.js?v=1.2.3"></script>
+    <script src="assets/js/views/suggestions.js?v=1.2.3"></script>
+    <script src="assets/js/views/members.js?v=1.2.3"></script>
+    <script src="assets/js/views/profile.js?v=1.2.3"></script>
+    <script src="assets/js/views/admin.js?v=1.2.3"></script>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registrado con éxito:', reg.scope))
+                    .catch(err => console.error('Error al registrar el Service Worker:', err));
+            });
+        }
+    </script>
 </body>
 
 </html>

@@ -147,6 +147,13 @@ function renderAdminRequests() {
         const nameStr = `${user.name} ${user.lastname || ''}`.trim();
         const initials = getInitials(nameStr);
         const avatarBg = getAvatarBgColor(nameStr);
+        
+        let avatarStyle = `background: ${avatarBg};`;
+        const hasAvatar = user.avatar && user.avatar !== '0' && user.avatar !== 'null';
+        if (hasAvatar) {
+            avatarStyle = `background-image: url('${getAvatarUrl(user.avatar)}'); background-size: cover; background-position: center;`;
+        }
+
         const createdAt = user.created_at ? new Date(user.created_at).toLocaleDateString('es-MX', {
             year: 'numeric', month: 'long', day: 'numeric'
         }) : '—';
@@ -157,10 +164,10 @@ function renderAdminRequests() {
             : `<span style="font-size:0.7rem; font-weight:600; padding:2px 8px; border-radius:12px; background:rgba(59,130,246,0.12); color:#3b82f6; border:1px solid rgba(59,130,246,0.22); margin-left: 6px;">Miembro</span>`;
 
         card.innerHTML = `
-            <div style="width:48px; height:48px; border-radius:50%; background:${avatarBg};
+            <div style="width:48px; height:48px; border-radius:50%; ${avatarStyle}
                 display:flex; align-items:center; justify-content:center;
                 font-size:1.1rem; font-weight:700; color:#fff; flex-shrink:0;">
-                ${initials}
+                ${hasAvatar ? '' : initials}
             </div>
             <div style="flex:1; min-width:200px;">
                 <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">

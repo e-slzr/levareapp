@@ -159,18 +159,22 @@ async function renderEvents(forceRefresh = false) {
 
         card.querySelector('.view-setlist-link').onclick = (e) => {
             e.preventDefault();
+            e.stopPropagation(); // Evitar abrir los detalles del evento al hacer clic en el enlace del repertorio
             if (ev.setlist_id) {
-                window.location.hash = '#setlists';
-                setTimeout(() => {
-                    const searchInput = document.getElementById('setlists-search-input');
-                    if (searchInput) {
-                        searchInput.value = setlistName;
-                        searchInput.dispatchEvent(new Event('input'));
-                    }
-                }, 200);
+                if (typeof viewSetlistPresentationDirectly === 'function') {
+                    viewSetlistPresentationDirectly(ev.setlist_id);
+                } else {
+                    window.location.hash = '#setlists';
+                }
             } else {
                 showToast("Este evento no tiene un repertorio asignado", "warning");
             }
+        };
+
+        // Hacer la tarjeta interactiva para abrir los detalles del evento
+        card.style.cursor = 'pointer';
+        card.onclick = () => {
+            viewEventDetails(ev.id);
         };
 
         listContainer.appendChild(card);
@@ -262,9 +266,28 @@ function renderCalendar() {
     }
 }
 
-function viewEventDetails(eventId) {
+async function viewEventDetails(eventId) {
+    if (!cachedEvents || cachedEvents.length === 0) {
+        try {
+            cachedEvents = await apiFetch('/events') || [];
+        } catch (err) {
+            console.error("Error loading events for details:", err);
+        }
+    }
     const ev = cachedEvents.find(e => e.id === eventId);
     if (!ev) return;
+
+    // Enlazar botones de cierre dinámicamente por si se abre desde otra vista como el Dashboard
+    const modal = document.getElementById('modal-event-detail');
+    if (modal) {
+        modal.querySelectorAll('.btn-close-modal').forEach(btn => {
+            btn.onclick = () => modal.classList.add('hidden');
+        });
+        const closeX = document.getElementById('btn-close-event-detail-modal-x');
+        if (closeX) {
+            closeX.onclick = () => modal.classList.add('hidden');
+        }
+    }
 
     document.getElementById('event-detail-modal-name').textContent = ev.name;
     const body = document.getElementById('event-detail-modal-body');
@@ -314,16 +337,15 @@ function viewEventDetails(eventId) {
 
     body.querySelector('.view-setlist-modal-link').onclick = (e) => {
         e.preventDefault();
-        document.getElementById('modal-event-detail').classList.add('hidden');
         if (ev.setlist_id) {
-            window.location.hash = '#setlists';
-            setTimeout(() => {
-                const searchInput = document.getElementById('setlists-search-input');
-                if (searchInput) {
-                    searchInput.value = setlistName;
-                    searchInput.dispatchEvent(new Event('input'));
-                }
-            }, 200);
+            document.getElementById('modal-event-detail').classList.add('hidden');
+            if (typeof viewSetlistPresentationDirectly === 'function') {
+                viewSetlistPresentationDirectly(ev.setlist_id);
+            } else {
+                window.location.hash = '#setlists';
+            }
+        } else {
+            showToast("Este evento no tiene un repertorio asignado", "warning");
         }
     };
 
@@ -380,7 +402,7 @@ async function openScheduleEventModal(prefilledDate = null) {
         setlists.forEach(s => {
             const opt = document.createElement('option');
             opt.value = s.id;
-            opt.textContent = `${s.name} (${formatDate(s.date, true)})`;
+            opt.textContent = s.name;
             setlistSelect.appendChild(opt);
         });
 

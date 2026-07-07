@@ -5,7 +5,7 @@
 let setlistSearchQuery = "";
 let cachedSetlists = [];
 let allSongs = [];
-let selectedSongIds = new Set();
+let selectedSongIds = [];
 let setlistSearchSongQuery = "";
 
 // Presentation view state variables
@@ -14,15 +14,27 @@ let currentPresentationSong = null;
 let presTransposeOffset = 0;
 let presIsScrolling = false;
 let presScrollInterval = null;
+let directPresentationSetlistId = null;
+let setlistIdToDelete = null;
 
 function initSetlistsView() {
     const currentUser = getData('currentUser');
     const currentGroupId = getData('currentGroupId');
     if (!currentUser || !currentGroupId) return;
 
+    if (directPresentationSetlistId !== null) {
+        const listSubpanel = document.getElementById('subpanel-setlists-list');
+        const presSubpanel = document.getElementById('subpanel-setlist-presentation');
+        if (listSubpanel && presSubpanel) {
+            listSubpanel.classList.add('hidden');
+            presSubpanel.classList.remove('hidden');
+            document.body.classList.add('setlist-presentation-mode');
+        }
+    }
+
     const searchInput = document.getElementById('setlists-search-input');
     const songSearchInput = document.getElementById('setlist-song-search');
-    
+
     // Reset filters
     setlistSearchQuery = "";
     searchInput.value = "";
@@ -56,6 +68,19 @@ function initSetlistsView() {
     document.getElementById('btn-close-setlist-modal-x').onclick = () => {
         document.getElementById('modal-setlist').classList.add('hidden');
     };
+
+    // Confirm Delete Setlist Modal triggers
+    document.querySelectorAll('#modal-delete-setlist-confirm .btn-close-modal').forEach(btn => {
+        btn.onclick = () => document.getElementById('modal-delete-setlist-confirm').classList.add('hidden');
+    });
+    const closeXDelete = document.getElementById('btn-close-delete-setlist-modal-x');
+    if (closeXDelete) {
+        closeXDelete.onclick = () => document.getElementById('modal-delete-setlist-confirm').classList.add('hidden');
+    }
+    const confirmDeleteBtn = document.getElementById('btn-confirm-delete-setlist');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.onclick = executeDeleteSetlist;
+    }
 
     // Presentation view controls listeners
     const btnPresBack = document.getElementById('btn-presentation-back');
@@ -93,6 +118,13 @@ function initSetlistsView() {
     const deleteBtn = document.getElementById('btn-delete-setlist');
     if (deleteBtn) {
         deleteBtn.onclick = handleDeleteSetlist;
+    }
+
+    if (directPresentationSetlistId !== null) {
+        const targetId = directPresentationSetlistId;
+        directPresentationSetlistId = null; // reset
+        loadDirectPresentation(targetId);
+        return;
     }
 
     renderSetlists(true); // force first load
@@ -141,7 +173,7 @@ async function renderSetlists(forceRefresh = false) {
         card.className = 'setlist-card';
         card.style.cursor = 'pointer';
         card.style.transition = 'transform 0.2s, box-shadow 0.2s';
-        
+
         // Add card hover styling programmatically
         card.onmouseenter = () => {
             card.style.transform = 'translateY(-2px)';
@@ -288,7 +320,7 @@ function openSetlistPresentation(setlist) {
         selectPresentationSong(setlist.songs[0]);
     } else {
         sidebarList.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:20px;">Sin canciones en este repertorio.</div>';
-        
+
         document.getElementById('pres-song-title').textContent = 'Sin canciones';
         document.getElementById('pres-song-artist').textContent = '';
         document.getElementById('pres-song-current-key').textContent = '-';
@@ -429,11 +461,11 @@ function togglePresentationSongsSidebar() {
 async function openCreateSetlistModal() {
     document.getElementById('setlist-form-id').value = "";
     document.getElementById('setlist-modal-title').textContent = "Crear Nuevo Repertorio";
-    document.getElementById('btn-submit-setlist').textContent = "Crear Lista";
+    document.getElementById('btn-submit-setlist').textContent = "Guardar";
     document.getElementById('btn-delete-setlist').style.display = "none";
     document.getElementById('setlist-form').reset();
-    
-    selectedSongIds = new Set();
+
+    selectedSongIds = [];
     setlistSearchSongQuery = "";
     const searchInput = document.getElementById('setlist-song-search');
     if (searchInput) searchInput.value = "";
@@ -447,8 +479,8 @@ async function openEditSetlistModal(setlistId) {
 
     document.getElementById('setlist-form-id').value = setlist.id;
     document.getElementById('setlist-modal-title').textContent = "Editar Repertorio";
-    document.getElementById('btn-submit-setlist').textContent = "Guardar Cambios";
-    
+    document.getElementById('btn-submit-setlist').textContent = "Guardar";
+
     // Show delete button
     const deleteBtn = document.getElementById('btn-delete-setlist');
     if (deleteBtn && canEdit()) {
@@ -457,9 +489,9 @@ async function openEditSetlistModal(setlistId) {
 
     document.getElementById('setlist-form-name').value = setlist.name;
     document.getElementById('setlist-form-desc').value = setlist.description || "";
-    
-    // Load existing songs
-    selectedSongIds = new Set(setlist.songs ? setlist.songs.map(song => song.id) : []);
+
+    // Load existing songs in order
+    selectedSongIds = setlist.songs ? setlist.songs.map(song => song.id) : [];
     setlistSearchSongQuery = "";
     const searchInput = document.getElementById('setlist-song-search');
     if (searchInput) searchInput.value = "";
@@ -474,6 +506,7 @@ async function loadAllSongsForModal() {
     try {
         allSongs = await apiFetch('/songs') || [];
         renderModalSongsSelection();
+        renderSelectedSongsOrder();
         document.getElementById('modal-setlist').classList.remove('hidden');
     } catch (e) {
         console.error("Error loading songs for setlist modal:", e);
@@ -498,7 +531,7 @@ function renderModalSongsSelection() {
         songsSelect.appendChild(msg);
 
         // Render already selected songs so the user can see them and uncheck them
-        if (selectedSongIds.size > 0) {
+        if (selectedSongIds.length > 0) {
             const heading = document.createElement('div');
             heading.style.fontSize = '0.75rem';
             heading.style.fontWeight = '600';
@@ -508,8 +541,9 @@ function renderModalSongsSelection() {
             heading.textContent = 'Canciones Seleccionadas:';
             songsSelect.appendChild(heading);
 
-            allSongs.forEach(s => {
-                if (selectedSongIds.has(s.id)) {
+            selectedSongIds.forEach(id => {
+                const s = allSongs.find(song => song.id == id);
+                if (s) {
                     const label = createSongCheckboxItem(s);
                     songsSelect.appendChild(label);
                 }
@@ -519,8 +553,8 @@ function renderModalSongsSelection() {
     }
 
     // Filter list
-    const filtered = allSongs.filter(s => 
-        s.title.toLowerCase().includes(query) || 
+    const filtered = allSongs.filter(s =>
+        s.title.toLowerCase().includes(query) ||
         s.artist.toLowerCase().includes(query)
     );
 
@@ -543,22 +577,27 @@ function renderModalSongsSelection() {
 function createSongCheckboxItem(song) {
     const label = document.createElement('label');
     label.className = 'checkbox-item';
-    
-    const isChecked = selectedSongIds.has(song.id) ? 'checked' : '';
-    
+
+    const isChecked = selectedSongIds.includes(song.id) ? 'checked' : '';
+
     label.innerHTML = `
         <input type="checkbox" name="setlist-songs" value="${song.id}" ${isChecked}>
         <span><strong>${song.title}</strong> - ${song.artist} (${song.key})</span>
     `;
 
-    // Listen to changes to dynamically update selectedSongIds Set
+    // Listen to changes to dynamically update selectedSongIds Array
     label.querySelector('input').addEventListener('change', (e) => {
         const sId = parseInt(e.target.value);
         if (e.target.checked) {
-            selectedSongIds.add(sId);
+            if (!selectedSongIds.includes(sId)) {
+                selectedSongIds.push(sId);
+            }
         } else {
-            selectedSongIds.delete(sId);
+            selectedSongIds = selectedSongIds.filter(id => id !== sId);
         }
+        
+        renderSelectedSongsOrder();
+        
         // If query is short, unchecking will dynamically remove it from selection list view
         if (setlistSearchSongQuery.toLowerCase().trim().length < 3) {
             renderModalSongsSelection();
@@ -568,6 +607,151 @@ function createSongCheckboxItem(song) {
     return label;
 }
 
+let dragSrcEl = null;
+
+function handleDragStart(e) {
+    dragSrcEl = this;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.index);
+    this.style.opacity = '0.5';
+    this.style.borderColor = 'var(--primary)';
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+}
+
+function handleDragEnter(e) {
+    this.style.background = 'var(--bg-hover)';
+}
+
+function handleDragLeave(e) {
+    this.style.background = 'var(--bg-card)';
+}
+
+function handleDrop(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    if (dragSrcEl !== this) {
+        const fromIndex = parseInt(dragSrcEl.dataset.index);
+        const toIndex = parseInt(this.dataset.index);
+        
+        // Reordenar en la variable
+        const [movedId] = selectedSongIds.splice(fromIndex, 1);
+        selectedSongIds.splice(toIndex, 0, movedId);
+        
+        renderSelectedSongsOrder();
+        renderModalSongsSelection();
+    }
+    return false;
+}
+
+function handleDragEnd(e) {
+    this.style.opacity = '1';
+    this.style.borderColor = 'var(--border-color)';
+    document.querySelectorAll('.selected-song-order-item').forEach(item => {
+        item.style.background = 'var(--bg-card)';
+    });
+}
+
+function moveSongInOrder(index, direction) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= selectedSongIds.length) return;
+    
+    // Intercambiar
+    const temp = selectedSongIds[index];
+    selectedSongIds[index] = selectedSongIds[targetIndex];
+    selectedSongIds[targetIndex] = temp;
+    
+    renderSelectedSongsOrder();
+    renderModalSongsSelection();
+}
+
+function removeSongFromOrder(songId) {
+    selectedSongIds = selectedSongIds.filter(id => id !== songId);
+    renderSelectedSongsOrder();
+    renderModalSongsSelection();
+}
+
+function renderSelectedSongsOrder() {
+    const orderContainer = document.getElementById('setlist-form-songs-order');
+    if (!orderContainer) return;
+    
+    orderContainer.innerHTML = '';
+    
+    if (selectedSongIds.length === 0) {
+        orderContainer.innerHTML = `<div style="color:var(--text-muted); font-size:0.85rem; font-style:italic; padding:8px;" class="no-songs-msg">No has seleccionado ninguna canción todavía.</div>`;
+        return;
+    }
+    
+    selectedSongIds.forEach((id, index) => {
+        const song = allSongs.find(s => s.id == id);
+        if (!song) return;
+        
+        const row = document.createElement('div');
+        row.className = 'selected-song-order-item';
+        row.draggable = true;
+        row.dataset.id = id;
+        row.dataset.index = index;
+        
+        // Estilos para la fila del orden (premium look, dark-mode ready)
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.justifyContent = 'space-between';
+        row.style.padding = '8px 12px';
+        row.style.background = 'var(--bg-card)';
+        row.style.border = '1px solid var(--border-color)';
+        row.style.borderRadius = 'var(--radius-sm)';
+        row.style.cursor = 'grab';
+        row.style.transition = 'background var(--transition-fast), border-color var(--transition-fast)';
+        row.style.gap = '8px';
+        row.style.marginBottom = '4px';
+        
+        row.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+                <span style="font-weight:700; color:var(--primary); font-size:0.85rem; min-width:18px;">${index + 1}.</span>
+                <span style="font-size:0.85rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0;">
+                    ${song.title} <span style="font-weight:400; color:var(--text-muted); font-size:0.8rem;">por ${song.artist} (${song.key})</span>
+                </span>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                <button type="button" class="btn btn-outline btn-sm btn-order-up" style="padding: 2px 6px; font-size:0.65rem;" title="Subir">▲</button>
+                <button type="button" class="btn btn-outline btn-sm btn-order-down" style="padding: 2px 6px; font-size:0.65rem;" title="Bajar">▼</button>
+                <button type="button" class="btn btn-outline btn-sm btn-order-remove" style="padding: 2px 6px; color:var(--danger); border-color:rgba(239,68,68,0.2); font-size:0.75rem; font-weight:700;" title="Quitar">×</button>
+            </div>
+        `;
+        
+        // Drag & Drop listeners
+        row.addEventListener('dragstart', handleDragStart);
+        row.addEventListener('dragover', handleDragOver);
+        row.addEventListener('drop', handleDrop);
+        row.addEventListener('dragend', handleDragEnd);
+        row.addEventListener('dragenter', handleDragEnter);
+        row.addEventListener('dragleave', handleDragLeave);
+        
+        // Button listeners
+        row.querySelector('.btn-order-up').onclick = (e) => {
+            e.stopPropagation();
+            moveSongInOrder(index, -1);
+        };
+        row.querySelector('.btn-order-down').onclick = (e) => {
+            e.stopPropagation();
+            moveSongInOrder(index, 1);
+        };
+        row.querySelector('.btn-order-remove').onclick = (e) => {
+            e.stopPropagation();
+            removeSongFromOrder(id);
+        };
+        
+        orderContainer.appendChild(row);
+    });
+}
+
 async function handleSetlistFormSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('setlist-form-id').value;
@@ -575,7 +759,7 @@ async function handleSetlistFormSubmit(e) {
     const date = getLocalDateString();
     const description = document.getElementById('setlist-form-desc').value.trim();
 
-    const songIds = Array.from(selectedSongIds);
+    const songIds = selectedSongIds;
 
     if (songIds.length === 0) {
         showToast("Selecciona al menos una canción", "warning");
@@ -606,23 +790,82 @@ async function handleSetlistFormSubmit(e) {
     }
 }
 
-async function handleDeleteSetlist() {
+function handleDeleteSetlist() {
     const id = document.getElementById('setlist-form-id').value;
     const name = document.getElementById('setlist-form-name').value.trim();
     if (!id) return;
 
-    if (!confirm(`¿Estás seguro de que deseas eliminar permanentemente el repertorio "${name}"?`)) {
-        return;
+    setlistIdToDelete = id;
+
+    // Poblar nombre
+    const modalNameEl = document.getElementById('delete-setlist-modal-name');
+    if (modalNameEl) {
+        modalNameEl.textContent = `"${name}"`;
     }
 
+    // Ocultar modal principal
+    document.getElementById('modal-setlist').classList.add('hidden');
+
+    // Mostrar modal de confirmación
+    document.getElementById('modal-delete-setlist-confirm').classList.remove('hidden');
+}
+
+async function executeDeleteSetlist() {
+    if (!setlistIdToDelete) return;
+
     try {
-        await apiFetch(`/setlists/${id}`, {
+        await apiFetch(`/setlists/${setlistIdToDelete}`, {
             method: 'DELETE'
         });
         showToast("Repertorio eliminado con éxito", "success");
-        document.getElementById('modal-setlist').classList.add('hidden');
+        document.getElementById('modal-delete-setlist-confirm').classList.add('hidden');
         await renderSetlists(true); // reload
     } catch (err) {
         showToast(err.message, "danger");
+    } finally {
+        setlistIdToDelete = null;
+    }
+}
+
+async function loadDirectPresentation(setlistId) {
+    if (cachedSetlists.length === 0) {
+        try {
+            cachedSetlists = await apiFetch('/setlists') || [];
+        } catch (err) {
+            console.error("Error loading setlists dynamically:", err);
+            closeSetlistPresentation();
+            renderSetlists(true);
+            return;
+        }
+    }
+    
+    const setlist = cachedSetlists.find(s => s.id == setlistId);
+    if (setlist) {
+        // Render en background para poblar la lista y que cuando el usuario regrese esté cargada
+        await renderSetlists(false);
+        openSetlistPresentation(setlist);
+    } else {
+        closeSetlistPresentation();
+        await renderSetlists(true);
+        showToast("No se pudo encontrar el repertorio en este grupo.", "danger");
+    }
+}
+
+async function viewSetlistPresentationDirectly(setlistId) {
+    directPresentationSetlistId = setlistId;
+
+    // Ocultar subpanel de lista y mostrar presentación de inmediato para evitar el parpadeo
+    const listSubpanel = document.getElementById('subpanel-setlists-list');
+    const presSubpanel = document.getElementById('subpanel-setlist-presentation');
+    if (listSubpanel && presSubpanel) {
+        listSubpanel.classList.add('hidden');
+        presSubpanel.classList.remove('hidden');
+        document.body.classList.add('setlist-presentation-mode');
+    }
+    
+    window.location.hash = '#setlists';
+
+    if (window.location.hash === '#setlists') {
+        initSetlistsView();
     }
 }

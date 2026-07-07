@@ -6,6 +6,23 @@
     </button>
 </div>
 
+<!-- Filtros de Sugerencias -->
+<div class="suggestion-filters" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; background: var(--bg-card); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); align-items: center;">
+    <div style="flex: 2; min-width: 200px;">
+        <input type="text" id="suggestions-filter-song" placeholder="Buscar por canción o artista...">
+    </div>
+    <div style="flex: 1.5; min-width: 150px;">
+        <input type="text" id="suggestions-filter-author" placeholder="Sugerido por...">
+    </div>
+    <div style="flex: 1; min-width: 130px;">
+        <select id="suggestions-filter-status" style="width: 100%;">
+            <option value="all">Todos los estados</option>
+            <option value="pendiente">Sugeridas</option>
+            <option value="agregada">Agregadas</option>
+        </select>
+    </div>
+</div>
+
 <div class="suggestions-list" id="suggestions-container-list" style="display:flex; flex-direction:column; gap:16px;">
     <!-- Suggestions populated dynamically -->
 </div>
@@ -40,5 +57,22 @@
                 <button type="submit" class="btn btn-primary">Sugerir</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- DELETE SUGGESTION CONFIRMATION MODAL -->
+<div class="modal-backdrop hidden" id="modal-delete-suggestion-confirm">
+    <div class="modal-card" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>Eliminar Sugerencia</h3>
+            <button class="btn-close-modal" id="btn-close-delete-suggestion-modal-x">&times;</button>
+        </div>
+        <div style="padding: 20px 24px;">
+            <p style="font-size: 0.95rem; color: var(--text-secondary);">¿Estás seguro de que deseas eliminar esta sugerencia de canción? Esta acción no se puede deshacer y retirará la propuesta de la lista.</p>
+        </div>
+        <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn btn-outline btn-close-modal" id="btn-close-delete-suggestion-modal">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="btn-confirm-delete-suggestion">Eliminar</button>
+        </div>
     </div>
 </div>

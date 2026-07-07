@@ -115,6 +115,7 @@
                     <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-weight:600;">@</span>
                     <input type="text" id="member-form-username" placeholder="juanperez" required style="padding-left:28px;">
                 </div>
+                <div id="member-username-feedback" class="field-feedback"></div>
                 <small class="form-help">Utilizado para iniciar sesión. Caracteres alfanuméricos simples.</small>
             </div>
             <div class="form-row">
@@ -139,7 +140,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline btn-close-modal" id="btn-close-member-modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar</button>
+                <button type="submit" id="btn-member-submit" class="btn btn-primary">Guardar</button>
             </div>
         </form>
     </div>

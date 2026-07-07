@@ -30,7 +30,8 @@ async function initDashboardView() {
         if (announcements.length === 0) {
             listContainer.innerHTML = `<div style="text-align:center; padding: 20px; color:var(--text-muted); font-size: 0.9rem;">No hay novedades recientes en este grupo.</div>`;
         } else {
-            announcements.forEach(a => {
+            // Mostrar solo las 10 novedades más recientes
+            announcements.slice(0, 10).forEach(a => {
                 const item = document.createElement('div');
                 item.className = 'notification-item';
                 
@@ -112,27 +113,20 @@ async function initDashboardView() {
 
             document.getElementById('dashboard-view-setlist-btn').addEventListener('click', () => {
                 if (ev.setlist_id) {
-                    window.location.hash = '#setlists';
-                    // Trigger filter search inside setlists view
-                    setTimeout(() => {
-                        const searchInput = document.getElementById('setlists-search-input');
-                        if (searchInput && ev.setlist) {
-                            searchInput.value = ev.setlist.name;
-                            searchInput.dispatchEvent(new Event('input'));
-                        }
-                    }, 150);
+                    if (typeof viewSetlistPresentationDirectly === 'function') {
+                        viewSetlistPresentationDirectly(ev.setlist_id);
+                    } else {
+                        window.location.hash = '#setlists';
+                    }
                 } else {
                     showToast("Este evento no tiene un repertorio asignado.", "warning");
                 }
             });
 
             document.getElementById('dashboard-view-event-btn').addEventListener('click', () => {
-                window.location.hash = '#events';
-                setTimeout(() => {
-                    if (typeof viewEventDetails === 'function') {
-                        viewEventDetails(ev.id);
-                    }
-                }, 150);
+                if (typeof viewEventDetails === 'function') {
+                    viewEventDetails(ev.id);
+                }
             });
         } else {
             nextEventBadge.textContent = 'Ninguno';

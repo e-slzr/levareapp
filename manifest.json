@@ -1,0 +1,19 @@
+{
+  "name": "Levare",
+  "short_name": "Levare",
+  "description": "Gestión de Bandas Musicales, repertorios, eventos e integrantes.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#121318",
+  "theme_color": "#7c3aed",
+  "icons": [
+    {
+      "src": "icon.svg?v=1.0.1",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

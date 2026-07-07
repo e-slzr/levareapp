@@ -101,9 +101,20 @@
     color: var(--text-main);
 }
 
-.suggestion-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
+/* Responsive visibility helpers & style overrides */
+.show-mobile {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+    .show-mobile {
+        display: inline !important;
+    }
+    .suggestion-card {
+        padding: 12px;
+        gap: 12px;
+    }
 }

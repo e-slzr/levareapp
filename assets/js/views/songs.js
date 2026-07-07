@@ -160,12 +160,16 @@ async function renderSongsCatalog(forceRefresh = false) {
 function openAddSongModal(prefilledData = null) {
     document.getElementById('song-modal-title').textContent = "Agregar Nueva Canción";
     document.getElementById('song-form-id').value = "";
+    document.getElementById('song-form-suggestion-id').value = "";
     document.getElementById('song-form').reset();
     document.getElementById('btn-delete-song').style.display = 'none';
     
     if (prefilledData) {
         document.getElementById('song-form-title').value = prefilledData.title || '';
         document.getElementById('song-form-artist').value = prefilledData.artist || '';
+        if (prefilledData.suggestionId) {
+            document.getElementById('song-form-suggestion-id').value = prefilledData.suggestionId;
+        }
     }
     
     document.getElementById('modal-song').classList.remove('hidden');
@@ -177,6 +181,7 @@ function openEditSongModal(songId) {
 
     document.getElementById('song-modal-title').textContent = "Editar Canción";
     document.getElementById('song-form-id').value = song.id;
+    document.getElementById('song-form-suggestion-id').value = ""; // No aplica para edición
     document.getElementById('song-form-title').value = song.title;
     document.getElementById('song-form-key').value = song.key;
     document.getElementById('song-form-artist').value = song.artist;
@@ -198,6 +203,7 @@ function openEditSongModal(songId) {
 async function handleSongFormSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('song-form-id').value;
+    const suggestionId = document.getElementById('song-form-suggestion-id').value;
     const title = document.getElementById('song-form-title').value.trim();
     const key = document.getElementById('song-form-key').value.toUpperCase().trim();
     const artist = document.getElementById('song-form-artist').value.trim();
@@ -220,6 +226,18 @@ async function handleSongFormSubmit(e) {
                 body: { title, key, artist, url, content: finalContent }
             });
             showToast("Canción guardada con éxito");
+
+            // Si vino de una sugerencia, la marcamos automáticamente como agregada
+            if (suggestionId) {
+                try {
+                    await apiFetch(`/suggestions/${suggestionId}/status`, {
+                        method: 'PUT',
+                        body: { status: 'agregada' }
+                    });
+                } catch (sugErr) {
+                    console.error("Error al actualizar estado de sugerencia:", sugErr);
+                }
+            }
         }
 
         document.getElementById('modal-song').classList.add('hidden');

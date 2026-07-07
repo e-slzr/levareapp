@@ -97,11 +97,17 @@ class AuthController extends Controller
             ], 422);
         }
 
+        $baseUsername = explode('@', $request->input('email'))[0];
+        $username = ltrim($baseUsername, '@');
+        while (User::where('username', $username)->exists()) {
+            $username = $baseUsername . rand(100, 999);
+        }
+
         $user = User::create([
             'name' => $request->input('name'),
             'lastname' => $request->input('lastname'),
             'email' => $request->input('email'),
-            'username' => explode('@', $request->input('email'))[0],
+            'username' => $username,
             'password' => Hash::make($request->input('password')),
             'account_type' => 'leader',
             'status' => 'active', // Active immediately
@@ -205,7 +211,10 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                'message' => $validator->errors()->first(),
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         $user->name = $request->input('name');
@@ -286,8 +295,10 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        if ($user->avatar) {
-            Storage::disk('public')->delete($user->avatar);
+        if ($user->avatar !== null && $user->avatar !== '') {
+            if ($user->avatar !== '0' && $user->avatar !== 'null') {
+                Storage::disk('public')->delete($user->avatar);
+            }
             $user->avatar = null;
             $user->save();
             return response()->json(['message' => 'Foto de perfil eliminada.']);
@@ -381,11 +392,17 @@ class AuthController extends Controller
 
         DB::beginTransaction();
         try {
+            $baseUsername = explode('@', $request->input('email'))[0];
+            $username = ltrim($baseUsername, '@');
+            while (User::where('username', $username)->exists()) {
+                $username = $baseUsername . rand(100, 999);
+            }
+
             $user = User::create([
                 'name' => $request->input('name'),
                 'lastname' => $request->input('lastname'),
                 'email' => $request->input('email'),
-                'username' => explode('@', $request->input('email'))[0],
+                'username' => $username,
                 'password' => Hash::make($request->input('password')),
                 'account_type' => 'member',
                 'status' => 'active', // Active immediately
@@ -423,5 +440,41 @@ class AuthController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Check if a username is available (Public API)
+     */
+    public function checkUsername(Request $request)
+    {
+        $username = ltrim(trim($request->query('username')), '@');
+        $excludeId = $request->query('exclude_id');
+
+        if (empty($username)) {
+            return response()->json([
+                'available' => false,
+                'message' => 'El nombre de usuario es obligatorio.'
+            ], 400);
+        }
+
+        // Validate format (only alphanumeric, dots, and underscores)
+        if (!preg_match('/^[a-zA-Z0-9._]+$/', $username)) {
+            return response()->json([
+                'available' => false,
+                'message' => 'El nombre de usuario solo permite letras, números, puntos y guiones bajos.'
+            ], 200);
+        }
+
+        $query = User::where('username', $username);
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        $exists = $query->exists();
+
+        return response()->json([
+            'available' => !$exists,
+            'message' => $exists ? 'Este nombre de usuario ya está en uso.' : 'Nombre de usuario disponible.'
+        ]);
     }
 }
