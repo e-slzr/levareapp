@@ -3,7 +3,14 @@
    ========================================================================== */
 
 // Resolve API server host dynamically to support local network mobile access
-const API_URL = `${window.location.protocol}//${window.location.hostname}:9090/api`;
+const isLocal = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname) || 
+                window.location.hostname.startsWith('192.168.') || 
+                window.location.hostname.startsWith('10.') || 
+                window.location.hostname.startsWith('172.');
+
+const API_URL = isLocal 
+    ? `${window.location.protocol}//${window.location.hostname}:9090/api` 
+    : `${window.location.protocol}//${window.location.hostname}/api/public/index.php/api`;
 /**
  * Basic LocalStorage Helpers (for session state)
  */
@@ -98,19 +105,33 @@ async function apiFetch(endpoint, options = {}) {
 function getAvatarUrl(avatarPath) {
     if (!avatarPath) return null;
     
-    const apiBase = API_URL.replace('/api', '');
-    
+    // Clean up the path whether the backend sent an absolute URL via asset() or a relative path
+    let relativePath = avatarPath;
     if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://')) {
         try {
             const urlObj = new URL(avatarPath);
-            const apiBaseUrl = new URL(apiBase);
-            urlObj.host = apiBaseUrl.host;
-            urlObj.protocol = apiBaseUrl.protocol;
-            return urlObj.toString();
+            const pathParts = urlObj.pathname.split('storage/');
+            if (pathParts.length > 1) {
+                relativePath = 'storage/' + pathParts[1];
+            } else {
+                return avatarPath;
+            }
         } catch {
             return avatarPath;
         }
+    } else {
+        if (!relativePath.startsWith('storage/')) {
+            relativePath = 'storage/' + relativePath;
+        }
     }
     
-    return `${apiBase}/${avatarPath}`;
+    // Resolve public base depending on API routing
+    let publicBase = API_URL;
+    if (publicBase.includes('/index.php/api')) {
+        publicBase = publicBase.replace('/index.php/api', '');
+    } else {
+        publicBase = publicBase.replace('/api', '');
+    }
+    
+    return `${publicBase}/${relativePath}`;
 }

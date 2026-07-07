@@ -75,6 +75,73 @@ function initProfileView() {
     initAccentColorSelectors(currentUser.accentColor || 'purple');
 
     renderProfileAvatar();
+
+    // Username real-time check validation
+    const usernameInput = document.getElementById('profile-input-username');
+    const usernameFeedback = document.getElementById('profile-username-feedback');
+    const saveBtn = document.getElementById('btn-profile-save');
+    let usernameCheckTimeout;
+
+    usernameInput.oninput = function() {
+        clearTimeout(usernameCheckTimeout);
+        const username = this.value.trim().toLowerCase().replace('@', '');
+        
+        if (username === '') {
+            usernameFeedback.style.display = 'none';
+            usernameFeedback.className = 'field-feedback';
+            saveBtn.disabled = false;
+            return;
+        }
+
+        // Si es el mismo username que ya tiene el usuario, no hace falta validar en backend
+        if (username === currentUser.username) {
+            usernameFeedback.style.display = 'flex';
+            usernameFeedback.className = 'field-feedback available';
+            usernameFeedback.style.color = '';
+            usernameFeedback.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Este es tu nombre de usuario actual.</span>
+            `;
+            saveBtn.disabled = false;
+            return;
+        }
+
+        // Mostrar estado de carga
+        usernameFeedback.style.display = 'flex';
+        usernameFeedback.className = 'field-feedback';
+        usernameFeedback.style.color = 'var(--text-muted)';
+        usernameFeedback.innerHTML = `<span>Verificando disponibilidad...</span>`;
+        saveBtn.disabled = true;
+
+        usernameCheckTimeout = setTimeout(async () => {
+            try {
+                const data = await apiFetch(`/auth/check-username?username=${encodeURIComponent(username)}&exclude_id=${currentUser.id}`);
+                
+                if (data.available) {
+                    usernameFeedback.className = 'field-feedback available';
+                    usernameFeedback.style.color = ''; 
+                    usernameFeedback.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>${data.message}</span>
+                    `;
+                    saveBtn.disabled = false;
+                } else {
+                    usernameFeedback.className = 'field-feedback unavailable';
+                    usernameFeedback.style.color = ''; 
+                    usernameFeedback.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span>${data.message}</span>
+                    `;
+                    saveBtn.disabled = true;
+                }
+            } catch (err) {
+                usernameFeedback.className = 'field-feedback unavailable';
+                usernameFeedback.style.color = '';
+                usernameFeedback.innerHTML = `<span>Error al verificar disponibilidad.</span>`;
+                saveBtn.disabled = false; 
+            }
+        }, 400);
+    };
 }
 
 function initAccentColorSelectors(activeAccent) {

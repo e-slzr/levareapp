@@ -1094,3 +1094,30 @@ body.setlist-presentation-mode .app-content {
     }
 }
 
+/* Real-time username verification styles */
+.field-feedback {
+    display: none;
+    font-size: 0.82rem;
+    margin-top: 6px;
+    font-weight: 500;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-primary);
+}
+
+.field-feedback.available {
+    display: flex;
+    color: var(--success);
+}
+
+.field-feedback.unavailable {
+    display: flex;
+    color: var(--danger);
+}
+
+.field-feedback svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+

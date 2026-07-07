@@ -22,6 +22,7 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register/leader', [AuthController::class, 'registerLeader']);
 Route::post('/auth/validate-invite-code', [AuthController::class, 'validateInviteCode']);
 Route::post('/auth/register/member', [AuthController::class, 'registerMember']);
+Route::get('/auth/check-username', [AuthController::class, 'checkUsername']);
 
 // --- Protected Endpoints (Token Authenticated) ---
 Route::middleware('auth:sanctum')->group(function () {

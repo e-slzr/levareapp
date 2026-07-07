@@ -183,6 +183,62 @@ function initMembersView() {
     document.getElementById('member-form').onsubmit = handleMemberFormSubmit;
     document.getElementById('add-role-form').onsubmit = handleAddRoleSubmit;
 
+    // Real-time username validation in Members Modal
+    const memberUsernameInput = document.getElementById('member-form-username');
+    const memberUsernameFeedback = document.getElementById('member-username-feedback');
+    const memberSubmitBtn = document.getElementById('btn-member-submit');
+    let memberUsernameCheckTimeout;
+
+    memberUsernameInput.oninput = function() {
+        if (this.disabled) return; // No validar si está deshabilitado (edición)
+
+        clearTimeout(memberUsernameCheckTimeout);
+        const username = this.value.trim().toLowerCase().replace('@', '');
+        
+        if (username === '') {
+            memberUsernameFeedback.style.display = 'none';
+            memberUsernameFeedback.className = 'field-feedback';
+            memberSubmitBtn.disabled = false;
+            return;
+        }
+
+        // Mostrar estado de carga
+        memberUsernameFeedback.style.display = 'flex';
+        memberUsernameFeedback.className = 'field-feedback';
+        memberUsernameFeedback.style.color = 'var(--text-muted)';
+        memberUsernameFeedback.innerHTML = `<span>Verificando disponibilidad...</span>`;
+        memberSubmitBtn.disabled = true;
+
+        memberUsernameCheckTimeout = setTimeout(async () => {
+            try {
+                const data = await apiFetch(`/auth/check-username?username=${encodeURIComponent(username)}`);
+                
+                if (data.available) {
+                    memberUsernameFeedback.className = 'field-feedback available';
+                    memberUsernameFeedback.style.color = '';
+                    memberUsernameFeedback.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>${data.message}</span>
+                    `;
+                    memberSubmitBtn.disabled = false;
+                } else {
+                    memberUsernameFeedback.className = 'field-feedback unavailable';
+                    memberUsernameFeedback.style.color = '';
+                    memberUsernameFeedback.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span>${data.message}</span>
+                    `;
+                    memberSubmitBtn.disabled = true;
+                }
+            } catch (err) {
+                memberUsernameFeedback.className = 'field-feedback unavailable';
+                memberUsernameFeedback.style.color = '';
+                memberUsernameFeedback.innerHTML = `<span>Error al verificar disponibilidad.</span>`;
+                memberSubmitBtn.disabled = false;
+            }
+        }, 400);
+    };
+
     renderMembers(true); // force first reload
 }
 
@@ -304,6 +360,14 @@ async function openAddMemberModal() {
     document.getElementById('member-form-username').disabled = false;
 
     await populateRolesDropdown('member-form-role');
+
+    // Reset username validation feedback
+    const memberFeedback = document.getElementById('member-username-feedback');
+    memberFeedback.style.display = 'none';
+    memberFeedback.className = 'field-feedback';
+    memberFeedback.innerHTML = '';
+    document.getElementById('btn-member-submit').disabled = false;
+
     document.getElementById('modal-member').classList.remove('hidden');
 }
 
@@ -341,6 +405,13 @@ async function openEditMemberModal(userId) {
     // Hide password fields when editing existing members
     document.getElementById('member-form-password-group').style.display = 'none';
     document.getElementById('member-form-password').required = false;
+
+    // Reset username validation feedback
+    const memberFeedback = document.getElementById('member-username-feedback');
+    memberFeedback.style.display = 'none';
+    memberFeedback.className = 'field-feedback';
+    memberFeedback.innerHTML = '';
+    document.getElementById('btn-member-submit').disabled = false;
 
     document.getElementById('modal-member').classList.remove('hidden');
 }
