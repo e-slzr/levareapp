@@ -10,7 +10,7 @@
   "theme_color": "#7c3aed",
   "icons": [
     {
-      "src": "icon.svg?v=1.0.1",
+      "src": "icon-levareapp.svg?v=1.0.1",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

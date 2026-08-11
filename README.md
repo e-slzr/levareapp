@@ -100,7 +100,7 @@ Una vez que se resuelva la versión de PHP en el sistema local, los pasos para e
 ### 1. Configurar la Base de Datos
 Asegúrate de tener un servidor MySQL local corriendo con las siguientes credenciales (definidas en `api/.env`):
 * **Host:** `192.168.1.100` (o cambiar a `127.0.0.1` según el entorno)
-* **Database:** `worshipapp`
+* **Database:** `levareapp_dev`
 * **Username:** `root`
 * **Password:** `9050`
 

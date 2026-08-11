@@ -17,8 +17,7 @@
     transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
 .setlist-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--primary);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .setlist-header {

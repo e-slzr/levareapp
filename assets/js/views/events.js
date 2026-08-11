@@ -7,6 +7,29 @@ let calendarCurrentMonth = new Date().getMonth(); // 0-11
 let cachedEvents = [];
 let eventIdToDelete = null;
 
+function getEventTypeBadgeHTML(typeStr) {
+    const typeLower = (typeStr || '').toLowerCase();
+    
+    let colorClasses = 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700';
+    let label = typeStr || 'Evento';
+
+    if (typeLower.includes('ensayo')) {
+        colorClasses = 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/60';
+        label = 'Ensayo';
+    } else if (typeLower.includes('servicio') || typeLower.includes('culto') || typeLower.includes('domingo')) {
+        colorClasses = 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/60';
+        label = 'Servicio / Culto';
+    } else if (typeLower.includes('concierto') || typeLower.includes('show') || typeLower.includes('especial')) {
+        colorClasses = 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/60';
+        label = 'Concierto';
+    } else if (typeLower.includes('reunión') || typeLower.includes('reunion') || typeLower.includes('capacitación')) {
+        colorClasses = 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/60';
+        label = 'Reunión / Capacitación';
+    }
+
+    return `<span class="px-2.5 py-1 rounded-xl text-xs font-bold border ${colorClasses}">${label}</span>`;
+}
+
 function initEventsView() {
     const currentUser = getData('currentUser');
     const currentGroupId = getData('currentGroupId');
@@ -18,63 +41,75 @@ function initEventsView() {
     const listWrapper = document.getElementById('events-list-wrapper');
     const calendarWrapper = document.getElementById('events-calendar-wrapper');
 
-    btnListView.onclick = () => {
-        btnListView.classList.add('active');
-        btnCalendarView.classList.remove('active');
-        listWrapper.classList.remove('hidden');
-        calendarWrapper.classList.add('hidden');
-    };
+    if (btnListView && btnCalendarView && listWrapper && calendarWrapper) {
+        btnListView.onclick = () => {
+            btnListView.classList.add('active');
+            btnCalendarView.classList.remove('active');
+            listWrapper.classList.remove('hidden');
+            calendarWrapper.classList.add('hidden');
+        };
 
-    btnCalendarView.onclick = () => {
-        btnCalendarView.classList.add('active');
-        btnListView.classList.remove('active');
-        calendarWrapper.classList.remove('hidden');
-        listWrapper.classList.add('hidden');
-        renderCalendar();
-    };
+        btnCalendarView.onclick = () => {
+            btnCalendarView.classList.add('active');
+            btnListView.classList.remove('active');
+            calendarWrapper.classList.remove('hidden');
+            listWrapper.classList.add('hidden');
+            renderCalendar();
+        };
+    }
 
     // Calendar Navigation
-    document.getElementById('btn-prev-month').onclick = () => {
-        calendarCurrentMonth--;
-        if (calendarCurrentMonth < 0) {
-            calendarCurrentMonth = 11;
-            calendarCurrentYear--;
-        }
-        renderCalendar();
-    };
+    const prevMonthBtn = document.getElementById('btn-prev-month');
+    if (prevMonthBtn) {
+        prevMonthBtn.onclick = () => {
+            calendarCurrentMonth--;
+            if (calendarCurrentMonth < 0) {
+                calendarCurrentMonth = 11;
+                calendarCurrentYear--;
+            }
+            renderCalendar();
+        };
+    }
 
-    document.getElementById('btn-next-month').onclick = () => {
-        calendarCurrentMonth++;
-        if (calendarCurrentMonth > 11) {
-            calendarCurrentMonth = 0;
-            calendarCurrentYear++;
-        }
-        renderCalendar();
-    };
+    const nextMonthBtn = document.getElementById('btn-next-month');
+    if (nextMonthBtn) {
+        nextMonthBtn.onclick = () => {
+            calendarCurrentMonth++;
+            if (calendarCurrentMonth > 11) {
+                calendarCurrentMonth = 0;
+                calendarCurrentYear++;
+            }
+            renderCalendar();
+        };
+    }
 
     // Add schedule event button visibility
     const scheduleBtn = document.getElementById('btn-schedule-event');
-    if (canEdit()) {
-        scheduleBtn.style.display = 'inline-flex';
-        scheduleBtn.onclick = () => openScheduleEventModal();
-    } else {
-        scheduleBtn.style.display = 'none';
+    if (scheduleBtn) {
+        if (canEdit()) {
+            scheduleBtn.style.display = 'inline-flex';
+            scheduleBtn.onclick = () => openScheduleEventModal();
+        } else {
+            scheduleBtn.style.display = 'none';
+        }
     }
 
     // Modal close triggers
     document.querySelectorAll('#modal-event-detail .btn-close-modal').forEach(btn => {
         btn.onclick = () => document.getElementById('modal-event-detail').classList.add('hidden');
     });
-    document.getElementById('btn-close-event-detail-modal-x').onclick = () => {
-        document.getElementById('modal-event-detail').classList.add('hidden');
-    };
+    const closeXDetail = document.getElementById('btn-close-event-detail-modal-x');
+    if (closeXDetail) {
+        closeXDetail.onclick = () => document.getElementById('modal-event-detail').classList.add('hidden');
+    }
 
     document.querySelectorAll('#modal-schedule-event .btn-close-modal').forEach(btn => {
         btn.onclick = () => document.getElementById('modal-schedule-event').classList.add('hidden');
     });
-    document.getElementById('btn-close-schedule-event-modal-x').onclick = () => {
-        document.getElementById('modal-schedule-event').classList.add('hidden');
-    };
+    const closeXSchedule = document.getElementById('btn-close-schedule-event-modal-x');
+    if (closeXSchedule) {
+        closeXSchedule.onclick = () => document.getElementById('modal-schedule-event').classList.add('hidden');
+    }
 
     // Confirm Delete Event Modal triggers
     document.querySelectorAll('#modal-delete-event-confirm .btn-close-modal').forEach(btn => {
@@ -91,30 +126,37 @@ function initEventsView() {
 
     // Populate event type dropdown
     const typeSelect = document.getElementById('event-form-type');
-    typeSelect.innerHTML = '';
-    EVENT_TYPES.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.value;
-        opt.textContent = t.label;
-        typeSelect.appendChild(opt);
-    });
+    if (typeSelect) {
+        typeSelect.innerHTML = '';
+        EVENT_TYPES.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.value;
+            opt.textContent = t.label;
+            typeSelect.appendChild(opt);
+        });
+    }
 
     // Form submit
-    document.getElementById('event-schedule-form').onsubmit = handleEventScheduleFormSubmit;
+    const scheduleForm = document.getElementById('event-schedule-form');
+    if (scheduleForm) {
+        scheduleForm.onsubmit = handleEventScheduleFormSubmit;
+    }
 
     renderEvents(true); // force first fetch
 }
 
 async function renderEvents(forceRefresh = false) {
     const listContainer = document.getElementById('events-list-container');
-    listContainer.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-muted);">Cargando eventos...</div>`;
+    if (!listContainer) return;
+
+    listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">Cargando eventos...</div>`;
 
     if (forceRefresh || cachedEvents.length === 0) {
         try {
             cachedEvents = await apiFetch('/events') || [];
         } catch (e) {
             console.error("Error loading events:", e);
-            listContainer.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--danger);">Fallo al conectar con el servidor de la base de datos.</div>`;
+            listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-red-500">Fallo al conectar con el servidor de eventos.</div>`;
             return;
         }
     }
@@ -122,71 +164,68 @@ async function renderEvents(forceRefresh = false) {
     listContainer.innerHTML = '';
 
     if (cachedEvents.length === 0) {
-        listContainer.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-muted);">No hay eventos programados.</div>`;
+        listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">No hay eventos programados.</div>`;
         return;
     }
 
     cachedEvents.forEach(ev => {
         const card = document.createElement('div');
-        card.className = `event-card ${ev.type}`;
+        card.className = 'p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition cursor-pointer space-y-3';
         
         const setlistName = ev.setlist ? ev.setlist.name : 'Ninguno';
-        const evDate = formatDate(ev.date);
+        const evDate = typeof formatDate === 'function' ? formatDate(ev.date) : ev.date;
 
-        // Build roster tags from database musicians relation
         let rosterTagsHTML = '';
         if (ev.musicians && ev.musicians.length > 0) {
             ev.musicians.forEach(mus => {
                 rosterTagsHTML += `
-                    <div class="roster-tag">
-                        <span>${mus.pivot.role}: <strong>${mus.name}</strong></span>
-                    </div>
+                    <span class="px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                        ${mus.pivot.role}: <strong class="text-zinc-900 dark:text-white">${mus.name}</strong>
+                    </span>
                 `;
             });
         }
 
-        const typeDetails = EVENT_TYPES.find(t => t.value === ev.type) || { label: 'Otro', badge: 'badge-danger' };
+        const typeBadgeHTML = getEventTypeBadgeHTML(ev.type);
 
         card.innerHTML = `
-            <div class="event-card-header">
+            <div class="flex items-start justify-between gap-2">
                 <div>
-                    <h3>${ev.name}</h3>
-                    <p>${evDate} • ${ev.time.substring(0, 5)} hs</p>
+                    <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100">${ev.name}</h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5"><i class="fa-regular fa-clock mr-1"></i>${evDate} • ${ev.time ? ev.time.substring(0, 5) : '18:00'} hs</p>
                 </div>
-                <span class="badge ${typeDetails.badge}">
-                    ${typeDetails.label}
-                </span>
+                ${typeBadgeHTML}
             </div>
-            <div class="event-card-body">
-                <p style="font-size:0.9rem;">${ev.description || 'Sin notas adicionales'}</p>
-                <div style="font-size:0.85rem;">
-                    <strong>Repertorio:</strong> <a href="#setlists" class="view-setlist-link" data-id="${ev.setlist_id || ''}">${setlistName}</a>
-                </div>
-                <div class="event-roster-preview">
-                    <h5>Músicos Asignados</h5>
-                    <div class="roster-tags-grid">
-                        ${rosterTagsHTML || '<div style="color:var(--text-muted); font-size:0.75rem;">Nadie asignado todavía.</div>'}
-                    </div>
+            <p class="text-xs text-zinc-600 dark:text-zinc-400">${ev.description || 'Sin notas adicionales'}</p>
+            <div class="text-xs text-zinc-500 dark:text-zinc-400">
+                <span class="font-semibold text-zinc-700 dark:text-zinc-300">Repertorio:</span> 
+                <a href="#setlists" class="view-setlist-link font-bold text-zinc-900 dark:text-zinc-100 hover:underline" data-id="${ev.setlist_id || ''}">${setlistName}</a>
+            </div>
+            <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
+                <h5 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-1.5">Músicos Asignados</h5>
+                <div class="flex flex-wrap gap-1.5">
+                    ${rosterTagsHTML || '<span class="text-xs text-zinc-400 italic">Nadie asignado todavía.</span>'}
                 </div>
             </div>
         `;
 
-        card.querySelector('.view-setlist-link').onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation(); // Evitar abrir los detalles del evento al hacer clic en el enlace del repertorio
-            if (ev.setlist_id) {
-                if (typeof viewSetlistPresentationDirectly === 'function') {
-                    viewSetlistPresentationDirectly(ev.setlist_id);
+        const setlistLink = card.querySelector('.view-setlist-link');
+        if (setlistLink) {
+            setlistLink.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (ev.setlist_id) {
+                    if (typeof viewSetlistPresentationDirectly === 'function') {
+                        viewSetlistPresentationDirectly(ev.setlist_id);
+                    } else {
+                        window.location.hash = '#setlists';
+                    }
                 } else {
-                    window.location.hash = '#setlists';
+                    showToast("Este evento no tiene un repertorio asignado", "warning");
                 }
-            } else {
-                showToast("Este evento no tiene un repertorio asignado", "warning");
-            }
-        };
+            };
+        }
 
-        // Hacer la tarjeta interactiva para abrir los detalles del evento
-        card.style.cursor = 'pointer';
         card.onclick = () => {
             viewEventDetails(ev.id);
         };
@@ -194,10 +233,12 @@ async function renderEvents(forceRefresh = false) {
         listContainer.appendChild(card);
     });
 
-    if (!document.getElementById('events-calendar-wrapper').classList.contains('hidden')) {
+    const calendarWrapper = document.getElementById('events-calendar-wrapper');
+    if (calendarWrapper && !calendarWrapper.classList.contains('hidden')) {
         renderCalendar();
     }
 }
+
 
 const MONTHS_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
@@ -243,11 +284,18 @@ function renderCalendar() {
             
             dayEvents.forEach(ev => {
                 const badge = document.createElement('div');
-                const typeDetails = EVENT_TYPES.find(t => t.value === ev.type) || { label: 'Otro' };
-                badge.className = `calendar-event-badge ${ev.type}`;
-                badge.textContent = typeDetails.label;
+                const typeLower = (ev.type || '').toLowerCase();
+                let badgeColor = 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
+                if (typeLower.includes('ensayo')) badgeColor = 'bg-blue-100 text-blue-700 dark:bg-blue-900/80 dark:text-blue-200';
+                else if (typeLower.includes('servicio') || typeLower.includes('culto') || typeLower.includes('domingo')) badgeColor = 'bg-purple-100 text-purple-700 dark:bg-purple-900/80 dark:text-purple-200';
+                else if (typeLower.includes('concierto') || typeLower.includes('show')) badgeColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/80 dark:text-emerald-200';
+                else if (typeLower.includes('reunión') || typeLower.includes('reunion')) badgeColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/80 dark:text-amber-200';
+
+                badge.className = `px-1.5 py-0.5 rounded text-[10px] font-bold truncate max-w-full mt-0.5 ${badgeColor}`;
+                badge.textContent = ev.name || ev.type;
                 badgesContainer.appendChild(badge);
             });
+
             
             cell.appendChild(badgesContainer);
             
@@ -314,39 +362,42 @@ async function viewEventDetails(eventId) {
     if (ev.musicians && ev.musicians.length > 0) {
         ev.musicians.forEach(mus => {
             rosterHTML += `
-                <li style="padding: 8px 12px; background-color: var(--bg-hover); border-radius:var(--radius-sm); margin-bottom:6px; display:flex; justify-content:space-between; font-size:0.9rem;">
-                    <span><strong>${mus.pivot.role}:</strong></span>
-                    <span>${mus.name} ${mus.lastname || ''}</span>
+                <li class="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 flex items-center justify-between text-xs">
+                    <span class="font-bold text-zinc-700 dark:text-zinc-300">${mus.pivot.role}:</span>
+                    <span class="text-zinc-900 dark:text-zinc-100 font-semibold">${mus.name} ${mus.lastname || ''}</span>
                 </li>
             `;
         });
     }
 
-    const typeDetails = EVENT_TYPES.find(t => t.value === ev.type) || { label: 'Otro', badge: 'badge-danger' };
+    const typeBadgeHTML = getEventTypeBadgeHTML(ev.type);
 
     body.innerHTML = `
-        <div class="modal-detail-section">
-            <h4>Fecha y Hora</h4>
-            <p>${formatDate(ev.date)} a las <strong>${ev.time.substring(0, 5)} hs</strong></p>
+        <div class="space-y-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Tipo de Evento</span>
+            <div>${typeBadgeHTML}</div>
         </div>
-        <div class="modal-detail-section">
-            <h4>Tipo de Evento</h4>
-            <span class="badge ${typeDetails.badge}">
-                ${typeDetails.label}
-            </span>
+        <div class="space-y-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Fecha y Hora</span>
+            <p class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">${formatDate(ev.date)} a las <strong>${ev.time ? ev.time.substring(0, 5) : '18:00'} hs</strong></p>
         </div>
-        <div class="modal-detail-section">
-            <h4>Descripción</h4>
-            <p>${ev.description || 'Sin notas adicionales.'}</p>
+        <div class="space-y-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Descripción</span>
+            <p class="text-xs text-zinc-600 dark:text-zinc-400">${ev.description || 'Sin notas adicionales.'}</p>
         </div>
-        <div class="modal-detail-section">
-            <h4>Repertorio Asignado</h4>
-            <p><a href="#setlists" class="btn btn-outline btn-sm view-setlist-modal-link" style="margin-top:4px;">${setlistName}</a></p>
+        <div class="space-y-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Repertorio Asignado</span>
+            <div>
+                <a href="#setlists" class="view-setlist-modal-link inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-xs font-bold text-zinc-900 dark:text-zinc-100 hover:underline transition">
+                    <i class="fa-solid fa-list-check text-xs"></i>
+                    <span>${setlistName}</span>
+                </a>
+            </div>
         </div>
-        <div class="modal-detail-section">
-            <h4>Músicos en Roster</h4>
-            <ul style="list-style:none;">
-                ${rosterHTML || '<span style="color:var(--text-muted); font-size:0.9rem;">Nadie asignado.</span>'}
+        <div class="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Músicos Asignados</span>
+            <ul class="space-y-1.5">
+                ${rosterHTML || '<li class="text-xs text-zinc-400 italic">Nadie asignado todavía.</li>'}
             </ul>
         </div>
     `;
@@ -448,22 +499,24 @@ async function openScheduleEventModal(prefilledDate = null) {
 
         rolesToAssign.forEach(role => {
             const div = document.createElement('div');
-            div.className = 'roster-setup-item';
+            div.className = 'flex items-center justify-between gap-2 p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs';
             
             let optionsHTML = '<option value="">-- No Asignado --</option>';
             members.forEach(u => {
-                const isMatch = u.role.toLowerCase().includes(role.toLowerCase()) || (role === "Líder" && u.role === "Líder");
+                const userRole = u.role || '';
+                const isMatch = userRole.toLowerCase().includes(role.toLowerCase()) || (role === "Líder" && userRole === "Líder");
                 optionsHTML += `<option value="${u.id}">${u.name} ${u.lastname || ''} ${isMatch ? '(Recomendado)' : ''}</option>`;
             });
 
             div.innerHTML = `
-                <span class="role-label">${role}</span>
-                <select name="roster-role-${role}" class="form-select-sm">
+                <span class="font-bold text-zinc-700 dark:text-zinc-300 min-w-[110px] truncate">${role}</span>
+                <select name="roster-role-${role}" class="flex-1 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none">
                     ${optionsHTML}
                 </select>
             `;
             rosterSection.appendChild(div);
         });
+
 
         // Date pre-fill
         if (prefilledDate) {

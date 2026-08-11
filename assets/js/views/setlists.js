@@ -109,7 +109,7 @@ function initSetlistsView() {
     }
 
     const btnPresToggleSongs = document.getElementById('btn-toggle-presentation-songs');
-    if (btnPresToggleSongs) btnPresToggleSongs.onclick = togglePresentationSongsSidebar;
+    if (btnPresToggleSongs) btnPresToggleSongs.onclick = openMobileSongsModal;
 
     // Form submit
     document.getElementById('setlist-form').onsubmit = handleSetlistFormSubmit;
@@ -170,19 +170,8 @@ async function renderSetlists(forceRefresh = false) {
 
     filtered.forEach(s => {
         const card = document.createElement('div');
-        card.className = 'setlist-card';
-        card.style.cursor = 'pointer';
-        card.style.transition = 'transform 0.2s, box-shadow 0.2s';
+        card.className = 'p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition cursor-pointer flex flex-col justify-between';
 
-        // Add card hover styling programmatically
-        card.onmouseenter = () => {
-            card.style.transform = 'translateY(-2px)';
-            card.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
-        };
-        card.onmouseleave = () => {
-            card.style.transform = 'translateY(0)';
-            card.style.boxShadow = 'none';
-        };
 
         let songItemsHTML = '';
         if (s.songs && s.songs.length > 0) {
@@ -190,9 +179,9 @@ async function renderSetlists(forceRefresh = false) {
             const firstTwoSongs = s.songs.slice(0, 2);
             firstTwoSongs.forEach(song => {
                 songItemsHTML += `
-                    <div class="song-preview-item">
-                        <span class="title">${song.title}</span>
-                        <span class="key">${song.key}</span>
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-xs">
+                        <span class="font-semibold text-zinc-800 dark:text-zinc-200 truncate">${song.title}</span>
+                        <span class="font-bold text-zinc-600 dark:text-zinc-400 ml-2">${song.key}</span>
                     </div>
                 `;
             });
@@ -201,23 +190,13 @@ async function renderSetlists(forceRefresh = false) {
             if (s.songs.length > 2) {
                 const remaining = s.songs.length - 2;
                 songItemsHTML += `
-                    <div class="song-preview-item-more" style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        background: var(--bg-input);
-                        border: 1px dashed var(--border-color);
-                        border-radius: var(--radius-sm);
-                        padding: 8px 12px;
-                        font-size: 0.75rem;
-                        font-weight: 700;
-                        color: var(--primary);
-                    ">
+                    <div class="flex items-center justify-center p-2 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/40 border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
                         +${remaining} canción${remaining > 1 ? 'es' : ''} más...
                     </div>
                 `;
             }
         }
+
 
         let editBtnHTML = '';
         if (canEdit()) {
@@ -262,18 +241,19 @@ async function renderSetlists(forceRefresh = false) {
         }
 
         card.innerHTML = `
-            <div class="setlist-header" style="display:flex; justify-content:space-between; align-items:flex-start; gap: 10px; margin-bottom: 8px;">
-                <h3 style="margin:0; font-size:1.15rem; font-weight:700;">${s.name}</h3>
+            <div class="flex justify-between items-start gap-2 mb-2">
+                <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100">${s.name}</h3>
                 ${editBtnHTML}
             </div>
-            <p class="setlist-desc" style="margin-bottom:12px;">${s.description || 'Sin descripción'}</p>
-            <div class="setlist-songs-list-preview">
-                <h5>Canciones (${s.songs ? s.songs.length : 0})</h5>
-                <div class="songs-preview-list">
-                    ${songItemsHTML || '<div style="color:var(--text-muted); font-size:0.8rem;">Sin canciones en esta lista.</div>'}
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-3">${s.description || 'Sin descripción'}</p>
+            <div class="border-t border-zinc-100 dark:border-zinc-800 pt-2.5">
+                <h5 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">Canciones (${s.songs ? s.songs.length : 0})</h5>
+                <div class="space-y-1.5">
+                    ${songItemsHTML || '<div class="text-xs text-zinc-400 italic">Sin canciones en esta lista.</div>'}
                 </div>
             </div>
         `;
+
 
         // Card click opens the presentation view
         card.onclick = () => {
@@ -306,10 +286,8 @@ function openSetlistPresentation(setlist) {
     currentPresentationSetlist = setlist;
     document.body.classList.add('setlist-presentation-mode');
 
-    const layout = document.querySelector('.setlist-presentation-layout');
-    if (layout) layout.classList.remove('sidebar-collapsed');
     const textSpan = document.getElementById('btn-toggle-songs-text');
-    if (textSpan) textSpan.textContent = "Ocultar Lista";
+    if (textSpan) textSpan.textContent = "Ver Canciones";
 
     document.getElementById('subpanel-setlists-list').classList.add('hidden');
     document.getElementById('subpanel-setlist-presentation').classList.remove('hidden');
@@ -318,34 +296,57 @@ function openSetlistPresentation(setlist) {
     document.getElementById('presentation-setlist-title').textContent = setlist.name;
     document.getElementById('presentation-setlist-desc').textContent = setlist.description || 'Sin notas o descripción asociada.';
 
-    // Populate songs sidebar list
+    // Populate songs sidebar list and mobile modal list
     const sidebarList = document.getElementById('presentation-songs-list-container');
-    sidebarList.innerHTML = '';
+    if (sidebarList) sidebarList.innerHTML = '';
+    
+    const mobileList = document.getElementById('mobile-presentation-songs-container');
+    if (mobileList) mobileList.innerHTML = '';
+    
+    const mobileTitle = document.getElementById('mobile-pres-setlist-title');
+    if (mobileTitle) mobileTitle.textContent = setlist.name;
 
     if (setlist.songs && setlist.songs.length > 0) {
         setlist.songs.forEach(song => {
-            const item = document.createElement('button');
-            item.className = 'presentation-song-item';
-            item.setAttribute('data-song-id', song.id);
-            item.innerHTML = `
-                <div style="display:flex; flex-direction:column; gap:2px;">
-                    <span class="song-title">${song.title}</span>
-                    <span class="song-artist">${song.artist}</span>
-                </div>
-                <span class="song-key">${song.key}</span>
-            `;
+            if (sidebarList) {
+                const item = document.createElement('button');
+                item.className = 'presentation-song-item';
+                item.setAttribute('data-song-id', song.id);
+                item.innerHTML = `
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <span class="song-title">${song.title}</span>
+                        <span class="song-artist">${song.artist}</span>
+                    </div>
+                    <span class="song-key">${song.key}</span>
+                `;
+                item.onclick = () => selectPresentationSong(song);
+                sidebarList.appendChild(item);
+            }
 
-            item.onclick = () => {
-                selectPresentationSong(song);
-            };
-
-            sidebarList.appendChild(item);
+            if (mobileList) {
+                const mobileItem = document.createElement('button');
+                mobileItem.className = 'mobile-song-item w-full p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/80 text-left flex items-center justify-between transition flex-shrink-0';
+                mobileItem.setAttribute('data-song-id', song.id);
+                mobileItem.innerHTML = `
+                    <div class="min-w-0 flex-1">
+                        <h4 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate">${song.title}</h4>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">${song.artist}</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 ml-2 flex-shrink-0">${song.key}</span>
+                `;
+                mobileItem.onclick = () => {
+                    selectPresentationSong(song);
+                    closeMobileSongsModal();
+                };
+                mobileList.appendChild(mobileItem);
+            }
         });
 
         // Load first song by default
         selectPresentationSong(setlist.songs[0]);
     } else {
-        sidebarList.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:20px;">Sin canciones en este repertorio.</div>';
+        if (sidebarList) sidebarList.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:20px;">Sin canciones en este repertorio.</div>';
+        if (mobileList) mobileList.innerHTML = '<div class="text-xs text-zinc-400 text-center p-4">Sin canciones en este repertorio.</div>';
 
         document.getElementById('pres-song-title').textContent = 'Sin canciones';
         document.getElementById('pres-song-artist').textContent = '';
@@ -356,6 +357,7 @@ function openSetlistPresentation(setlist) {
 
 function closeSetlistPresentation() {
     stopPresScroll();
+    closeMobileSongsModal();
     document.body.classList.remove('setlist-presentation-mode');
     document.getElementById('subpanel-setlist-presentation').classList.add('hidden');
     document.getElementById('subpanel-setlists-list').classList.remove('hidden');
@@ -364,12 +366,26 @@ function closeSetlistPresentation() {
     currentPresentationSong = null;
 }
 
+function openMobileSongsModal() {
+    const modal = document.getElementById('modal-presentation-songs-mobile');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeMobileSongsModal() {
+    const modal = document.getElementById('modal-presentation-songs-mobile');
+    if (modal) modal.classList.add('hidden');
+}
+
+window.openMobileSongsModal = openMobileSongsModal;
+window.closeMobileSongsModal = closeMobileSongsModal;
+
+
 function selectPresentationSong(song) {
     currentPresentationSong = song;
     presTransposeOffset = 0;
     stopPresScroll();
 
-    // Toggle active classes in sidebar items
+    // Toggle active classes in sidebar and mobile modal items
     document.querySelectorAll('.presentation-song-item').forEach(item => {
         if (item.getAttribute('data-song-id') == song.id) {
             item.classList.add('active');
@@ -377,6 +393,15 @@ function selectPresentationSong(song) {
             item.classList.remove('active');
         }
     });
+
+    document.querySelectorAll('.mobile-song-item').forEach(item => {
+        if (item.getAttribute('data-song-id') == song.id) {
+            item.classList.add('bg-zinc-100', 'dark:bg-zinc-800');
+        } else {
+            item.classList.remove('bg-zinc-100', 'dark:bg-zinc-800');
+        }
+    });
+
 
     // Populate viewer header
     document.getElementById('pres-song-title').textContent = song.title;
@@ -474,14 +499,7 @@ function stopPresScroll() {
 }
 
 function togglePresentationSongsSidebar() {
-    const layout = document.querySelector('.setlist-presentation-layout');
-    const textSpan = document.getElementById('btn-toggle-songs-text');
-    if (!layout) return;
-
-    const isCollapsed = layout.classList.toggle('sidebar-collapsed');
-    if (textSpan) {
-        textSpan.textContent = isCollapsed ? "Mostrar Lista" : "Ocultar Lista";
-    }
+    openMobileSongsModal();
 }
 
 async function openCreateSetlistModal() {
@@ -891,18 +909,17 @@ async function loadDirectPresentation(setlistId) {
 async function viewSetlistPresentationDirectly(setlistId) {
     directPresentationSetlistId = setlistId;
 
-    // Ocultar subpanel de lista y mostrar presentación de inmediato para evitar el parpadeo
-    const listSubpanel = document.getElementById('subpanel-setlists-list');
-    const presSubpanel = document.getElementById('subpanel-setlist-presentation');
-    if (listSubpanel && presSubpanel) {
-        listSubpanel.classList.add('hidden');
-        presSubpanel.classList.remove('hidden');
-        document.body.classList.add('setlist-presentation-mode');
-    }
-    
-    window.location.hash = '#setlists';
+    // Close the event detail modal if open
+    const eventDetailModal = document.getElementById('modal-event-detail');
+    if (eventDetailModal) eventDetailModal.classList.add('hidden');
 
-    if (window.location.hash === '#setlists') {
-        initSetlistsView();
+    // Force the setlists panel to reload so initSetlistsView() binds fresh DOM elements
+    const setlistsPanel = document.getElementById('panel-setlists');
+    if (setlistsPanel) {
+        setlistsPanel.dataset.loaded = '';
     }
+
+    // Navigate to #setlists — app.js handleHashRouting will load the panel and call initSetlistsView()
+    window.location.hash = '#setlists';
 }
+
