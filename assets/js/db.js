@@ -9,8 +9,8 @@ const isLocal = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostn
                 window.location.hostname.startsWith('172.');
 
 const API_URL = isLocal 
-    ? `${window.location.protocol}//${window.location.hostname}:9090/api` 
-    : `${window.location.protocol}//${window.location.hostname}/api/public/index.php/api`;
+    ? `${window.location.protocol}//${window.location.hostname}:9080/levareapp-dev/api_native/index.php` 
+    : `${window.location.protocol}//${window.location.hostname}/api_native/index.php`;
 /**
  * Basic LocalStorage Helpers (for session state)
  */
@@ -49,6 +49,7 @@ async function apiFetch(endpoint, options = {}) {
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+        headers['X-Token'] = token;
     }
 
     if (groupId) {
@@ -63,8 +64,8 @@ async function apiFetch(endpoint, options = {}) {
     try {
         const response = await fetch(`${API_URL}${endpoint}`, config);
 
-        // Handle Session Expired
-        if (response.status === 401) {
+        // Handle Session Expired (except on login attempts)
+        if (response.status === 401 && endpoint !== '/auth/login') {
             setData('currentUser', null);
             setData('token', null);
             setData('currentGroupId', null);
@@ -127,11 +128,16 @@ function getAvatarUrl(avatarPath) {
     
     // Resolve public base depending on API routing
     let publicBase = API_URL;
-    if (publicBase.includes('/index.php/api')) {
+    if (publicBase.includes('/api_native/index.php')) {
+        publicBase = publicBase.replace('/api_native/index.php', '');
+    } else if (publicBase.includes('/index.php/api')) {
         publicBase = publicBase.replace('/index.php/api', '');
     } else {
         publicBase = publicBase.replace('/api', '');
     }
     
+    // Trim trailing slash if present
+    publicBase = publicBase.replace(/\/$/, '');
     return `${publicBase}/${relativePath}`;
 }
+

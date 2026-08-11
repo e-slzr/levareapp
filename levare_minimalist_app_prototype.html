@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Levare - Prototipe Wireframes UI Minimalista</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f6f6f6',
+                            100: '#e7e7e7',
+                            200: '#d1d1d1',
+                            800: '#1a1a1a',
+                            900: '#0d0d0d',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome for clean icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Custom scrollbar styling for high-end feel */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+        
+        /* Smooth page transitions inside screen */
+        .screen-fade {
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Abstract minimalist background patterns inspired by reference image */
+        .bg-pattern-light {
+            background-image: radial-gradient(#000000 0.75px, transparent 0.75px);
+            background-size: 12px 12px;
+            opacity: 0.12;
+        }
+        .bg-pattern-dark {
+            background-image: radial-gradient(#ffffff 0.75px, transparent 0.75px);
+            background-size: 12px 12px;
+            opacity: 0.12;
+        }
+
+        /* Phone Mockup Frame Shadows */
+        .phone-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 12px #18181b;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased font-sans min-h-screen flex flex-col selection:bg-black selection:text-white">
+
+    <!-- Top Bar Toolbar (Prototype Navigation Controls) -->
+    <header class="bg-white/80 backdrop-blur border-b border-slate-200 sticky top-0 z-50 px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center font-bold text-sm">
+                L
+            </div>
+            <div>
+                <h1 class="text-base font-semibold text-slate-900 leading-tight">Levare — Wireframes UI</h1>
+                <p class="text-xs text-slate-500">Prototipo de Banda & Organización Musical</p>
+            </div>
+        </div>
+
+        <!-- View Controls & Theme Toggle -->
+        <div class="flex items-center gap-2">
+            <!-- View Mode Switcher -->
+            <div class="bg-slate-100 p-1 rounded-xl flex text-xs font-medium border border-slate-200">
+                <button id="btn-view-interactive" onclick="setViewMode('interactive')" class="px-3 py-1.5 rounded-lg bg-white shadow-sm text-slate-900 transition">
+                    <i class="fa-solid fa-mobile-screen mr-1.5"></i>Simulador Interactivo
+                </button>
+                <button id="btn-view-canvas" onclick="setViewMode('canvas')" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">
+                    <i class="fa-solid fa-border-all mr-1.5"></i>Lienzo Completo (Wireframe Flow)
+                </button>
+            </div>
+
+            <!-- Global Mode Toggle (Claro / Oscuro) -->
+            <button onclick="toggleTheme()" class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 px-3 py-2 rounded-xl text-xs font-medium transition shadow-sm" title="Cambiar Tema Claro / Oscuro">
+                <i id="theme-btn-icon" class="fa-solid fa-moon text-amber-300 dark:text-slate-700"></i>
+                <span id="theme-btn-label">Modo Oscuro</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 p-4 md:p-8 flex items-center justify-center overflow-x-auto">
+
+        <!-- MODE 1: Interactive Mobile Device Frame -->
+        <div id="interactive-view" class="w-full flex flex-col items-center justify-center my-auto">
+            
+            <!-- Quick Screen Selector Pills -->
+            <div class="flex items-center justify-center gap-2 mb-6 overflow-x-auto max-w-full pb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-2">Navegar a:</span>
+                <button onclick="switchScreen('login')" class="screen-pill px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition" data-screen="login">1. Login</button>
+                <button onclick="switchScreen('inicio')" class="screen-pill px-3 py-1 rounded-full text-xs font-medium bg-black text-white transition" data-screen="inicio">2. Inicio</button>
+                <button onclick="switchScreen('canciones')" class="screen-pill px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition" data-screen="canciones">3. Canciones</button>
+                <button onclick="switchScreen('repertorios')" class="screen-pill px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition" data-screen="repertorios">4. Repertorios</button>
+                <button onclick="switchScreen('eventos')" class="screen-pill px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition" data-screen="eventos">5. Eventos</button>
+                <button onclick="switchScreen('mas')" class="screen-pill px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition" data-screen="mas">6. Más / Perfil</button>
+            </div>
+
+            <!-- Smartphone Frame Mockup -->
+            <div class="w-[380px] h-[780px] rounded-[48px] phone-shadow bg-slate-950 p-3 relative flex flex-col transition-all duration-300">
+                <!-- Phone Dynamic Island / Speaker notch -->
+                <div class="absolute top-5 left-1/2 -translate-x-1/2 w-28 h-4 bg-slate-900 rounded-full z-40 flex items-center justify-end px-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-slate-950 border border-slate-800"></div>
+                </div>
+
+                <!-- Phone Screen Container (Handles Dark/Light CSS class) -->
+                <div id="phone-screen" class="w-full h-full rounded-[38px] overflow-hidden bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 flex flex-col relative transition-colors duration-300 border border-slate-200 dark:border-zinc-800">
+                    
+                    <!-- Status Bar -->
+                    <div class="pt-3 px-6 pb-1 flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-zinc-400 z-30 select-none">
+                        <span>9:41</span>
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-signal text-[10px]"></i>
+                            <i class="fa-solid fa-wifi text-[10px]"></i>
+                            <i class="fa-solid fa-battery-full text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- APP SCREEN CONTENT VIEWPORT -->
+                    <div id="app-viewport" class="flex-1 overflow-y-auto relative flex flex-col">
+                        <!-- Dynamic Screen Content gets loaded here by JavaScript -->
+                    </div>
+
+                    <!-- Bottom Nav Bar (Hidden in Login screen) -->
+                    <nav id="app-bottom-nav" class="bg-white/90 dark:bg-zinc-950/90 backdrop-blur border-t border-slate-100 dark:border-zinc-900 px-3 py-2 flex justify-around items-center z-30 transition-colors">
+                        <button onclick="switchScreen('inicio')" class="nav-item flex flex-col items-center gap-0.5 text-xs font-medium text-slate-900 dark:text-white" data-target="inicio">
+                            <i class="fa-solid fa-grip text-base"></i>
+                            <span class="text-[10px]">Inicio</span>
+                        </button>
+                        <button onclick="switchScreen('canciones')" class="nav-item flex flex-col items-center gap-0.5 text-xs font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white transition" data-target="canciones">
+                            <i class="fa-solid fa-music text-base"></i>
+                            <span class="text-[10px]">Canciones</span>
+                        </button>
+                        <button onclick="switchScreen('repertorios')" class="nav-item flex flex-col items-center gap-0.5 text-xs font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white transition" data-target="repertorios">
+                            <i class="fa-solid fa-list-check text-base"></i>
+                            <span class="text-[10px]">Repertorios</span>
+                        </button>
+                        <button onclick="switchScreen('eventos')" class="nav-item flex flex-col items-center gap-0.5 text-xs font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white transition" data-target="eventos">
+                            <i class="fa-solid fa-calendar-days text-base"></i>
+                            <span class="text-[10px]">Eventos</span>
+                        </button>
+                        <button onclick="switchScreen('mas')" class="nav-item flex flex-col items-center gap-0.5 text-xs font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white transition" data-target="mas">
+                            <i class="fa-solid fa-ellipsis text-base"></i>
+                            <span class="text-[10px]">Más</span>
+                        </button>
+                    </nav>
+
+                    <!-- Home Indicator Bar -->
+                    <div class="pb-1 pt-1 flex justify-center bg-white dark:bg-zinc-950">
+                        <div class="w-32 h-1 bg-slate-300 dark:bg-zinc-700 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODE 2: Figma / Wireframe Canvas Overview Mode -->
+        <div id="canvas-view" class="hidden w-full max-w-7xl mx-auto flex-col">
+            <div class="mb-6 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 p-4 rounded-2xl flex items-center justify-between text-amber-900 dark:text-amber-200 text-sm">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-circle-info text-lg"></i>
+                    <span><strong>Vista General Wireframe:</strong> Revisa la estructura de navegación e interacción completa en paralelo. Puedes alternar a Modo Oscuro/Claro para ver la adaptación global.</span>
+                </div>
+                <button onclick="setViewMode('interactive')" class="px-3 py-1.5 bg-amber-900 text-amber-100 dark:bg-amber-100 dark:text-amber-900 rounded-xl text-xs font-semibold">Probar Interactivo</button>
+            </div>
+
+            <!-- Wireframe Grid Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
+                <!-- Login Box -->
+                <div class="w-[340px] flex flex-col gap-2">
+                    <span class="text-xs font-semibold text-slate-500 tracking-wider uppercase">01. Acceso & Login</span>
+                    <div class="w-full h-[620px] rounded-[32px] overflow-hidden bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 border border-slate-300 dark:border-zinc-800 shadow-lg relative flex flex-col" id="static-screen-login"></div>
+                </div>
+
+                <!-- Inicio Box -->
+                <div class="w-[340px] flex flex-col gap-2">
+                    <span class="text-xs font-semibold text-slate-500 tracking-wider uppercase">02. Dashboard / Inicio</span>
+                    <div class="w-full h-[620px] rounded-[32px] overflow-hidden bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 border border-slate-300 dark:border-zinc-800 shadow-lg relative flex flex-col" id="static-screen-inicio"></div>
+                </div>
+
+                <!-- Canciones Box -->
+                <div class="w-[340px] flex flex-col gap-2">
+                    <span class="text-xs font-semibold text-slate-500 tracking-wider uppercase">03. Canciones & Filtro</span>
+                    <div class="w-full h-[620px] rounded-[32px] overflow-hidden bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 border border-slate-300 dark:border-zinc-800 shadow-lg relative flex flex-col" id="static-screen-canciones"></div>
+                </div>
+
+                <!-- Repertorios Box -->
+                <div class="w-[340px] flex flex-col gap-2">
+                    <span class="text-xs font-semibold text-slate-500 tracking-wider uppercase">04. Repertorios / Setlists</span>
+                    <div class="w-full h-[620px] rounded-[32px] overflow-hidden bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 border border-slate-300 dark:border-zinc-800 shadow-lg relative flex flex-col" id="static-screen-repertorios"></div>
+                </div>
+
+                <!-- Eventos Box -->
+                <div class="w-[340px] flex flex-col gap-2">
+                    <span class="text-xs font-semibold text-slate-500 tracking-wider uppercase">05. Eventos & Programación</span>
+                    <div class="w-full h-[620px] rounded-[32px] overflow-hidden bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 border border-slate-300 dark:border-zinc-800 shadow-lg relative flex flex-col" id="static-screen-eventos"></div>
+                </div>
+
+                <!-- Ajustes Box -->
+                <div class="w-[340px] flex flex-col gap-2">
+                    <span class="text-xs font-semibold text-slate-500 tracking-wider uppercase">06. Perfil & Ajustes (Switch Tema)</span>
+                    <div class="w-full h-[620px] rounded-[32px] overflow-hidden bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 border border-slate-300 dark:border-zinc-800 shadow-lg relative flex flex-col" id="static-screen-mas"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- TEMPLATES FOR SCREENS (JavaScript Renderers) -->
+    <script>
+        // App State
+        let currentTheme = 'dark'; // 'light' or 'dark' (Defaulting to dark per modern aesthetic, easily toggleable)
+        let activeScreen = 'inicio';
+        let activeEventView = 'lista'; // 'lista' or 'calendario'
+        let currentSearchQuery = '';
+
+        // Mock data
+        const songsData = [
+            { id: 1, title: "Unción en el aire", artist: "World Worship", key: "G", bpm: 72, category: "Servicio" },
+            { id: 2, title: "Yellow", artist: "Coldplay", key: "B", bpm: 87, category: "Ensayo" },
+            { id: 3, title: "La Bondad de Dios", artist: "Bethel Music", key: "A", bpm: 70, category: "Servicio" },
+            { id: 4, title: "Gracias", artist: "Marcos Witt", key: "D", bpm: 68, category: "Servicio" },
+            { id: 5, title: "Tumbas a Huertos", artist: "Elevation Worship", key: "C", bpm: 74, category: "Favorita" }
+        ];
+
+        const repertoiresData = [
+            { name: "ReperTEST 01", songsCount: 2, members: ["Eliu", "Josselyn"], tag: "Ensayo" },
+            { name: "Dominical 16 Ago", songsCount: 4, members: ["Eliu", "Carlos", "María"], tag: "Culto" },
+            { name: "Servicio Jóvenes", songsCount: 3, members: ["Eliu", "Mateo"], tag: "Especial" }
+        ];
+
+        const eventsData = [
+            {
+                title: "Evento de prueba",
+                badge: "ENSAYO",
+                date: "Sábado, 4 de julio de 2026 • 18:00 hs",
+                notes: "Ensayo general para servicio domingo",
+                repertoire: "ReperTEST 01",
+                assignments: [{ role: "Voz Principal", musician: "Eliu" }, { role: "Batería", musician: "Carlos" }]
+            },
+            {
+                title: "Segundo evento de prueba",
+                badge: "CULTO / SERVICIO",
+                date: "Sábado, 25 de julio de 2026 • 18:00 hs",
+                notes: "Sin notas adicionales",
+                repertoire: "ReperTEST 02",
+                assignments: [{ role: "Guitarra Acústica", musician: "Eliu" }, { role: "Teclado", musician: "Josselyn" }]
+            }
+        ];
+
+        
+        // --- SCREEN BUILDERS --- //
+
+        function renderLoginScreen() {
+            return `
+            <div class="screen-fade h-full flex flex-col justify-between p-6 relative overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+                <!-- Abstract organic minimalist art background (inspired by reference) -->
+                <div class="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-slate-200/60 dark:bg-zinc-800/40 blur-xl pointer-events-none"></div>
+                <div class="absolute top-1/3 -left-16 w-40 h-40 rounded-full bg-slate-300/40 dark:bg-zinc-900/60 blur-lg pointer-events-none"></div>
+                <div class="absolute inset-0 bg-pattern-light dark:bg-pattern-dark pointer-events-none"></div>
+
+                <!-- Top Brand Area -->
+                <div class="pt-8 relative z-10 text-center">
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-black dark:bg-white text-white dark:text-black mb-4 shadow-xl">
+                        <i class="fa-solid fa-plus text-xl font-bold"></i>
+                    </div>
+                    <h1 class="font-serif text-3xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">Levare</h1>
+                    <p class="text-xs uppercase tracking-widest font-semibold text-slate-400 dark:text-zinc-500 mt-1">Plataforma de Música</p>
+                </div>
+
+                <!-- Main Form Area -->
+                <div class="relative z-10 my-auto py-6">
+                    <div class="mb-6 text-center">
+                        <h2 class="text-xl font-semibold text-slate-900 dark:text-zinc-100">Bienvenido de nuevo</h2>
+                        <p class="text-xs text-slate-500 dark:text-zinc-400 mt-1 max-w-[240px] mx-auto">Gestiona tu banda musical, repertorios, eventos e integrantes</p>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); switchScreen('inicio');" class="space-y-3.5">
+                        <div>
+                            <label class="block text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1">Correo Electrónico o Usuario</label>
+                            <input type="text" value="eliu.asalazar@gmail.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 text-sm text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition" placeholder="tu@correo.com" />
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1">Contraseña</label>
+                            <input type="password" value="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 text-sm text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition" />
+                        </div>
+
+                        <button type="submit" class="w-full py-3 rounded-xl bg-slate-900 dark:bg-zinc-100 hover:bg-black dark:hover:bg-white text-white dark:text-zinc-900 text-sm font-semibold tracking-wide shadow-md hover:shadow-lg transition-all active:scale-[0.98] mt-2">
+                            Iniciar Sesión
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center space-y-2">
+                        <p class="text-xs text-slate-500 dark:text-zinc-400">
+                            ¿Eres un nuevo Líder? <a href="#" onclick="alert('Demo: Función de registro'); return false;" class="font-semibold text-slate-900 dark:text-zinc-100 hover:underline">Regístrate aquí</a>
+                        </p>
+                        <a href="#" onclick="alert('Demo: Código de invitación'); return false;" class="block text-xs font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300">Tengo un código de invitación</a>
+                    </div>
+                </div>
+
+                <!-- Footer minimalism note -->
+                <div class="relative z-10 text-center pb-2">
+                    <span class="text-[10px] uppercase tracking-widest text-slate-400 dark:text-zinc-600">Levare OS v2.0 Minimal UI</span>
+                </div>
+            </div>
+            `;
+        }
+
+        function renderInicioScreen() {
+            return `
+            <div class="screen-fade flex-1 p-4 space-y-4 pb-6">
+                <!-- App Header -->
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-900">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-bold text-xs">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <span class="font-serif font-bold text-lg text-slate-900 dark:text-zinc-100 tracking-tight">Levare</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleTheme()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 flex items-center justify-center text-xs hover:bg-slate-200 dark:hover:bg-zinc-800 transition">
+                            <i class="${currentTheme === 'dark' ? 'fa-solid fa-sun text-amber-400' : 'fa-solid fa-moon text-slate-700'}"></i>
+                        </button>
+                        <button onclick="switchScreen('login')" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 flex items-center justify-center text-xs hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/50 dark:hover:text-red-400 transition" title="Cerrar sesión">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- User Greeting Card -->
+                <div class="p-4 rounded-2xl bg-slate-900 dark:bg-zinc-900 text-white relative overflow-hidden shadow-md">
+                    <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-slate-800/50 dark:bg-zinc-800/40 pointer-events-none"></div>
+                    <div class="relative z-10 flex justify-between items-start">
+                        <div>
+                            <span class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">Martes, 11 de agosto</span>
+                            <h2 class="text-xl font-serif font-bold mt-0.5">¡Hola, Eliu!</h2>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            LÍDER DE BANDA
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Próximo Evento Highlight Block -->
+                <div class="p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Próximo Evento</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400">
+                            ENSAYO
+                        </span>
+                    </div>
+
+                    <div>
+                        <h3 class="text-base font-semibold text-slate-900 dark:text-zinc-100">Ensayo Dominical</h3>
+                        <p class="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-1.5 mt-1">
+                            <i class="fa-regular fa-calendar text-[11px]"></i> Sábado, 15 de agosto • 18:00 hs
+                        </p>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-xs">
+                        <span class="text-slate-500 dark:text-zinc-400">Repertorio: <strong class="text-slate-800 dark:text-zinc-200 font-medium">Dominical 16 Ago</strong></span>
+                        <button onclick="switchScreen('eventos')" class="font-medium text-slate-900 dark:text-zinc-100 hover:underline flex items-center gap-1">
+                            Ver detalles <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Novedades y Anuncios -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between px-1">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Novedades y Anuncios</h3>
+                        <span class="text-[10px] text-slate-400">Hoy</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 flex items-start gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-700 dark:text-zinc-300 text-xs shrink-0 mt-0.5">
+                                <i class="fa-solid fa-music"></i>
+                            </div>
+                            <div class="flex-1 text-xs">
+                                <p class="text-slate-800 dark:text-zinc-200">
+                                    <strong class="font-semibold text-slate-900 dark:text-white">Josselyn</strong> sugirió la canción: <span class="italic font-serif">"Unción en el aire"</span> de World Worship.
+                                </p>
+                                <span class="text-[10px] text-slate-400 dark:text-zinc-500 mt-1 block">22:06 hs</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 flex items-start gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-700 dark:text-zinc-300 text-xs shrink-0 mt-0.5">
+                                <i class="fa-solid fa-compact-disc"></i>
+                            </div>
+                            <div class="flex-1 text-xs">
+                                <p class="text-slate-800 dark:text-zinc-200">
+                                    <strong class="font-semibold text-slate-900 dark:text-white">Eliu</strong> sugirió la canción: <span class="italic font-serif">"Yellow"</span> de Coldplay.
+                                </p>
+                                <span class="text-[10px] text-slate-400 dark:text-zinc-500 mt-1 block">21:51 hs</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800/80 flex items-start gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-700 dark:text-zinc-300 text-xs shrink-0 mt-0.5">
+                                <i class="fa-solid fa-folder-plus"></i>
+                            </div>
+                            <div class="flex-1 text-xs">
+                                <p class="text-slate-800 dark:text-zinc-200">
+                                    <strong class="font-semibold text-slate-900 dark:text-white">Eliu</strong> creó el nuevo repertorio <span class="font-medium">"Dominical 16 Ago"</span>.
+                                </p>
+                                <span class="text-[10px] text-slate-400 dark:text-zinc-500 mt-1 block">Ayer</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        function renderCancionesScreen() {
+            const filtered = songsData.filter(s => 
+                s.title.toLowerCase().includes(currentSearchQuery.toLowerCase()) || 
+                s.artist.toLowerCase().includes(currentSearchQuery.toLowerCase())
+            );
+
+            return `
+            <div class="screen-fade flex-1 p-4 space-y-3 pb-6 flex flex-col">
+                <!-- Screen Title -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-serif font-bold text-slate-900 dark:text-zinc-100">Canciones</h2>
+                        <p class="text-xs text-slate-500 dark:text-zinc-400">Biblioteca del repertorio general</p>
+                    </div>
+                    <button onclick="alert('Demo: Formulario para añadir nueva canción')" class="w-9 h-9 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center text-sm shadow-md hover:scale-105 transition">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Search Input -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                    <input type="text" id="song-search-input" value="${currentSearchQuery}" oninput="handleSongSearch(this.value)" placeholder="Buscar título, artista o tono..." class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-slate-400 dark:focus:ring-zinc-600" />
+                </div>
+
+                <!-- Quick Category Filter Chips -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-medium no-scrollbar">
+                    <button class="px-3 py-1 rounded-full bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shrink-0">Todas</button>
+                    <button class="px-3 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 shrink-0">Servicio</button>
+                    <button class="px-3 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 shrink-0">Ensayos</button>
+                    <button class="px-3 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 shrink-0">Favoritas</button>
+                </div>
+
+                <!-- Songs List -->
+                <div class="space-y-2 flex-1 overflow-y-auto">
+                    ${filtered.length === 0 ? `
+                        <div class="text-center py-8 text-xs text-slate-400">
+                            No se encontraron canciones que coincidan.
+                        </div>
+                    ` : filtered.map(song => `
+                        <div class="p-3 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between hover:border-slate-400 dark:hover:border-zinc-700 transition group cursor-pointer" onclick="alert('Demo: Detalle de canción ${song.title}')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-zinc-800/80 text-slate-800 dark:text-zinc-200 flex items-center justify-center font-bold text-sm shrink-0 border border-slate-200 dark:border-zinc-700">
+                                    ${song.key}
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-semibold text-slate-900 dark:text-zinc-100 group-hover:underline">${song.title}</h4>
+                                    <p class="text-[11px] text-slate-500 dark:text-zinc-400">${song.artist}</p>
+                                </div>
+                            </div>
+
+                            <div class="text-right flex flex-col items-end gap-1">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300">
+                                    ${song.bpm} BPM
+                                </span>
+                                <i class="fa-solid fa-chevron-right text-[10px] text-slate-300 dark:text-zinc-600"></i>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+
+        function renderRepertoriosScreen() {
+            return `
+            <div class="screen-fade flex-1 p-4 space-y-4 pb-6">
+                <!-- Header -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-serif font-bold text-slate-900 dark:text-zinc-100">Repertorios</h2>
+                        <p class="text-xs text-slate-500 dark:text-zinc-400">Listas de canciones programadas</p>
+                    </div>
+                    <button onclick="alert('Demo: Crear nuevo repertorio')" class="w-9 h-9 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center text-sm shadow-md hover:scale-105 transition">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Category Segmented Control -->
+                <div class="grid grid-cols-2 p-1 bg-slate-100 dark:bg-zinc-900 rounded-xl text-xs font-medium border border-slate-200 dark:border-zinc-800">
+                    <button class="py-1.5 rounded-lg bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm text-center">Todos</button>
+                    <button class="py-1.5 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white text-center">Por Evento</button>
+                </div>
+
+                <!-- Repertoires Cards -->
+                <div class="space-y-3">
+                    ${repertoiresData.map(rep => `
+                        <div class="p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3 hover:border-slate-400 dark:hover:border-zinc-700 transition">
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center text-base">
+                                        <i class="fa-solid fa-list-ul"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-slate-900 dark:text-zinc-100">${rep.name}</h3>
+                                        <span class="text-[11px] text-slate-500 dark:text-zinc-400">${rep.songsCount} canciones incluidos</span>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300">
+                                    ${rep.tag}
+                                </span>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
+                                <div class="flex items-center gap-1.5">
+                                    <i class="fa-solid fa-users text-[10px]"></i>
+                                    <span>${rep.members.join(', ')}</span>
+                                </div>
+                                <button onclick="alert('Demo: Ver repertorio ${rep.name}')" class="text-slate-900 dark:text-white font-medium hover:underline flex items-center gap-1">
+                                    Abrir <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+
+        function renderEventosScreen() {
+            return `
+            <div class="screen-fade flex-1 p-4 space-y-4 pb-6">
+                <!-- Header -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-serif font-bold text-slate-900 dark:text-zinc-100">Eventos</h2>
+                        <p class="text-xs text-slate-500 dark:text-zinc-400">Agenda de la banda</p>
+                    </div>
+
+                    <!-- Lista / Calendario Switch -->
+                    <div class="flex bg-slate-100 dark:bg-zinc-900 p-0.5 rounded-xl border border-slate-200 dark:border-zinc-800 text-xs">
+                        <button onclick="setEventView('lista')" class="px-2.5 py-1 rounded-lg ${activeEventView === 'lista' ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-zinc-400'}">
+                            <i class="fa-solid fa-list mr-1"></i>Lista
+                        </button>
+                        <button onclick="setEventView('calendario')" class="px-2.5 py-1 rounded-lg ${activeEventView === 'calendario' ? 'bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-zinc-400'}">
+                            <i class="fa-regular fa-calendar-days mr-1"></i>Calendario
+                        </button>
+                    </div>
+                </div>
+
+                ${activeEventView === 'calendario' ? `
+                    <!-- Calendar Mock View -->
+                    <div class="p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
+                        <div class="flex items-center justify-between font-semibold text-xs text-slate-800 dark:text-zinc-200">
+                            <span>Agosto 2026</span>
+                            <div class="flex items-center gap-2">
+                                <button class="hover:text-black dark:hover:text-white"><i class="fa-solid fa-chevron-left"></i></button>
+                                <button class="hover:text-black dark:hover:text-white"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-7 text-center text-[10px] text-slate-400 font-medium gap-1">
+                            <span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
+                        </div>
+                        <div class="grid grid-cols-7 text-center text-xs gap-1 text-slate-700 dark:text-zinc-300">
+                            <span class="p-1 text-slate-300 dark:text-zinc-700">28</span>
+                            <span class="p-1 text-slate-300 dark:text-zinc-700">29</span>
+                            <span class="p-1 text-slate-300 dark:text-zinc-700">30</span>
+                            <span class="p-1 text-slate-300 dark:text-zinc-700">31</span>
+                            <span class="p-1">1</span><span class="p-1">2</span><span class="p-1">3</span>
+                            <span class="p-1 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold">4</span>
+                            <span class="p-1">5</span><span class="p-1">6</span><span class="p-1">7</span><span class="p-1">8</span><span class="p-1">9</span><span class="p-1">10</span>
+                            <span class="p-1">11</span><span class="p-1">12</span><span class="p-1">13</span><span class="p-1">14</span><span class="p-1">15</span><span class="p-1">16</span><span class="p-1">17</span>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Events Cards List -->
+                <div class="space-y-3">
+                    ${eventsData.map(event => `
+                        <div class="p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-slate-900 dark:text-zinc-100">${event.title}</h3>
+                                    <p class="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">${event.date}</p>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                                    ${event.badge}
+                                </span>
+                            </div>
+
+                            <p class="text-xs text-slate-600 dark:text-zinc-400 italic bg-slate-50 dark:bg-zinc-950 p-2 rounded-lg border border-slate-100 dark:border-zinc-800/60">
+                                "${event.notes}"
+                            </p>
+
+                            <div class="space-y-2 text-xs">
+                                <div class="flex items-center justify-between text-slate-600 dark:text-zinc-400">
+                                    <span>Repertorio asignado:</span>
+                                    <span class="font-semibold text-slate-900 dark:text-zinc-200">${event.repertoire}</span>
+                                </div>
+
+                                <div class="p-2.5 rounded-xl bg-slate-100/70 dark:bg-zinc-800/50 space-y-1">
+                                    <span class="text-[10px] uppercase tracking-wider font-semibold text-slate-400 dark:text-zinc-400 block">Músicos Asignados</span>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        ${event.assignments.map(a => `
+                                            <span class="px-2 py-0.5 rounded-md bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-[11px] font-medium text-slate-800 dark:text-zinc-200">
+                                                ${a.role}: <strong>${a.musician}</strong>
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            `;
+        }
+
+        function renderMasScreen() {
+            return `
+            <div class="screen-fade flex-1 p-4 space-y-4 pb-6">
+                <!-- Header Profile Card -->
+                <div class="p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-lg font-serif">
+                        E
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-base font-bold text-slate-900 dark:text-zinc-100">Eliu Salazar</h2>
+                        <p class="text-xs text-slate-500 dark:text-zinc-400">Banda Levare • Rol: Líder</p>
+                    </div>
+                </div>
+
+                <!-- Settings Group -->
+                <div class="space-y-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-500 px-1">Ajustes & Preferencias</span>
+
+                    <div class="rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-slate-100 dark:divide-zinc-800/80 overflow-hidden text-xs">
+                        
+                        <!-- Interactivo Modo Oscuro / Claro Switch -->
+                        <div class="p-3.5 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-700 dark:text-zinc-300">
+                                    <i class="${currentTheme === 'dark' ? 'fa-solid fa-moon text-amber-300' : 'fa-solid fa-sun text-amber-500'}"></i>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-slate-900 dark:text-zinc-100 block">Apariencia Visual</span>
+                                    <span class="text-[10px] text-slate-400">Modo actual: ${currentTheme === 'dark' ? 'Oscuro' : 'Claro'}</span>
+                                </div>
+                            </div>
+
+                            <!-- Interactive Theme Switch Toggle -->
+                            <button onclick="toggleTheme()" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${currentTheme === 'dark' ? 'bg-slate-700' : 'bg-slate-300'}">
+                                <span class="sr-only">Cambiar tema</span>
+                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${currentTheme === 'dark' ? 'translate-x-5' : 'translate-x-0'}"></span>
+                            </button>
+                        </div>
+
+                        <!-- Other visual options -->
+                        <div class="p-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-zinc-800/40 cursor-pointer" onclick="alert('Demo: Miembros de la banda')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-700 dark:text-zinc-300">
+                                    <i class="fa-solid fa-user-group"></i>
+                                </div>
+                                <span class="font-medium text-slate-800 dark:text-zinc-200">Miembros de la Banda</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 dark:text-zinc-600 text-xs"></i>
+                        </div>
+
+                        <div class="p-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-zinc-800/40 cursor-pointer" onclick="alert('Demo: Notificaciones')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-700 dark:text-zinc-300">
+                                    <i class="fa-solid fa-bell"></i>
+                                </div>
+                                <span class="font-medium text-slate-800 dark:text-zinc-200">Notificaciones</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 dark:text-zinc-600 text-xs"></i>
+                        </div>
+
+                        <div class="p-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-zinc-800/40 cursor-pointer" onclick="alert('Demo: Código de invitación')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-700 dark:text-zinc-300">
+                                    <i class="fa-solid fa-qrcode"></i>
+                                </div>
+                                <span class="font-medium text-slate-800 dark:text-zinc-200">Código de Invitación</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 dark:text-zinc-600 text-xs"></i>
+                        </div>
+
+                        <div class="p-3.5 flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 cursor-pointer" onclick="switchScreen('login')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center">
+                                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                </div>
+                                <span class="font-semibold">Cerrar Sesión</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+
+        // Master Render Function
+        function renderActiveScreen() {
+            const viewport = document.getElementById('app-viewport');
+            const nav = document.getElementById('app-bottom-nav');
+
+            if (!viewport) return;
+
+            // Render interactive phone view
+            let html = '';
+            switch (activeScreen) {
+                case 'login':
+                    html = renderLoginScreen();
+                    nav.style.display = 'none'; // Hide bottom nav on login screen
+                    break;
+                case 'inicio':
+                    html = renderInicioScreen();
+                    nav.style.display = 'flex';
+                    break;
+                case 'canciones':
+                    html = renderCancionesScreen();
+                    nav.style.display = 'flex';
+                    break;
+                case 'repertorios':
+                    html = renderRepertoriosScreen();
+                    nav.style.display = 'flex';
+                    break;
+                case 'eventos':
+                    html = renderEventosScreen();
+                    nav.style.display = 'flex';
+                    break;
+                case 'mas':
+                    html = renderMasScreen();
+                    nav.style.display = 'flex';
+                    break;
+                default:
+                    html = renderInicioScreen();
+                    nav.style.display = 'flex';
+            }
+
+            viewport.innerHTML = html;
+
+            // Update Nav item active styling
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                const target = btn.getAttribute('data-target');
+                if (target === activeScreen) {
+                    btn.className = "nav-item flex flex-col items-center gap-0.5 text-xs font-medium text-slate-900 dark:text-white";
+                } else {
+                    btn.className = "nav-item flex flex-col items-center gap-0.5 text-xs font-medium text-slate-400 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white transition";
+                }
+            });
+
+            // Update top screen selector pills
+            document.querySelectorAll('.screen-pill').forEach(btn => {
+                const screen = btn.getAttribute('data-screen');
+                if (screen === activeScreen) {
+                    btn.className = "screen-pill px-3 py-1 rounded-full text-xs font-medium bg-black dark:bg-white text-white dark:text-black transition shadow-sm";
+                } else {
+                    btn.className = "screen-pill px-3 py-1 rounded-full text-xs font-medium bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-300 dark:hover:bg-zinc-700 transition";
+                }
+            });
+        }
+
+        // Render Canvas Overview screens (all screens at once in grid)
+        function renderCanvasOverview() {
+            const screens = [
+                { id: 'static-screen-login', render: renderLoginScreen },
+                { id: 'static-screen-inicio', render: renderInicioScreen },
+                { id: 'static-screen-canciones', render: renderCancionesScreen },
+                { id: 'static-screen-repertorios', render: renderRepertoriosScreen },
+                { id: 'static-screen-eventos', render: renderEventosScreen },
+                { id: 'static-screen-mas', render: renderMasScreen }
+            ];
+
+            screens.forEach(s => {
+                const el = document.getElementById(s.id);
+                if (el) {
+                    el.innerHTML = s.render();
+                }
+            });
+        }
+
+        // Switch active screen
+        function switchScreen(screenName) {
+            activeScreen = screenName;
+            renderActiveScreen();
+        }
+
+        // Toggle Event View (Lista / Calendario)
+        function setEventView(mode) {
+            activeEventView = mode;
+            renderActiveScreen();
+            renderCanvasOverview();
+        }
+
+        // Handle Song Search
+        function handleSongSearch(value) {
+            currentSearchQuery = value;
+            renderActiveScreen();
+            // Restore focus after re-render
+            const searchInput = document.getElementById('song-search-input');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.setSelectionRange(value.length, value.length);
+            }
+        }
+
+        // Global Theme Toggle Handler (Light / Dark)
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const root = document.documentElement;
+            const themeBtnLabel = document.getElementById('theme-btn-label');
+            const themeBtnIcon = document.getElementById('theme-btn-icon');
+
+            if (currentTheme === 'dark') {
+                root.classList.add('dark');
+                if (themeBtnLabel) themeBtnLabel.textContent = 'Modo Claro';
+                if (themeBtnIcon) themeBtnIcon.className = 'fa-solid fa-sun text-amber-400';
+            } else {
+                root.classList.remove('dark');
+                if (themeBtnLabel) themeBtnLabel.textContent = 'Modo Oscuro';
+                if (themeBtnIcon) themeBtnIcon.className = 'fa-solid fa-moon text-slate-700';
+            }
+
+            renderActiveScreen();
+            renderCanvasOverview();
+        }
+
+        // View Mode Switcher (Interactive vs Canvas Overview)
+        function setViewMode(mode) {
+            const interactiveView = document.getElementById('interactive-view');
+            const canvasView = document.getElementById('canvas-view');
+            const btnInteractive = document.getElementById('btn-view-interactive');
+            const btnCanvas = document.getElementById('btn-view-canvas');
+
+            if (mode === 'interactive') {
+                interactiveView.classList.remove('hidden');
+                canvasView.classList.add('hidden');
+                btnInteractive.className = "px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-800 shadow-sm text-slate-900 dark:text-white transition";
+                btnCanvas.className = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition";
+            } else {
+                interactiveView.classList.add('hidden');
+                canvasView.classList.remove('hidden');
+                btnCanvas.className = "px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-800 shadow-sm text-slate-900 dark:text-white transition";
+                btnInteractive.className = "px-3 py-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition";
+                renderCanvasOverview();
+            }
+        }
+
+        // Initial setup on window load
+        window.onload = function() {
+            applyTheme();
+            renderActiveScreen();
+            renderCanvasOverview();
+        };
+    </script>
+</body>
+</html>

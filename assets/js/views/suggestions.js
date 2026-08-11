@@ -14,21 +14,28 @@ function initSuggestionsView() {
     if (!currentUser || !currentGroupId) return;
 
     // Add suggestion button
-    document.getElementById('btn-add-suggestion').onclick = () => {
-        document.getElementById('suggestion-form').reset();
-        document.getElementById('modal-suggestion').classList.remove('hidden');
-    };
+    const addBtn = document.getElementById('btn-add-suggestion');
+    if (addBtn) {
+        addBtn.onclick = () => {
+            const form = document.getElementById('suggestion-form');
+            if (form) form.reset();
+            const modal = document.getElementById('modal-suggestion');
+            if (modal) modal.classList.remove('hidden');
+        };
+    }
 
     // Modal Close triggers
     document.querySelectorAll('#modal-suggestion .btn-close-modal').forEach(btn => {
         btn.onclick = () => document.getElementById('modal-suggestion').classList.add('hidden');
     });
-    document.getElementById('btn-close-suggestion-modal-x').onclick = () => {
-        document.getElementById('modal-suggestion').classList.add('hidden');
-    };
+    const closeX = document.getElementById('btn-close-suggestion-modal-x');
+    if (closeX) {
+        closeX.onclick = () => document.getElementById('modal-suggestion').classList.add('hidden');
+    }
 
     // Form submit
-    document.getElementById('suggestion-form').onsubmit = handleSuggestionFormSubmit;
+    const form = document.getElementById('suggestion-form');
+    if (form) form.onsubmit = handleSuggestionFormSubmit;
 
     // Reset filters
     filterSongQuery = "";
@@ -80,14 +87,15 @@ function initSuggestionsView() {
 
 async function renderSuggestions(forceRefresh = false) {
     const container = document.getElementById('suggestions-container-list');
+    if (!container) return;
 
     if (forceRefresh || cachedSuggestions.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-muted);">Cargando sugerencias...</div>`;
+        container.innerHTML = `<div class="text-center py-12 text-xs text-zinc-500 dark:text-zinc-400">Cargando sugerencias...</div>`;
         try {
             cachedSuggestions = await apiFetch('/suggestions') || [];
         } catch (e) {
             console.error("Error loading suggestions:", e);
-            container.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--danger);">Fallo al cargar sugerencias musicales.</div>`;
+            container.innerHTML = `<div class="text-center py-12 text-xs text-red-500">Fallo al cargar sugerencias musicales.</div>`;
             return;
         }
     }
@@ -95,8 +103,32 @@ async function renderSuggestions(forceRefresh = false) {
     renderSuggestionsList();
 }
 
+function getAuthorFullName(s) {
+    if (s.suggested_by_name) {
+        return `${s.suggested_by_name} ${s.suggested_by_lastname || ''}`.trim();
+    }
+    if (s.suggested_by_user && s.suggested_by_user.name) {
+        return `${s.suggested_by_user.name} ${s.suggested_by_user.lastname || ''}`.trim();
+    }
+    if (typeof s.suggested_by === 'object' && s.suggested_by && s.suggested_by.name) {
+        return `${s.suggested_by.name} ${s.suggested_by.lastname || ''}`.trim();
+    }
+    return 'Miembro';
+}
+
+function getCreatorId(s) {
+    if (typeof s.suggested_by === 'object' && s.suggested_by && s.suggested_by.id) {
+        return parseInt(s.suggested_by.id);
+    }
+    if (s.suggested_by_user && s.suggested_by_user.id) {
+        return parseInt(s.suggested_by_user.id);
+    }
+    return parseInt(s.suggested_by);
+}
+
 function renderSuggestionsList() {
     const container = document.getElementById('suggestions-container-list');
+    if (!container) return;
     container.innerHTML = '';
 
     const songQ = filterSongQuery.toLowerCase().trim();
@@ -105,10 +137,10 @@ function renderSuggestionsList() {
 
     const filtered = cachedSuggestions.filter(s => {
         const matchesSong = !songQ ||
-            s.title.toLowerCase().includes(songQ) ||
-            s.artist.toLowerCase().includes(songQ);
+            (s.title && s.title.toLowerCase().includes(songQ)) ||
+            (s.artist && s.artist.toLowerCase().includes(songQ));
 
-        const authorName = `${s.suggested_by.name} ${s.suggested_by.lastname || ''}`.toLowerCase();
+        const authorName = getAuthorFullName(s).toLowerCase();
         const matchesAuthor = !authorQ || authorName.includes(authorQ);
 
         const matchesStatus = statusQ === 'all' || s.status === statusQ;
@@ -117,7 +149,7 @@ function renderSuggestionsList() {
     });
 
     if (filtered.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-muted);">No se encontraron sugerencias.</div>`;
+        container.innerHTML = `<div class="text-center py-12 text-xs text-zinc-500 dark:text-zinc-400">No se encontraron sugerencias.</div>`;
         return;
     }
 
@@ -126,75 +158,80 @@ function renderSuggestionsList() {
 
     filtered.forEach(s => {
         const card = document.createElement('div');
-        card.className = 'suggestion-card';
+        card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition flex gap-3.5 items-start';
 
-        // Badge adaptativo a responsive (inicial en móvil)
+        // Status badge
         let statusBadge = '';
         if (s.status === 'pendiente') {
-            statusBadge = '<span class="badge badge-warning"><span class="hide-mobile">Sugerida</span><span class="show-mobile">S</span></span>';
+            statusBadge = '<span class="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50">Sugerida</span>';
         } else if (s.status === 'ensayo') {
-            statusBadge = '<span class="badge badge-primary"><span class="hide-mobile">En Ensayo</span><span class="show-mobile">E</span></span>';
+            statusBadge = '<span class="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50">En Ensayo</span>';
         } else if (s.status === 'agregada') {
-            statusBadge = '<span class="badge badge-success"><span class="hide-mobile">Agregada</span><span class="show-mobile">A</span></span>';
+            statusBadge = '<span class="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50">Agregada</span>';
         }
 
-        // Acciones administrativas (sólo si es líder y está pendiente)
+        // Admin action (solo si es líder y está pendiente)
         let adminActionHTML = '';
         if (isLeader && s.status === 'pendiente') {
             adminActionHTML = `
-                <button class="btn btn-outline btn-sm btn-send-to-catalog" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; gap:4px;">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    <span class="hide-mobile">Enviar al Catálogo</span>
+                <button class="btn-send-to-catalog px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 flex items-center gap-1.5 transition cursor-pointer">
+                    <i class="fa-solid fa-plus text-[10px]"></i> Añadir al Catálogo
                 </button>
             `;
         }
 
-        // Botón de eliminar (sólo si es el creador de la propuesta y no está agregada)
+        // Delete button (Solo si el usuario logueado es el CREADOR de la sugerencia)
+        const creatorId = getCreatorId(s);
+        const isCreator = currentUser && (parseInt(currentUser.id) === creatorId);
         let deleteBtnHTML = '';
-        if (s.suggested_by.id === currentUser?.id && s.status !== 'agregada') {
+        if (isCreator && s.status !== 'agregada') {
             deleteBtnHTML = `
-                <button class="btn btn-outline btn-sm btn-delete-suggestion" style="color:var(--danger); border-color:rgba(239,68,68,0.2); padding:4px 8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    <span class="hide-mobile">Eliminar</span>
+                <button class="btn-delete-suggestion px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/30 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 flex items-center gap-1.5 transition cursor-pointer" title="Eliminar sugerencia">
+                    <i class="fa-solid fa-trash-can text-[10px]"></i> Eliminar
                 </button>
             `;
         }
 
-        // Corazones de votación
-        const heartIcon = s.has_voted
-            ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color:var(--danger);"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
-            : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+        // Votes and Has Voted
+        const votesCount = (s.votes_count !== undefined && s.votes_count !== null) ? parseInt(s.votes_count) : (s.votes ? s.votes.length : 0);
+        const hasVoted = Boolean(s.has_voted);
 
-        const authorName = `${s.suggested_by.name} ${s.suggested_by.lastname || ''}`.trim();
+        // Heart / vote icon
+        const heartIcon = hasVoted
+            ? `<i class="fa-solid fa-heart text-red-500 text-sm"></i>`
+            : `<i class="fa-regular fa-heart text-zinc-400 dark:text-zinc-500 text-sm"></i>`;
+
+        const authorFullName = getAuthorFullName(s);
 
         card.innerHTML = `
-            <div class="suggestion-vote-box">
-                <button class="btn-vote ${s.has_voted ? 'voted' : ''}" title="Me gusta">
-                    ${heartIcon}
-                </button>
-                <span class="vote-count">${s.votes_count}</span>
-            </div>
-            <div class="suggestion-info-block" style="display:flex; flex-direction:column; gap:6px; min-width:0; flex:1;">
-                <!-- Línea Superior: Título/Artista y Badge de Estado -->
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%; min-width:0; gap:12px;">
-                    <div style="min-width:0; flex:1;">
-                        <h4 style="font-size:1.05rem; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.title}</h4>
-                        <p class="artist" style="margin:0; font-size:0.85rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">por ${s.artist}</p>
+            <!-- Vote Column -->
+            <button class="btn-vote flex flex-col items-center justify-center flex-shrink-0 w-11 h-11 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-800/80 hover:scale-105 transition active:scale-95 cursor-pointer" title="${hasVoted ? 'Quitar voto' : 'Me gusta'}">
+                ${heartIcon}
+                <span class="vote-count text-[10px] font-bold mt-0.5 ${hasVoted ? 'text-red-500' : 'text-zinc-500 dark:text-zinc-400'}">${votesCount}</span>
+            </button>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0 space-y-1.5">
+                <!-- Title row -->
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <h4 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate">${s.title}</h4>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">por ${s.artist}</p>
                     </div>
-                    <div style="flex-shrink:0;">
+                    <div class="flex items-center gap-1 flex-shrink-0">
                         ${statusBadge}
                     </div>
                 </div>
 
-                <!-- Línea Media: Notas a ancho completo -->
-                <p class="notes" style="margin:0; width:100%; box-sizing:border-box;">${s.notes || 'Sin comentarios.'}</p>
+                <!-- Notes -->
+                ${s.notes ? `<p class="text-xs text-zinc-600 dark:text-zinc-400">${s.notes}</p>` : ''}
 
-                <!-- Línea Inferior: Autor (Nombre solo) y Botones de Acción -->
-                <div style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:8px;">
-                    <span class="author" style="font-size:0.75rem; color:var(--text-muted);">
-                        <strong>${authorName}</strong>
+                <!-- Footer -->
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
+                    <span class="text-[11px] text-zinc-400 dark:text-zinc-500">
+                        Sugerido por <strong class="text-zinc-700 dark:text-zinc-300">${authorFullName}</strong>
                     </span>
-                    <div style="display:flex; gap:6px; align-items:center; flex-shrink:0;">
+                    <div class="flex items-center gap-2 flex-shrink-0">
                         ${deleteBtnHTML}
                         ${adminActionHTML}
                     </div>
@@ -203,31 +240,27 @@ function renderSuggestionsList() {
         `;
 
         // Vote listener
-        card.querySelector('.btn-vote').onclick = () => toggleSuggestionVote(s.id);
+        const voteBtn = card.querySelector('.btn-vote');
+        if (voteBtn) voteBtn.onclick = () => toggleSuggestionVote(s.id);
 
-        // Delete button listener (si aplica)
+        // Delete listener
         const deleteBtn = card.querySelector('.btn-delete-suggestion');
         if (deleteBtn) {
             deleteBtn.onclick = () => {
                 suggestionIdToDelete = s.id;
-                document.getElementById('modal-delete-suggestion-confirm').classList.remove('hidden');
+                const modal = document.getElementById('modal-delete-suggestion-confirm');
+                if (modal) modal.classList.remove('hidden');
             };
         }
 
-        // Send to catalog button listener
-        if (isLeader && s.status === 'pendiente') {
-            card.querySelector('.btn-send-to-catalog').onclick = () => {
-                // Navigate to songs hash
+        // Send to catalog listener
+        const catalogBtn = card.querySelector('.btn-send-to-catalog');
+        if (catalogBtn) {
+            catalogBtn.onclick = () => {
                 window.location.hash = '#songs';
-
-                // Open add song modal prefilled
                 setTimeout(() => {
                     if (typeof openAddSongModal === 'function') {
-                        openAddSongModal({
-                            title: s.title,
-                            artist: s.artist,
-                            suggestionId: s.id
-                        });
+                        openAddSongModal({ title: s.title, artist: s.artist, suggestionId: s.id });
                     }
                 }, 200);
             };
@@ -302,7 +335,8 @@ async function confirmDeleteSuggestion() {
         });
 
         showToast("Sugerencia eliminada correctamente", "success");
-        document.getElementById('modal-delete-suggestion-confirm').classList.add('hidden');
+        const modal = document.getElementById('modal-delete-suggestion-confirm');
+        if (modal) modal.classList.add('hidden');
 
         // Remove from local cache and render
         cachedSuggestions = cachedSuggestions.filter(s => s.id !== suggestionIdToDelete);
@@ -324,9 +358,20 @@ async function handleSuggestionFormSubmit(e) {
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn ? submitBtn.textContent : 'Sugerir';
 
-    const title = document.getElementById('suggestion-form-title').value.trim();
-    const artist = document.getElementById('suggestion-form-artist').value.trim();
-    const notes = document.getElementById('suggestion-form-notes').value.trim();
+    const titleInput = document.getElementById('suggestion-form-title');
+    const artistInput = document.getElementById('suggestion-form-artist');
+    const notesInput = document.getElementById('suggestion-form-notes');
+    const urlInput = document.getElementById('suggestion-form-url');
+
+    const title = titleInput ? titleInput.value.trim() : '';
+    const artist = artistInput ? artistInput.value.trim() : '';
+    const notes = notesInput ? notesInput.value.trim() : '';
+    const url = urlInput ? urlInput.value.trim() : '';
+
+    if (!title || !artist) {
+        showToast("Por favor completa el título y artista.", "warning");
+        return;
+    }
 
     if (submitBtn) {
         submitBtn.disabled = true;
@@ -336,11 +381,12 @@ async function handleSuggestionFormSubmit(e) {
     try {
         await apiFetch('/suggestions', {
             method: 'POST',
-            body: { title, artist, notes }
+            body: { title, artist, notes, url }
         });
 
         showToast("Sugerencia compartida con el equipo", "success");
-        document.getElementById('modal-suggestion').classList.add('hidden');
+        const modal = document.getElementById('modal-suggestion');
+        if (modal) modal.classList.add('hidden');
         await renderSuggestions(true); // force fresh list reload
     } catch (err) {
         showToast(err.message, "danger");

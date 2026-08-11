@@ -10,47 +10,70 @@ let isScrolling = false;
 let cachedSongs = [];
 let songIdToDelete = null;
 
+window.openSongFormModal = openAddSongModal;
+window.openAddSongModal = openAddSongModal;
+
+function openAddSongModal(prefilledData = null) {
+    document.getElementById('song-modal-title').textContent = "Agregar Nueva Canción";
+    document.getElementById('song-form-id').value = "";
+    document.getElementById('song-form-suggestion-id').value = "";
+    document.getElementById('song-form').reset();
+    document.getElementById('btn-delete-song').classList.add('hidden');
+    
+    if (prefilledData) {
+        document.getElementById('song-form-title').value = prefilledData.title || '';
+        document.getElementById('song-form-artist').value = prefilledData.artist || '';
+        if (prefilledData.suggestionId) {
+            document.getElementById('song-form-suggestion-id').value = prefilledData.suggestionId;
+        }
+    }
+    
+    document.getElementById('modal-song').classList.remove('hidden');
+}
+
 function initSongsView() {
     const currentUser = getData('currentUser');
-    const currentGroupId = getData('currentGroupId');
-    if (!currentUser || !currentGroupId) return;
+    if (!currentUser) return;
 
-    // Asegurar volver al listado de canciones y detener autoscroll al navegar o volver a esta sección
+    // Stop autoscroll and show catalog subpanel
     stopAutoScroll();
     const subpanelDetail = document.getElementById('subpanel-song-detail');
     const subpanelList = document.getElementById('subpanel-songs-list');
     if (subpanelDetail) subpanelDetail.classList.add('hidden');
     if (subpanelList) subpanelList.classList.remove('hidden');
-    document.querySelector('.app-content')?.classList.remove('song-detail-mode');
     currentViewingSong = null;
     transposeOffset = 0;
 
-    const searchInput = document.getElementById('songs-search-input');
-    
-    // Reset search
-    songsSearchQuery = "";
-    searchInput.value = "";
-    
-    // Setup search listener
-    searchInput.removeEventListener('input', handleSongsSearch);
-    searchInput.addEventListener('input', handleSongsSearch);
+    const searchInput = document.getElementById('song-search-input') || document.getElementById('songs-search-input');
+    if (searchInput) {
+        songsSearchQuery = "";
+        searchInput.value = "";
+        searchInput.removeEventListener('input', handleSongsSearch);
+        searchInput.addEventListener('input', handleSongsSearch);
+    }
 
     // Add song button visibility
     const addSongBtn = document.getElementById('btn-add-song');
-    if (canEdit()) {
-        addSongBtn.style.display = 'inline-flex';
-        addSongBtn.onclick = () => openAddSongModal();
-    } else {
-        addSongBtn.style.display = 'none';
+    if (addSongBtn) {
+        if (canEdit()) {
+            addSongBtn.classList.remove('hidden');
+            addSongBtn.style.display = 'flex';
+            addSongBtn.onclick = () => openAddSongModal();
+        } else {
+            addSongBtn.classList.add('hidden');
+            addSongBtn.style.display = 'none';
+        }
+
     }
 
     // Modal Close Triggers
     document.querySelectorAll('#modal-song .btn-close-modal').forEach(btn => {
         btn.onclick = () => document.getElementById('modal-song').classList.add('hidden');
     });
-    document.getElementById('btn-close-song-modal-x').onclick = () => {
-        document.getElementById('modal-song').classList.add('hidden');
-    };
+    const closeXSong = document.getElementById('btn-close-song-modal-x');
+    if (closeXSong) {
+        closeXSong.onclick = () => document.getElementById('modal-song').classList.add('hidden');
+    }
 
     // Confirm Delete Song Modal triggers
     document.querySelectorAll('#modal-delete-song-confirm .btn-close-modal').forEach(btn => {
@@ -66,60 +89,77 @@ function initSongsView() {
     }
     
     // Song form submit
-    document.getElementById('song-form').onsubmit = handleSongFormSubmit;
+    const songForm = document.getElementById('song-form');
+    if (songForm) songForm.onsubmit = handleSongFormSubmit;
 
     // Transpose and auto-scroll control buttons
-    document.getElementById('btn-transpose-up').onclick = () => {
-        transposeOffset = (transposeOffset + 1) % 12;
-        renderTransposedLyrics();
-    };
+    const btnTransposeUp = document.getElementById('btn-transpose-up');
+    if (btnTransposeUp) {
+        btnTransposeUp.onclick = () => {
+            transposeOffset = (transposeOffset + 1) % 12;
+            renderTransposedLyrics();
+        };
+    }
 
-    document.getElementById('btn-transpose-down').onclick = () => {
-        transposeOffset = (transposeOffset - 1 + 12) % 12;
-        renderTransposedLyrics();
-    };
+    const btnTransposeDown = document.getElementById('btn-transpose-down');
+    if (btnTransposeDown) {
+        btnTransposeDown.onclick = () => {
+            transposeOffset = (transposeOffset - 1 + 12) % 12;
+            renderTransposedLyrics();
+        };
+    }
 
-    document.getElementById('btn-transpose-reset').onclick = () => {
-        transposeOffset = 0;
-        renderTransposedLyrics();
-    };
+    const btnTransposeReset = document.getElementById('btn-transpose-reset');
+    if (btnTransposeReset) {
+        btnTransposeReset.onclick = () => {
+            transposeOffset = 0;
+            renderTransposedLyrics();
+        };
+    }
 
-    document.getElementById('back-to-songs').onclick = () => {
-        stopAutoScroll();
-        document.getElementById('subpanel-song-detail').classList.add('hidden');
-        document.getElementById('subpanel-songs-list').classList.remove('hidden');
-        document.getElementById('current-page-title').textContent = 'Catálogo de Canciones';
-        // Restaurar padding del contenedor principal
-        document.querySelector('.app-content')?.classList.remove('song-detail-mode');
-    };
-
-    document.getElementById('btn-scroll-toggle').onclick = () => {
-        if (isScrolling) {
+    const btnBackToSongs = document.getElementById('back-to-songs');
+    if (btnBackToSongs) {
+        btnBackToSongs.onclick = () => {
             stopAutoScroll();
-        } else {
-            startAutoScroll();
-        }
-    };
+            document.getElementById('subpanel-song-detail').classList.add('hidden');
+            document.getElementById('subpanel-songs-list').classList.remove('hidden');
+            const pageTitleElem = document.getElementById('current-page-title');
+            if (pageTitleElem) pageTitleElem.textContent = 'Catálogo de Canciones';
+        };
+    }
+
+    const btnScrollToggle = document.getElementById('btn-scroll-toggle');
+    if (btnScrollToggle) {
+        btnScrollToggle.onclick = () => {
+            if (isScrolling) {
+                stopAutoScroll();
+            } else {
+                startAutoScroll();
+            }
+        };
+    }
 
     // Render list initially
-    renderSongsCatalog(true); // force first load
+    renderSongsCatalog(true);
 }
 
 function handleSongsSearch(e) {
     songsSearchQuery = e.target.value;
-    renderSongsCatalog(false); // local filter from cached
+    renderSongsCatalog(false);
 }
 
 async function renderSongsCatalog(forceRefresh = false) {
-    const list = document.getElementById('songs-catalog-list');
-    list.innerHTML = `<div style="grid-column: span 2; text-align:center; padding: 40px; color:var(--text-muted);">Cargando catálogo...</div>`;
+    const list = document.getElementById('songs-catalog-list') || document.getElementById('songs-list-container');
+    if (!list) return;
+    
+    list.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">Cargando canciones del catálogo...</div>`;
 
     if (forceRefresh || cachedSongs.length === 0) {
         try {
             cachedSongs = await apiFetch('/songs') || [];
         } catch (e) {
             console.error("Error fetching songs:", e);
-            list.innerHTML = `<div style="grid-column: span 2; text-align:center; padding: 40px; color:var(--danger);">Error al conectar con la base de datos.</div>`;
+            list.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-red-500">Error al conectar con la base de datos.</div>`;
             return;
         }
     }
@@ -127,13 +167,13 @@ async function renderSongsCatalog(forceRefresh = false) {
     list.innerHTML = '';
     const query = songsSearchQuery.toLowerCase().trim();
     const filtered = cachedSongs.filter(s => 
-        s.title.toLowerCase().includes(query) || 
-        s.artist.toLowerCase().includes(query) || 
-        s.key.toLowerCase().includes(query)
+        (s.title && s.title.toLowerCase().includes(query)) || 
+        (s.artist && s.artist.toLowerCase().includes(query)) || 
+        (s.key && s.key.toLowerCase().includes(query))
     );
 
     if (filtered.length === 0) {
-        list.innerHTML = `<div style="grid-column: span 2; text-align:center; padding: 40px; color:var(--text-muted);">No se encontraron canciones.</div>`;
+        list.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">No se encontraron canciones en el catálogo.</div>`;
         return;
     }
 
@@ -141,42 +181,51 @@ async function renderSongsCatalog(forceRefresh = false) {
 
     filtered.forEach(s => {
         const card = document.createElement('div');
-        card.className = 'song-card';
+        card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition flex items-center justify-between cursor-pointer group';
         card.innerHTML = `
-            <div class="song-card-info">
-                <h4>${s.title}</h4>
-                <p>${s.artist}</p>
+            <div class="space-y-0.5">
+                <h4 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-700 dark:group-hover:text-white transition">${s.title}</h4>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">${s.artist || 'Artista no especificado'}</p>
             </div>
-            <div class="song-card-meta">
-                <span class="song-key-badge">${s.key}</span>
-                <button class="song-action-btn btn-edit-song-trigger" data-id="${s.id}" title="Editar" style="display: ${editAllowed ? 'flex' : 'none'};">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">${s.key || 'C'}</span>
+                ${editAllowed ? `
+                <button type="button" class="btn-edit-song-trigger p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition" data-id="${s.id}" title="Editar">
+                    <i class="fa-solid fa-pen text-xs pointer-events-none"></i>
                 </button>
-                <button class="song-action-btn btn-delete-song-trigger" data-id="${s.id}" title="Eliminar" style="display: ${editAllowed ? 'flex' : 'none'}; color: var(--danger); margin-left: 4px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                <button type="button" class="btn-delete-song-trigger p-2 text-zinc-400 hover:text-red-600 transition" data-id="${s.id}" title="Eliminar">
+                    <i class="fa-solid fa-trash text-xs pointer-events-none"></i>
                 </button>
+                ` : ''}
             </div>
         `;
 
         card.onclick = (e) => {
-            if (e.target.closest('.song-action-btn')) return;
+            if (e.target.closest('.btn-edit-song-trigger') || e.target.closest('.btn-delete-song-trigger')) return;
             viewSongDetail(s.id);
         };
 
         if (editAllowed) {
-            card.querySelector('.btn-edit-song-trigger').onclick = (e) => {
-                e.stopPropagation();
-                openEditSongModal(s.id);
-            };
-            card.querySelector('.btn-delete-song-trigger').onclick = (e) => {
-                e.stopPropagation();
-                handleDeleteSong(s.id, s.title);
-            };
+            const btnEdit = card.querySelector('.btn-edit-song-trigger');
+            if (btnEdit) {
+                btnEdit.onclick = (e) => {
+                    e.stopPropagation();
+                    openEditSongModal(s.id);
+                };
+            }
+            const btnDelete = card.querySelector('.btn-delete-song-trigger');
+            if (btnDelete) {
+                btnDelete.onclick = (e) => {
+                    e.stopPropagation();
+                    handleDeleteSong(s.id, s.title);
+                };
+            }
         }
 
         list.appendChild(card);
     });
 }
+
 
 function openAddSongModal(prefilledData = null) {
     document.getElementById('song-modal-title').textContent = "Agregar Nueva Canción";
@@ -334,29 +383,44 @@ function viewSongDetail(songId) {
     transposeOffset = 0; // reset
     stopAutoScroll();
 
-    document.getElementById('song-detail-title').textContent = song.title;
-    document.getElementById('song-detail-artist').textContent = song.artist;
-    document.getElementById('song-detail-original-key').textContent = song.key;
-    document.getElementById('song-current-key').textContent = song.key;
+    const titleEl = document.getElementById('song-detail-title');
+    if (titleEl) titleEl.textContent = song.title;
+
+    const artistEl = document.getElementById('song-detail-artist');
+    if (artistEl) artistEl.textContent = song.artist;
+
+    const origKeyEl = document.getElementById('song-detail-original-key');
+    if (origKeyEl) origKeyEl.textContent = song.key;
+
+    const curKeyEl = document.getElementById('song-current-key');
+    if (curKeyEl) curKeyEl.textContent = song.key;
 
     // Render media link
     const mediaWrap = document.getElementById('song-media-links');
-    mediaWrap.innerHTML = '';
-    if (song.url) {
-        mediaWrap.innerHTML = `
-            <a href="${song.url}" target="_blank" class="btn btn-outline btn-sm" style="color: var(--secondary); border-color: rgba(6,182,212,0.3);">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                <span>Video/Audio</span>
-            </a>
-        `;
+    if (mediaWrap) {
+        mediaWrap.innerHTML = '';
+        if (song.url) {
+            mediaWrap.innerHTML = `
+                <a href="${song.url}" target="_blank" class="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                    <span>Audio / Video</span>
+                </a>
+            `;
+        }
     }
+
 
     renderTransposedLyrics();
     
     // Switch sub-panels
-    document.getElementById('subpanel-songs-list').classList.add('hidden');
-    document.getElementById('subpanel-song-detail').classList.remove('hidden');
-    document.getElementById('current-page-title').textContent = 'Letra y Acordes';
+    const subpanelList = document.getElementById('subpanel-songs-list');
+    if (subpanelList) subpanelList.classList.add('hidden');
+    const subpanelDetail = document.getElementById('subpanel-song-detail');
+    if (subpanelDetail) subpanelDetail.classList.remove('hidden');
+    
+    const pageTitleElem = document.getElementById('current-page-title');
+    if (pageTitleElem) pageTitleElem.textContent = 'Letra y Acordes';
+
     // Activar modo visor expandido en móvil (fallback para :has())
     document.querySelector('.app-content')?.classList.add('song-detail-mode');
 }

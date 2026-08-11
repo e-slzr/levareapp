@@ -6,24 +6,39 @@
 function canEdit() {
     const currentUser = getData('currentUser');
     if (!currentUser) return false;
-    
-    // Superadmin has universal permissions
-    if (currentUser.account_type === 'superadmin') return true;
-    
+
+    // Superadmin and Leader account types have full edit permissions
+    if (currentUser.account_type === 'superadmin' || currentUser.account_type === 'leader') return true;
+
     const currentGroupId = getData('currentGroupId');
-    if (!currentGroupId) return false;
-    
     const userGroups = getData('userGroups') || [];
-    const activeGroup = userGroups.find(g => g.id == currentGroupId);
-    return activeGroup ? (activeGroup.role === 'Líder') : false;
+
+    if (currentGroupId && userGroups.length > 0) {
+        const activeGroup = userGroups.find(g => g.id == currentGroupId);
+        if (activeGroup) {
+            const role = String(activeGroup.role || '').toLowerCase();
+            return role.includes('líder') || role.includes('lider') || role.includes('leader') || role.includes('admin');
+        }
+    }
+
+    return false;
 }
 
 // Get the user's role string inside a specific group
 function getUserRoleInGroup(userId, groupId) {
+    const currentUser = getData('currentUser');
+    if (currentUser && currentUser.account_type === 'superadmin') return 'Super Admin';
+
     const userGroups = getData('userGroups') || [];
     const activeGroup = userGroups.find(g => g.id == groupId);
-    return activeGroup ? (activeGroup.role || 'Miembro') : 'Miembro';
+    if (activeGroup && activeGroup.role) {
+        return activeGroup.role;
+    }
+
+    if (currentUser && currentUser.account_type === 'leader') return 'Líder de Banda';
+    return 'Miembro';
 }
+
 
 // Get initials from user's name
 function getInitials(name) {
@@ -35,7 +50,7 @@ function getInitials(name) {
 function formatDate(dateStr, short = false) {
     if (!dateStr) return '';
     const date = new Date(dateStr + 'T00:00:00');
-    const options = short 
+    const options = short
         ? { month: 'short', day: 'numeric', year: 'numeric' }
         : { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return date.toLocaleDateString('es-ES', options);
@@ -80,7 +95,7 @@ function showToast(message, type = 'success') {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     // Simple inline styles to ensure toast visuals match design
     toast.style.padding = '12px 16px';
     toast.style.borderRadius = '8px';
@@ -103,18 +118,18 @@ function showToast(message, type = 'success') {
     } else {
         toast.style.background = 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)'; // primary
     }
-    
+
     toast.innerHTML = `
         <span style="flex:1; padding-right:8px;">${message}</span>
         <button style="color:inherit; font-size:1.2rem; background:none; border:none; cursor:pointer; font-weight:bold;">&times;</button>
     `;
-    
+
     toast.querySelector('button').addEventListener('click', () => {
         toast.remove();
     });
-    
+
     container.appendChild(toast);
-    
+
     // Auto-remove after 3.5 seconds
     setTimeout(() => {
         toast.style.animation = 'fadeOut 0.3s forwards';
@@ -124,18 +139,18 @@ function showToast(message, type = 'success') {
 
 // Global Event Types Constant
 const EVENT_TYPES = [
-    { value: 'ensayo',    label: 'Ensayo',           badge: 'badge-primary' },
+    { value: 'ensayo', label: 'Ensayo', badge: 'badge-primary' },
     { value: 'concierto', label: 'Concierto / Show', badge: 'badge-success' },
-    { value: 'culto',     label: 'Culto / Servicio',  badge: 'badge-info'    },
-    { value: 'especial',  label: 'Evento Especial',  badge: 'badge-warning' },
-    { value: 'otro',      label: 'Otro',             badge: 'badge-danger'  }
+    { value: 'culto', label: 'Culto / Servicio', badge: 'badge-info' },
+    { value: 'especial', label: 'Evento Especial', badge: 'badge-warning' },
+    { value: 'otro', label: 'Otro', badge: 'badge-danger' }
 ];
 
 // Helper to switch system theme accent color
 function applyAccentColor(accentName) {
     const accents = ['accent-purple', 'accent-green', 'accent-yellow', 'accent-aqua', 'accent-red', 'accent-white'];
     accents.forEach(acc => document.body.classList.remove(acc));
-    
+
     const activeAccent = accentName ? `accent-${accentName}` : 'accent-purple';
     document.body.classList.add(activeAccent);
 }
@@ -148,4 +163,67 @@ function getLocalDateString() {
     const day = String(localDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
+
+// Helper to get notification icon & styling by announcement content/type
+function getAnnouncementIconConfig(announcement) {
+    const text = String(announcement.text || '').toLowerCase();
+
+    // 1. Sugerencia de canción -> Icono de audífonos / auriculares
+    if (text.includes('sugiri') || text.includes('sugerencia') || text.includes('propuso')) {
+        return {
+            iconHtml: `<i class="fa-solid fa-headphones text-sm"></i>`,
+            badgeClass: 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50',
+            notifTypeClass: 'purple'
+        };
+    }
+
+    // 2. Nueva canción -> Icono de nota musical
+    if (text.includes('canción') || text.includes('cancion') || text.includes('añadió') || text.includes('anadió')) {
+        return {
+            iconHtml: `<i class="fa-solid fa-music text-sm"></i>`,
+            badgeClass: 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50',
+            notifTypeClass: 'blue'
+        };
+    }
+
+    // 3. Repertorio -> Icono de lista de verificación (setlist)
+    if (text.includes('repertorio') || text.includes('setlist')) {
+        return {
+            iconHtml: `<i class="fa-solid fa-list-check text-sm"></i>`,
+            badgeClass: 'bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-900/50',
+            notifTypeClass: 'green'
+        };
+    }
+
+    // 4. Eventos -> Icono de calendario
+    if (text.includes('evento') || text.includes('programó') || text.includes('programo') || text.includes('culto') || text.includes('ensayo') || text.includes('concierto')) {
+        return {
+            iconHtml: `<i class="fa-solid fa-calendar-days text-sm"></i>`,
+            badgeClass: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50',
+            notifTypeClass: 'green'
+        };
+    }
+
+    // Fallbacks por propiedad type
+    if (announcement.type === 'purple') {
+        return {
+            iconHtml: `<i class="fa-solid fa-headphones text-sm"></i>`,
+            badgeClass: 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50',
+            notifTypeClass: 'purple'
+        };
+    } else if (announcement.type === 'green') {
+        return {
+            iconHtml: `<i class="fa-solid fa-calendar-days text-sm"></i>`,
+            badgeClass: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50',
+            notifTypeClass: 'green'
+        };
+    }
+
+    return {
+        iconHtml: `<i class="fa-solid fa-music text-sm"></i>`,
+        badgeClass: 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50',
+        notifTypeClass: 'blue'
+    };
+}
+
 

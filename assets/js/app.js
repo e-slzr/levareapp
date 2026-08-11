@@ -20,13 +20,17 @@ function initApp() {
     applyTheme(storedTheme);
 
     const themeToggle = document.getElementById('theme-toggle');
-    themeToggle.onclick = toggleTheme;
+    if (themeToggle) themeToggle.onclick = toggleTheme;
 
     // Login page switches
     const goRegisterLink = document.getElementById('go-to-leader-register');
+    if (goRegisterLink) goRegisterLink.onclick = () => switchAuthTab('register');
     const goLoginLink = document.getElementById('go-to-login');
+    if (goLoginLink) goLoginLink.onclick = () => switchAuthTab('login');
     const goMemberInviteLink = document.getElementById('go-to-member-invite');
+    if (goMemberInviteLink) goMemberInviteLink.onclick = () => switchAuthTab('invite');
     const goBackToInviteLink = document.getElementById('go-back-to-invite');
+    if (goBackToInviteLink) goBackToInviteLink.onclick = () => switchAuthTab('invite');
     
     if (goRegisterLink) {
         goRegisterLink.onclick = (e) => {
@@ -69,38 +73,61 @@ function initApp() {
     }
 
     // Bind core forms
-    document.getElementById('login-form').onsubmit = handleLoginFormSubmit;
-    document.getElementById('leader-register-form').onsubmit = handleLeaderRegisterSubmit;
-    document.getElementById('member-invite-form').onsubmit = handleMemberInviteSubmit;
-    document.getElementById('member-register-form').onsubmit = handleMemberRegisterSubmit;
-    document.getElementById('force-password-form').onsubmit = handleForcePasswordChangeSubmit;
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) loginForm.onsubmit = handleLoginFormSubmit;
+    const leaderRegisterForm = document.getElementById('leader-register-form');
+    if (leaderRegisterForm) leaderRegisterForm.onsubmit = handleLeaderRegisterSubmit;
+    const memberInviteForm = document.getElementById('member-invite-form');
+    if (memberInviteForm) memberInviteForm.onsubmit = handleMemberInviteSubmit;
+    const memberRegisterForm = document.getElementById('member-register-form');
+    if (memberRegisterForm) memberRegisterForm.onsubmit = handleMemberRegisterSubmit;
+    const forcePasswordForm = document.getElementById('force-password-form');
+    if (forcePasswordForm) forcePasswordForm.onsubmit = handleForcePasswordChangeSubmit;
 
     // Logouts
     const openLogoutModal = (e) => {
         if (e) e.preventDefault();
-        document.getElementById('modal-confirm-logout').classList.remove('hidden');
+        const modal = document.getElementById('modal-confirm-logout');
+        if (modal) modal.classList.remove('hidden');
     };
-    document.getElementById('logout-btn-sidebar').onclick = openLogoutModal;
-    document.getElementById('logout-btn-mobile').onclick = openLogoutModal;
+    const logoutBtnSidebar = document.getElementById('logout-btn-sidebar');
+    if (logoutBtnSidebar) logoutBtnSidebar.onclick = openLogoutModal;
+    const logoutBtnMobile = document.getElementById('logout-btn-mobile');
+    if (logoutBtnMobile) logoutBtnMobile.onclick = openLogoutModal;
 
     // Close buttons for logout modal
     document.querySelectorAll('#modal-confirm-logout .btn-close-modal').forEach(btn => {
-        btn.onclick = () => document.getElementById('modal-confirm-logout').classList.add('hidden');
+        btn.onclick = () => {
+            const modal = document.getElementById('modal-confirm-logout');
+            if (modal) modal.classList.add('hidden');
+        };
     });
-    document.getElementById('btn-close-logout-modal-x').onclick = () => {
-        document.getElementById('modal-confirm-logout').classList.add('hidden');
-    };
-    document.getElementById('modal-confirm-logout').onclick = (e) => {
-        if (e.target === document.getElementById('modal-confirm-logout')) {
-            document.getElementById('modal-confirm-logout').classList.add('hidden');
-        }
-    };
-    document.getElementById('btn-confirm-logout').onclick = confirmLogout;
+    const btnCloseLogoutX = document.getElementById('btn-close-logout-modal-x');
+    if (btnCloseLogoutX) {
+        btnCloseLogoutX.onclick = () => {
+            const modal = document.getElementById('modal-confirm-logout');
+            if (modal) modal.classList.add('hidden');
+        };
+    }
+    const modalLogout = document.getElementById('modal-confirm-logout');
+    if (modalLogout) {
+        modalLogout.onclick = (e) => {
+            if (e.target === modalLogout) {
+                modalLogout.classList.add('hidden');
+            }
+        };
+    }
+    const btnConfirmLogout = document.getElementById('btn-confirm-logout');
+    if (btnConfirmLogout) btnConfirmLogout.onclick = confirmLogout;
 
     // Trigger profile triggers (Avatar click goes to profile)
-    document.getElementById('user-profile-sidebar-trigger').onclick = () => {
-        window.location.hash = '#profile';
-    };
+    const profileTrigger = document.getElementById('user-profile-sidebar-trigger');
+    if (profileTrigger) {
+        profileTrigger.onclick = () => {
+            showView('profile');
+            window.location.hash = '#profile';
+        };
+    }
 
     // Mobile More Menu Actions
     const btnMobileMore = document.getElementById('btn-mobile-more');
@@ -108,10 +135,14 @@ function initApp() {
     const btnCloseMoreMenu = document.getElementById('btn-close-more-menu');
 
     if (btnMobileMore) {
-        btnMobileMore.onclick = () => mobileMoreMenu.classList.remove('hidden');
+        btnMobileMore.onclick = () => {
+            if (mobileMoreMenu) mobileMoreMenu.classList.remove('hidden');
+        };
     }
     if (btnCloseMoreMenu) {
-        btnCloseMoreMenu.onclick = () => mobileMoreMenu.classList.add('hidden');
+        btnCloseMoreMenu.onclick = () => {
+            if (mobileMoreMenu) mobileMoreMenu.classList.add('hidden');
+        };
     }
     if (mobileMoreMenu) {
         mobileMoreMenu.onclick = (e) => {
@@ -123,7 +154,7 @@ function initApp() {
 
     // Setup active group workspace selectors
     const groupActiveSelect = document.getElementById('group-active-select');
-    groupActiveSelect.onchange = handleActiveGroupChangeSelect;
+    if (groupActiveSelect) groupActiveSelect.onchange = handleActiveGroupChangeSelect;
 
     const groupActiveSelectMobile = document.getElementById('group-active-select-mobile');
     if (groupActiveSelectMobile) {
@@ -150,19 +181,30 @@ function initApp() {
 
     // Close buttons for join group modal
     document.querySelectorAll('#modal-join-group-global .btn-close-modal').forEach(btn => {
-        btn.onclick = () => document.getElementById('modal-join-group-global').classList.add('hidden');
+        btn.onclick = () => {
+            const modal = document.getElementById('modal-join-group-global');
+            if (modal) modal.classList.add('hidden');
+        };
     });
-    document.getElementById('btn-close-join-group-modal-x').onclick = () => {
-        document.getElementById('modal-join-group-global').classList.add('hidden');
-    };
+    const btnCloseJoinX = document.getElementById('btn-close-join-group-modal-x');
+    if (btnCloseJoinX) {
+        btnCloseJoinX.onclick = () => {
+            const modal = document.getElementById('modal-join-group-global');
+            if (modal) modal.classList.add('hidden');
+        };
+    }
 
-    document.getElementById('modal-join-group-global').onclick = (e) => {
-        if (e.target === document.getElementById('modal-join-group-global')) {
-            document.getElementById('modal-join-group-global').classList.add('hidden');
-        }
-    };
+    const modalJoinGroup = document.getElementById('modal-join-group-global');
+    if (modalJoinGroup) {
+        modalJoinGroup.onclick = (e) => {
+            if (e.target === modalJoinGroup) {
+                modalJoinGroup.classList.add('hidden');
+            }
+        };
+    }
 
-    document.getElementById('join-group-form').onsubmit = handleJoinGroupSubmit;
+    const joinGroupForm = document.getElementById('join-group-form');
+    if (joinGroupForm) joinGroupForm.onsubmit = handleJoinGroupSubmit;
 
     // Create group modal triggers
     const sidebarCreateBtn = document.getElementById('sidebar-btn-create-group');
@@ -184,18 +226,29 @@ function initApp() {
 
     // Close buttons for create group modal
     document.querySelectorAll('#modal-create-group-global .btn-close-modal').forEach(btn => {
-        btn.onclick = () => document.getElementById('modal-create-group-global').classList.add('hidden');
+        btn.onclick = () => {
+            const modal = document.getElementById('modal-create-group-global');
+            if (modal) modal.classList.add('hidden');
+        };
     });
-    document.getElementById('btn-close-create-group-modal-x').onclick = () => {
-        document.getElementById('modal-create-group-global').classList.add('hidden');
-    };
-    document.getElementById('modal-create-group-global').onclick = (e) => {
-        if (e.target === document.getElementById('modal-create-group-global')) {
-            document.getElementById('modal-create-group-global').classList.add('hidden');
-        }
-    };
+    const btnCloseCreateX = document.getElementById('btn-close-create-group-modal-x');
+    if (btnCloseCreateX) {
+        btnCloseCreateX.onclick = () => {
+            const modal = document.getElementById('modal-create-group-global');
+            if (modal) modal.classList.add('hidden');
+        };
+    }
+    const modalCreateGroup = document.getElementById('modal-create-group-global');
+    if (modalCreateGroup) {
+        modalCreateGroup.onclick = (e) => {
+            if (e.target === modalCreateGroup) {
+                modalCreateGroup.classList.add('hidden');
+            }
+        };
+    }
 
-    document.getElementById('create-group-form').onsubmit = handleCreateGroupSubmit;
+    const createGroupForm = document.getElementById('create-group-form');
+    if (createGroupForm) createGroupForm.onsubmit = handleCreateGroupSubmit;
 
     // Wire view routing triggers for navigation links
     document.querySelectorAll('[data-view]').forEach(link => {
@@ -214,27 +267,45 @@ function initApp() {
 }
 
 function applyTheme(themeName) {
-    const iconMoon = document.querySelector('.theme-toggle-btn .icon-moon');
-    const iconSun = document.querySelector('.theme-toggle-btn .icon-sun');
-    
-    if (themeName === 'light') {
-        document.body.classList.remove('dark-theme');
-        document.body.classList.add('light-theme');
-        iconMoon?.classList.add('hidden');
-        iconSun?.classList.remove('hidden');
+    const isDark = themeName !== 'light';
+    if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.body.classList.remove('light-theme', 'bg-zinc-100', 'text-zinc-900');
+        document.body.classList.add('dark-theme', 'bg-zinc-950', 'text-zinc-100');
     } else {
-        document.body.classList.remove('light-theme');
-        document.body.classList.add('dark-theme');
-        iconSun?.classList.add('hidden');
-        iconMoon?.classList.remove('hidden');
+        document.documentElement.classList.remove('dark');
+        document.body.classList.remove('dark-theme', 'bg-zinc-950', 'text-zinc-100');
+        document.body.classList.add('light-theme', 'bg-zinc-100', 'text-zinc-900');
     }
+    
+    // Update profile theme text and switch knob animation if present
+    const statusText = document.getElementById('profile-theme-status-text');
+    if (statusText) statusText.textContent = isDark ? 'Modo actual: Oscuro' : 'Modo actual: Claro';
+    
+    const switchBtn = document.getElementById('theme-switch-btn');
+    const switchKnob = document.getElementById('theme-switch-knob');
+    if (switchBtn && switchKnob) {
+        if (isDark) {
+            switchBtn.classList.remove('bg-zinc-300');
+            switchBtn.classList.add('bg-zinc-700');
+            switchKnob.classList.remove('translate-x-0');
+            switchKnob.classList.add('translate-x-5');
+        } else {
+            switchBtn.classList.remove('bg-zinc-700');
+            switchBtn.classList.add('bg-zinc-300');
+            switchKnob.classList.remove('translate-x-5');
+            switchKnob.classList.add('translate-x-0');
+        }
+    }
+
     localStorage.setItem('worship_theme', themeName);
 }
 
 function toggleTheme() {
-    const isDark = document.body.classList.contains('dark-theme');
-    applyTheme(isDark ? 'light' : 'dark');
-    showToast(isDark ? "Modo claro activado" : "Modo oscuro activado");
+    const isLight = document.body.classList.contains('light-theme');
+    const newTheme = isLight ? 'dark' : 'light';
+    applyTheme(newTheme);
+    showToast(newTheme === 'light' ? "Modo claro activado" : "Modo oscuro activado");
 }
 
 async function updateShellVisibility() {
@@ -246,16 +317,16 @@ async function updateShellVisibility() {
     const viewForcePassword = document.getElementById('view-force-password');
 
     // Hide everything first
-    authContainer.classList.add('hidden');
-    mainContainer.classList.add('hidden');
-    authOnboardingPanel.classList.add('hidden');
-    viewLogin.classList.add('hidden');
-    viewRegister.classList.add('hidden');
-    viewForcePassword.classList.add('hidden');
+    if (authContainer) authContainer.classList.add('hidden');
+    if (mainContainer) mainContainer.classList.add('hidden');
+    if (authOnboardingPanel) authOnboardingPanel.classList.add('hidden');
+    if (viewLogin) viewLogin.classList.add('hidden');
+    if (viewRegister) viewRegister.classList.add('hidden');
+    if (viewForcePassword) viewForcePassword.classList.add('hidden');
 
     if (!currentUser) {
-        authContainer.classList.remove('hidden');
-        viewLogin.classList.remove('hidden');
+        if (authContainer) authContainer.classList.remove('hidden');
+        if (viewLogin) viewLogin.classList.remove('hidden');
         return;
     }
 
@@ -270,17 +341,18 @@ async function updateShellVisibility() {
     let userGroups = [];
     if (currentUser.account_type !== 'superadmin') {
         try {
-            userGroups = await apiFetch('/groups');
+            const res = await apiFetch('/groups');
+            userGroups = Array.isArray(res) ? res : [];
             setData('userGroups', userGroups);
         } catch (e) {
             console.error("Fallo al obtener grupos del usuario", e);
             userGroups = getData('userGroups') || [];
         }
 
-        if (userGroups.length === 0) {
+        if (!Array.isArray(userGroups) || userGroups.length === 0) {
             // Authenticated user with no active groups. Open Onboarding Setup.
-            authContainer.classList.remove('hidden');
-            authOnboardingPanel.classList.remove('hidden');
+            if (authContainer) authContainer.classList.remove('hidden');
+            if (authOnboardingPanel) authOnboardingPanel.classList.remove('hidden');
             loadOnboardingLayout();
             return;
         }
@@ -293,40 +365,23 @@ async function updateShellVisibility() {
     }
 
     // Active screen dashboard
+    if (authContainer) authContainer.classList.add('hidden');
+    if (mainContainer) mainContainer.classList.remove('hidden');
     mainContainer.classList.remove('hidden');
     
     // Show/hide nav items based on account_type
     const isSuperAdmin = currentUser.account_type === 'superadmin';
     
-    // 1. Desktop Sidebar Links
-    document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
-        const view = item.dataset.view;
-        if (view && view !== 'dashboard' && view !== 'admin') {
-            // Ocultar Canciones, Repertorios, Eventos, Sugerencias y Miembros para el Super Admin
-            item.classList.toggle('hidden', isSuperAdmin);
-        } else if (view === 'admin') {
-            // Mostrar Admin únicamente para el Super Admin
-            item.classList.toggle('hidden', !isSuperAdmin);
+    // Handle nav items visibility in #app-bottom-nav based on role
+    document.querySelectorAll('#app-bottom-nav button').forEach(item => {
+        const view = item.getAttribute('data-view');
+        if (isSuperAdmin && view) {
+            if (view !== 'dashboard' && view !== 'admin' && view !== 'profile') {
+                item.classList.add('hidden');
+                item.classList.remove('md:flex');
+            }
         }
     });
-
-    // 2. Mobile Bottom Nav Links
-    document.querySelectorAll('.bottom-nav .bottom-nav-item').forEach(item => {
-        const view = item.dataset.view;
-        if (view && view !== 'dashboard' && view !== 'admin' && view !== 'profile') {
-            // Ocultar Canciones, Repertorios y Eventos en móvil para Super Admin
-            item.classList.toggle('hidden', isSuperAdmin);
-        } else if (view === 'admin' || view === 'profile') {
-            // Mostrar Admin y Perfil en móvil únicamente para el Super Admin
-            item.classList.toggle('hidden', !isSuperAdmin);
-        }
-    });
-    
-    // Ocultar el botón "Más" de móvil para Super Admin
-    const btnMobileMore = document.getElementById('btn-mobile-more');
-    if (btnMobileMore) {
-        btnMobileMore.classList.toggle('hidden', isSuperAdmin);
-    }
 
     // Load pending badge count for superadmin
     if (isSuperAdmin) {
@@ -341,7 +396,8 @@ async function updateShellVisibility() {
     }
     
     // Update sidebar profiles
-    document.getElementById('sidebar-user-name').textContent = `${currentUser.name} ${currentUser.lastname || ''}`.trim();
+    const sidebarUserName = document.getElementById('sidebar-user-name');
+    if (sidebarUserName) sidebarUserName.textContent = `${currentUser.name} ${currentUser.lastname || ''}`.trim();
     
     // Get user active role in selected group
     let roleText = 'Miembro';
@@ -352,22 +408,25 @@ async function updateShellVisibility() {
         roleText = activeGroup ? (activeGroup.role || 'Miembro') : 'Miembro';
     }
     
-    document.getElementById('sidebar-user-role').textContent = roleText;
+    const sidebarUserRole = document.getElementById('sidebar-user-role');
+    if (sidebarUserRole) sidebarUserRole.textContent = roleText;
 
     // Load initials
     const initials = getInitials(`${currentUser.name} ${currentUser.lastname || ''}`);
     const avatarElement = document.getElementById('sidebar-avatar');
     
-    if (currentUser.avatar) {
-        avatarElement.style.backgroundImage = `url('${getAvatarUrl(currentUser.avatar)}')`;
-        avatarElement.style.backgroundSize = 'cover';
-        avatarElement.style.backgroundPosition = 'center';
-        avatarElement.style.backgroundColor = 'transparent';
-        avatarElement.textContent = '';
-    } else {
-        avatarElement.style.backgroundImage = 'none';
-        avatarElement.style.backgroundColor = getAvatarBgColor(`${currentUser.name} ${currentUser.lastname || ''}`);
-        avatarElement.textContent = initials;
+    if (avatarElement) {
+        if (currentUser.avatar) {
+            avatarElement.style.backgroundImage = `url('${getAvatarUrl(currentUser.avatar)}')`;
+            avatarElement.style.backgroundSize = 'cover';
+            avatarElement.style.backgroundPosition = 'center';
+            avatarElement.style.backgroundColor = 'transparent';
+            avatarElement.textContent = '';
+        } else {
+            avatarElement.style.backgroundImage = 'none';
+            avatarElement.style.backgroundColor = getAvatarBgColor(`${currentUser.name} ${currentUser.lastname || ''}`);
+            avatarElement.textContent = initials;
+        }
     }
 
     // Render workspace group selector dropdown options
@@ -378,25 +437,22 @@ async function updateShellVisibility() {
 }
 
 function renderWorkspaceGroupSelector(userGroups) {
-    const select = document.getElementById('group-active-select');
-    const selectContainer = document.getElementById('group-selector-sidebar-container');
-    const selectMobile = document.getElementById('group-active-select-mobile');
-    const selectMobileContainer = document.getElementById('group-selector-mobile-container');
-    
-    const isSuperAdmin = currentUser.account_type === 'superadmin';
-
-    if (isSuperAdmin) {
-        if (selectContainer) selectContainer.style.display = 'none';
-        if (selectMobileContainer) selectMobileContainer.style.display = 'none';
-        return;
+    if (!Array.isArray(userGroups) || userGroups.length === 0) {
+        userGroups = getData('userGroups') || [];
     }
+    const selects = document.querySelectorAll('#group-active-select, #group-active-select-mobile, #group-active-select-profile');
+    const isSuperAdmin = currentUser && currentUser.account_type === 'superadmin';
 
-    if (selectContainer) selectContainer.style.display = 'block';
-    if (selectMobileContainer) selectMobileContainer.style.display = 'block';
 
-    // Populate Desktop Select
-    if (select) {
+    selects.forEach(select => {
+        if (isSuperAdmin) {
+            select.style.display = 'none';
+            return;
+        }
+
+        select.style.display = 'inline-block';
         select.innerHTML = '';
+        
         userGroups.forEach(g => {
             const opt = document.createElement('option');
             opt.value = g.id;
@@ -406,22 +462,17 @@ function renderWorkspaceGroupSelector(userGroups) {
             }
             select.appendChild(opt);
         });
-    }
+    });
 
-    // Populate Mobile Select
-    if (selectMobile) {
-        selectMobile.innerHTML = '';
-        userGroups.forEach(g => {
-            const opt = document.createElement('option');
-            opt.value = g.id;
-            opt.textContent = g.name;
-            if (g.id == currentGroupId) {
-                opt.selected = true;
-            }
-            selectMobile.appendChild(opt);
-        });
+    // Update active group name text on dashboard footer
+    const activeGroupDisplay = document.getElementById('active-group-display-name');
+    if (activeGroupDisplay && Array.isArray(userGroups)) {
+        const activeGroup = userGroups.find(g => g.id == currentGroupId);
+        if (activeGroup) activeGroupDisplay.textContent = activeGroup.name;
     }
 }
+
+
 
 function handleActiveGroupChangeSelect(e) {
     const newGroupId = parseInt(e.target.value);
@@ -438,11 +489,15 @@ function handleActiveGroupChangeSelect(e) {
     setTimeout(() => window.location.reload(), 100);
 }
 
-// ROUTER IMPLEMENTATION (Lazy View Fetcher)
+function navigateTo(viewId) {
+    if (!viewId) return;
+    window.location.hash = `#${viewId}`;
+}
+
 async function handleHashRouting() {
     if (!currentUser) return;
     
-    // Automatically exit setlist presentation mode when routing changes
+    // If setlist presentation mode is active, close it on routing
     if (document.body.classList.contains('setlist-presentation-mode')) {
         if (typeof closeSetlistPresentation === 'function') {
             closeSetlistPresentation();
@@ -459,7 +514,7 @@ async function handleHashRouting() {
     if (!viewId) viewId = 'dashboard';
 
     // Validate page lists
-    const pages = ['dashboard', 'songs', 'setlists', 'events', 'suggestions', 'members', 'profile', 'admin'];
+    const pages = ['dashboard', 'songs', 'setlists', 'events', 'suggestions', 'members', 'profile', 'announcements', 'admin'];
     if (!pages.includes(viewId)) {
         viewId = currentUser?.account_type === 'superadmin' ? 'admin' : 'dashboard';
         window.location.hash = `#${viewId}`;
@@ -490,7 +545,7 @@ async function handleHashRouting() {
     if (container) {
         if (container.dataset.loaded !== 'true') {
             try {
-                const response = await fetch(`views/${viewId}.html?t=${Date.now()}`);
+                const response = await fetch(`views/${viewId}.php?t=${Date.now()}`);
                 if (!response.ok) throw new Error("Fallo la carga de la vista");
                 container.innerHTML = await response.text();
                 container.dataset.loaded = 'true';
@@ -508,11 +563,17 @@ async function handleHashRouting() {
     }
 
     // Update active nav links lists classes
-    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(link => {
-        if (link.getAttribute('data-view') === viewId) {
-            link.classList.add('active');
+    const mainMobileViews = ['dashboard', 'songs', 'setlists', 'events'];
+    const isSecondaryView = !mainMobileViews.includes(viewId);
+
+    document.querySelectorAll('#app-bottom-nav button').forEach(link => {
+        const linkView = link.getAttribute('data-view');
+        if (linkView === viewId || (link.id === 'btn-nav-more' && isSecondaryView)) {
+            link.classList.remove('text-zinc-500');
+            link.classList.add('text-zinc-100', 'font-semibold');
         } else {
-            link.classList.remove('active');
+            link.classList.remove('text-zinc-100', 'font-semibold');
+            link.classList.add('text-zinc-500');
         }
     });
 
@@ -525,9 +586,11 @@ async function handleHashRouting() {
         'suggestions': 'Caja de Sugerencias',
         'members': 'Directorio de Miembros',
         'profile': 'Editar Mi Perfil',
+        'announcements': 'Novedades y Anuncios',
         'admin': '🛡️ Panel de Administración'
     };
-    document.getElementById('current-page-title').textContent = titles[viewId] || 'Levare';
+    const pageTitleElem = document.getElementById('current-page-title');
+    if (pageTitleElem) pageTitleElem.textContent = titles[viewId] || 'Levare';
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -539,6 +602,7 @@ function triggerViewInitializer(viewId) {
     if (viewId === 'suggestions' && typeof initSuggestionsView === 'function') initSuggestionsView();
     if (viewId === 'members' && typeof initMembersView === 'function') initMembersView();
     if (viewId === 'profile' && typeof initProfileView === 'function') initProfileView();
+    if (viewId === 'announcements' && typeof initAnnouncementsView === 'function') initAnnouncementsView();
     if (viewId === 'admin' && typeof initAdminView === 'function') initAdminView();
 }
 
@@ -546,7 +610,7 @@ function triggerViewInitializer(viewId) {
 async function loadOnboardingLayout() {
     const wrapper = document.getElementById('auth-onboarding-panel');
     try {
-        const response = await fetch(`views/onboarding.html?t=${Date.now()}`);
+        const response = await fetch(`views/onboarding.php?t=${Date.now()}`);
         wrapper.innerHTML = await response.text();
         
         const onboardingChoices = document.querySelector('.onboarding-choices');
@@ -758,6 +822,7 @@ async function confirmLogout() {
         btn.textContent = "Cerrar Sesión";
     }
     
+    document.documentElement.classList.remove('user-is-authenticated');
     const authContainer = document.getElementById('auth-container');
     const mainContainer = document.getElementById('main-container');
     if (authContainer && mainContainer) {
@@ -841,9 +906,12 @@ async function handleMemberRegisterSubmit(e) {
 
 // --- Join Group Flows ---
 function openJoinGroupModal() {
-    document.getElementById('join-group-invite-code').value = '';
-    document.getElementById('modal-join-group-global').classList.remove('hidden');
+    const input = document.getElementById('join-group-invite-code');
+    if (input) input.value = '';
+    const modal = document.getElementById('modal-join-group-global');
+    if (modal) modal.classList.remove('hidden');
 }
+window.openJoinGroupModal = openJoinGroupModal;
 
 async function handleJoinGroupSubmit(e) {
     e.preventDefault();
@@ -900,10 +968,16 @@ async function handleJoinGroupSubmit(e) {
 
 // --- Create Group Flows ---
 function openCreateGroupModal() {
-    document.getElementById('create-group-name').value = '';
-    document.getElementById('create-group-description').value = '';
-    document.getElementById('modal-create-group-global').classList.remove('hidden');
+    const nameInput = document.getElementById('create-group-name');
+    if (nameInput) nameInput.value = '';
+    const descInput = document.getElementById('create-group-description');
+    if (descInput) descInput.value = '';
+    const modal = document.getElementById('modal-create-group-global');
+    if (modal) modal.classList.remove('hidden');
 }
+window.openCreateGroupModal = openCreateGroupModal;
+
+
 
 async function handleCreateGroupSubmit(e) {
     e.preventDefault();
@@ -946,5 +1020,52 @@ async function handleCreateGroupSubmit(e) {
     }
 }
 
+
 // Initialize app on load
 window.onload = initApp;
+
+/* ==========================================================================
+   "MÁS" BOTTOM SHEET — Nav More Menu helpers
+   ========================================================================== */
+
+function openMoreMenu() {
+    const modal = document.getElementById('modal-more-menu');
+    if (!modal) return;
+
+    // Populate the group selector
+    const groupSelect = document.getElementById('more-menu-group-select');
+    if (groupSelect) {
+        const groups = getData('userGroups') || [];
+        const activeId = getData('currentGroupId');
+        groupSelect.innerHTML = '';
+        groups.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.id;
+            opt.textContent = g.name;
+            if (g.id == activeId) opt.selected = true;
+            groupSelect.appendChild(opt);
+        });
+    }
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeMoreMenu(event) {
+    // Close only when clicking the backdrop (not the sheet itself)
+    if (event && event.target !== document.getElementById('modal-more-menu')) return;
+    const modal = document.getElementById('modal-more-menu');
+    if (modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function handleMoreMenuGroupChange(groupId) {
+    setData('currentGroupId', parseInt(groupId));
+    // Force all views to reload data
+    document.querySelectorAll('.content-view').forEach(p => { p.dataset.loaded = ''; });
+    const hash = window.location.hash.replace('#', '') || 'dashboard';
+    const panel = document.getElementById(`panel-${hash}`);
+    if (panel) panel.dataset.loaded = '';
+    window.location.reload();
+}
+
