@@ -120,7 +120,8 @@ async function initDashboardView() {
             if (timeElem) timeElem.textContent = ev.time ? ev.time.substring(0, 5) + ' hs' : '';
 
             const setlistNameElem = document.getElementById('next-event-setlist-name');
-            if (setlistNameElem) setlistNameElem.textContent = ev.repertoire || ev.setlist_name || 'Sin repertorio asignado';
+            const setlistName = ev.setlist_name || (ev.setlist ? ev.setlist.name : (ev.repertoire || 'Sin repertorio asignado'));
+            if (setlistNameElem) setlistNameElem.textContent = setlistName;
         } else {
             const nameElem = document.getElementById('next-event-name');
             if (nameElem) nameElem.textContent = 'No hay eventos programados';

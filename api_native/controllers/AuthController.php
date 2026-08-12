@@ -49,6 +49,7 @@ class AuthController {
                 'username' => $user['username'],
                 'account_type' => $user['account_type'],
                 'status' => $user['status'],
+                'must_change_password' => (bool)$user['must_change_password'],
                 'accent_color' => $user['accent_color'],
                 'accentColor' => $user['accent_color'] ?? 'purple',
                 'avatar' => $user['avatar']
@@ -98,7 +99,7 @@ class AuthController {
         }
 
         // Check unique email if specified
-        if (!empty($email) && $user['account_type'] !== 'member') {
+        if (!empty($email)) {
             $stmtE = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ? LIMIT 1");
             $stmtE->execute([$email, $user['id']]);
             if ($stmtE->fetch()) {
@@ -106,16 +107,8 @@ class AuthController {
             }
         }
 
-        $sql = "UPDATE users SET name = ?, lastname = ?, username = ?, accent_color = ?, updated_at = NOW()";
-        $params = [$name, $lastname, $username, $accentColor];
-
-        if ($user['account_type'] !== 'member' && !empty($email)) {
-            $sql .= ", email = ?";
-            $params[] = $email;
-        }
-
-        $sql .= " WHERE id = ?";
-        $params[] = $user['id'];
+        $sql = "UPDATE users SET name = ?, lastname = ?, username = ?, email = ?, accent_color = ?, updated_at = NOW() WHERE id = ?";
+        $params = [$name, $lastname, $username, $email ?: null, $accentColor, $user['id']];
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
@@ -263,4 +256,202 @@ class AuthController {
         }
         jsonResponse(['message' => 'Sesión cerrada correctamente.']);
     }
+
+    public static function registerLeader(): void {
+        $rawInput = file_get_contents('php://input');
+        if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
+            $rawInput = $GLOBALS['rawInput'];
+        }
+        $input = json_decode($rawInput, true) ?? $_POST;
+
+        $name = trim($input['name'] ?? '');
+        $lastname = trim($input['lastname'] ?? '');
+        $email = strtolower(trim($input['email'] ?? ''));
+        $password = $input['password'] ?? '';
+
+        if (empty($name) || empty($email) || empty($password)) {
+            jsonResponse(['message' => 'Por favor, completa todos los campos requeridos.'], 422);
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            jsonResponse(['message' => 'El correo electrónico no es válido.'], 422);
+        }
+
+        if (strlen($password) < 6) {
+            jsonResponse(['message' => 'La contraseña debe tener al menos 6 caracteres.'], 422);
+        }
+
+        $pdo = DB::getConnection();
+
+        // Check if email already exists
+        $stmtCheck = $pdo->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
+        $stmtCheck->execute([$email]);
+        if ($stmtCheck->fetch()) {
+            jsonResponse(['message' => 'El correo electrónico ya se encuentra registrado.'], 422);
+        }
+
+        $username = self::generateUniqueUsername($pdo, $email, $name);
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+        $stmtInsert = $pdo->prepare("
+            INSERT INTO users (name, lastname, email, username, password, account_type, status, must_change_password, accent_color, created_at, updated_at) 
+            VALUES (?, ?, ?, ?, ?, 'leader', 'active', 0, 'purple', NOW(), NOW())
+        ");
+        $stmtInsert->execute([$name, $lastname, $email, $username, $hashedPassword]);
+        $userId = $pdo->lastInsertId();
+
+        // Generate Plain Token
+        $plainToken = bin2hex(random_bytes(32));
+        $stmtToken = $pdo->prepare("INSERT INTO personal_access_tokens (tokenable_type, tokenable_id, name, token, abilities, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
+        $stmtToken->execute(['App\\Models\\User', $userId, 'WorshipAppToken', $plainToken, '["*"]']);
+
+        jsonResponse([
+            'token' => $plainToken,
+            'user' => [
+                'id' => (int)$userId,
+                'name' => $name,
+                'lastname' => $lastname,
+                'email' => $email,
+                'username' => $username,
+                'account_type' => 'leader',
+                'status' => 'active',
+                'accent_color' => 'purple',
+                'accentColor' => 'purple',
+                'avatar' => null
+            ]
+        ], 201);
+    }
+
+    public static function registerMember(): void {
+        $rawInput = file_get_contents('php://input');
+        if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
+            $rawInput = $GLOBALS['rawInput'];
+        }
+        $input = json_decode($rawInput, true) ?? $_POST;
+
+        $name = trim($input['name'] ?? '');
+        $lastname = trim($input['lastname'] ?? '');
+        $email = strtolower(trim($input['email'] ?? ''));
+        $password = $input['password'] ?? '';
+        $inviteCode = trim($input['invite_code'] ?? '');
+
+        if (empty($name) || empty($email) || empty($password) || empty($inviteCode)) {
+            jsonResponse(['message' => 'Por favor, completa todos los campos del registro.'], 422);
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            jsonResponse(['message' => 'El correo electrónico no es válido.'], 422);
+        }
+
+        if (strlen($password) < 6) {
+            jsonResponse(['message' => 'La contraseña debe tener al menos 6 caracteres.'], 422);
+        }
+
+        $pdo = DB::getConnection();
+
+        // Validate invite code
+        $stmtGrp = $pdo->prepare("SELECT id, name FROM groups WHERE invite_code = ? LIMIT 1");
+        $stmtGrp->execute([$inviteCode]);
+        $group = $stmtGrp->fetch();
+        if (!$group) {
+            jsonResponse(['message' => 'El código de invitación no es válido o ha expirado.'], 422);
+        }
+
+        // Check if email already exists
+        $stmtCheck = $pdo->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
+        $stmtCheck->execute([$email]);
+        if ($stmtCheck->fetch()) {
+            jsonResponse(['message' => 'El correo electrónico ya se encuentra registrado.'], 422);
+        }
+
+        $username = self::generateUniqueUsername($pdo, $email, $name);
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+        $stmtInsert = $pdo->prepare("
+            INSERT INTO users (name, lastname, email, username, password, account_type, status, must_change_password, accent_color, created_at, updated_at) 
+            VALUES (?, ?, ?, ?, ?, 'member', 'active', 0, 'purple', NOW(), NOW())
+        ");
+        $stmtInsert->execute([$name, $lastname, $email, $username, $hashedPassword]);
+        $userId = $pdo->lastInsertId();
+
+        // Add user to group with NULL musical role (no musical role assigned yet)
+        $stmtGU = $pdo->prepare("INSERT INTO group_user (user_id, group_id, role, created_at) VALUES (?, ?, NULL, NOW())");
+        $stmtGU->execute([$userId, $group['id']]);
+
+        // Generate Plain Token
+        $plainToken = bin2hex(random_bytes(32));
+        $stmtToken = $pdo->prepare("INSERT INTO personal_access_tokens (tokenable_type, tokenable_id, name, token, abilities, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
+        $stmtToken->execute(['App\\Models\\User', $userId, 'WorshipAppToken', $plainToken, '["*"]']);
+
+        jsonResponse([
+            'token' => $plainToken,
+            'user' => [
+                'id' => (int)$userId,
+                'name' => $name,
+                'lastname' => $lastname,
+                'email' => $email,
+                'username' => $username,
+                'account_type' => 'member',
+                'status' => 'active',
+                'accent_color' => 'purple',
+                'accentColor' => 'purple',
+                'avatar' => null
+            ]
+        ], 201);
+    }
+
+    public static function validateInviteCode(): void {
+        $rawInput = file_get_contents('php://input');
+        if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
+            $rawInput = $GLOBALS['rawInput'];
+        }
+        $input = json_decode($rawInput, true) ?? $_POST;
+        $inviteCode = trim($input['invite_code'] ?? '');
+
+        if (empty($inviteCode)) {
+            jsonResponse(['message' => 'Ingresa un código de invitación.'], 422);
+        }
+
+        $pdo = DB::getConnection();
+        $stmt = $pdo->prepare("SELECT id, name, invite_code FROM groups WHERE invite_code = ? LIMIT 1");
+        $stmt->execute([$inviteCode]);
+        $group = $stmt->fetch();
+
+        if (!$group) {
+            jsonResponse(['message' => 'Código de invitación no encontrado.'], 404);
+        }
+
+        jsonResponse([
+            'invite_code' => $group['invite_code'],
+            'group_name' => $group['name']
+        ]);
+    }
+
+    private static function generateUniqueUsername(PDO $pdo, string $email, string $name): string {
+        $base = strtolower(explode('@', $email)[0]);
+        $base = preg_replace('/[^a-z0-9_]/', '', $base);
+        if (empty($base)) {
+            $base = strtolower(preg_replace('/[^a-z0-9_]/', '', $name));
+        }
+        if (empty($base)) {
+            $base = 'user';
+        }
+
+        $username = $base;
+        $counter = 1;
+        while (true) {
+            $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
+            $stmt->execute([$username]);
+            if (!$stmt->fetch()) {
+                return $username;
+            }
+            $username = $base . rand(100, 9999);
+            $counter++;
+            if ($counter > 10) {
+                $username = $base . '_' . time();
+                return $username;
+            }
+        }
+    }
 }
+

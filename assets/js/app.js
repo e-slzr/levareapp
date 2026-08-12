@@ -568,12 +568,11 @@ async function handleHashRouting() {
 
     document.querySelectorAll('#app-bottom-nav button').forEach(link => {
         const linkView = link.getAttribute('data-view');
-        if (linkView === viewId || (link.id === 'btn-nav-more' && isSecondaryView)) {
-            link.classList.remove('text-zinc-500');
-            link.classList.add('text-zinc-100', 'font-semibold');
+        const isActive = linkView === viewId || (link.id === 'btn-nav-more' && isSecondaryView);
+        if (isActive) {
+            link.classList.add('active');
         } else {
-            link.classList.remove('text-zinc-100', 'font-semibold');
-            link.classList.add('text-zinc-500');
+            link.classList.remove('active');
         }
     });
 
@@ -706,7 +705,7 @@ async function handleLeaderRegisterSubmit(e) {
         applyAccentColor('purple');
         await updateShellVisibility();
 
-        showToast(`Registro completado. ¡Bienvenido a WorshipApp!`, "success");
+        showToast(`Registro completado. ¡Bienvenido a Levare!`, "success");
     } catch (err) {
         showToast(err.message, "danger");
     }
@@ -834,14 +833,10 @@ async function confirmLogout() {
     showToast("Sesión cerrada");
 }
 
-// Helper to determine role permissions
 function canEdit() {
-    if (!currentUser) return false;
-    if (currentUser.account_type === 'superadmin') return true;
-
-    const userGroups = getData('userGroups') || [];
-    const activeGroup = userGroups.find(g => g.id == currentGroupId);
-    return activeGroup ? (activeGroup.role === 'Líder') : false;
+    const user = currentUser || getData('currentUser');
+    if (!user) return false;
+    return user.account_type === 'superadmin' || user.account_type === 'leader';
 }
 
 // --- Member Invite Flow ---
@@ -898,7 +893,7 @@ async function handleMemberRegisterSubmit(e) {
         applyAccentColor(currentUser.accentColor || 'purple');
         await updateShellVisibility();
 
-        showToast(`Registro completado. ¡Bienvenido a WorshipApp!`, "success");
+        showToast(`Registro completado. ¡Bienvenido a Levare!`, "success");
     } catch (err) {
         showToast(err.message, "danger");
     }

@@ -5,34 +5,34 @@
         <p class="text-xs text-zinc-500 dark:text-zinc-400">Preferencias de cuenta y bandas musicales</p>
     </header>
 
-    <!-- Profile Info Card (Minimalist Avatar & Photo Controls) -->
-    <div class="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between shadow-sm">
+    <!-- Profile Info Card (Always Dark for Rich Contrast) -->
+    <div class="p-5 rounded-2xl border border-zinc-800 bg-zinc-900 text-zinc-100 flex items-center justify-between shadow-md">
         <div class="flex items-center gap-4">
             <div class="relative group">
-                <div id="profile-avatar-container" class="w-16 h-16 rounded-full bg-zinc-900 dark:bg-zinc-800 text-white dark:text-zinc-100 flex items-center justify-center font-bold text-2xl uppercase shadow-md border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                <div id="profile-avatar-container" class="w-16 h-16 rounded-full bg-zinc-800 text-zinc-100 flex items-center justify-center font-bold text-2xl uppercase shadow-md border border-zinc-700 overflow-hidden">
                     E
                 </div>
             </div>
             <div>
                 <div class="flex items-center gap-2">
-                    <h2 id="profile-full-name" class="font-bold text-lg text-zinc-900 dark:text-zinc-100">Eliu Salazar</h2>
-                    <span id="profile-system-role-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/60 uppercase">
+                    <h2 id="profile-full-name" class="font-bold text-lg text-zinc-100">Eliu Salazar</h2>
+                    <span id="profile-system-role-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/60 uppercase">
                         LÍDER
                     </span>
                 </div>
-                <p id="profile-user-details" class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">@eliu.asalazar</p>
+                <p id="profile-user-details" class="text-xs text-zinc-400 mt-0.5">@eliu.asalazar</p>
             </div>
         </div>
 
         <!-- Photo Action Buttons -->
         <div class="flex items-center gap-2">
-            <label id="btn-upload-avatar" for="profile-avatar-upload" class="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer flex items-center gap-1.5 shadow-sm" title="Cambiar foto">
+            <label id="btn-upload-avatar" for="profile-avatar-upload" class="px-3 py-1.5 rounded-xl border border-zinc-700 bg-zinc-800 text-xs font-semibold text-zinc-200 hover:bg-zinc-700 transition cursor-pointer flex items-center gap-1.5 shadow-sm" title="Cambiar foto">
                 <i class="fa-solid fa-camera text-xs"></i>
                 <span class="hidden sm:inline">Foto</span>
                 <input type="file" id="profile-avatar-upload" class="hidden" accept="image/*" />
             </label>
 
-            <button type="button" id="btn-remove-avatar" class="px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/40 transition" title="Eliminar foto">
+            <button type="button" id="btn-remove-avatar" class="px-3 py-1.5 rounded-xl border border-red-900/50 bg-red-950/20 text-xs font-semibold text-red-400 hover:bg-red-950/40 transition" title="Eliminar foto">
                 <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
         </div>

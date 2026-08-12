@@ -270,13 +270,14 @@ async function renderMembers(forceRefresh = false) {
 
         let avatarStyle = `background: ${avatarBg};`;
         if (u.avatar) {
-            avatarStyle = `background-image: url('${u.avatar}');`;
+            const avatarUrl = getAvatarUrl(u.avatar);
+            avatarStyle = `background-image: url('${avatarUrl}'); background-size: cover; background-position: center;`;
         }
 
         let adminActions = '';
+        const isLeaderUser = u.account_type === 'leader' || u.account_type === 'superadmin';
         if (editAllowed) {
-            // Cannot edit/delete protected Leader role
-            const isLider = u.role === 'Líder';
+            // Cannot delete protected Leader system user
             adminActions = `
                 <div class="member-actions-row">
                     <button class="member-action-btn btn-reset-pw" data-id="${u.id}" title="Restablecer Contraseña">
@@ -285,7 +286,7 @@ async function renderMembers(forceRefresh = false) {
                     <button class="member-action-btn btn-edit-member" data-id="${u.id}" title="Editar">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
-                    ${!isLider ? `
+                    ${!isLeaderUser ? `
                     <button class="member-action-btn danger btn-delete-member" data-id="${u.id}" title="Eliminar del Grupo">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>` : ''}
@@ -294,13 +295,17 @@ async function renderMembers(forceRefresh = false) {
         }
 
         const loginHandle = u.email ? u.email : `@${u.username}`;
+        const systemRoleBadge = isLeaderUser ? '<span class="inline-block ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase">Líder</span>' : '';
 
         card.innerHTML = `
             <div class="member-info-wrapper">
                 <div class="avatar" style="${avatarStyle}">${u.avatar ? '' : initials}</div>
                 <div class="member-details">
-                    <h4>${nameStr}</h4>
-                    <p style="color: var(--primary); font-weight:700; font-size:0.75rem; text-transform:uppercase;">${u.role || 'Miembro'}</p>
+                    <div class="flex items-center gap-1.5">
+                        <h4 class="font-bold text-sm text-zinc-100">${nameStr}</h4>
+                        ${systemRoleBadge}
+                    </div>
+                    <p style="color: var(--primary); font-weight:700; font-size:0.75rem; text-transform:uppercase;">${u.role ? u.role : 'Sin rol musical'}</p>
                     <p style="font-size:0.7rem; color:var(--text-muted); opacity: 0.8; margin-top:2px;">${loginHandle}</p>
                 </div>
             </div>
@@ -328,6 +333,14 @@ async function populateRolesDropdown(selectId, selectedValue = '') {
         const roles = await apiFetch('/members/roles') || [];
         select.innerHTML = '';
 
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = 'Sin rol musical asignado';
+        if (!selectedValue) {
+            defaultOpt.selected = true;
+        }
+        select.appendChild(defaultOpt);
+
         roles.forEach(r => {
             const opt = document.createElement('option');
             opt.value = r;
@@ -339,7 +352,7 @@ async function populateRolesDropdown(selectId, selectedValue = '') {
         });
     } catch (e) {
         console.error("Error loading dropdown roles:", e);
-        select.innerHTML = '<option value="">Fallo al cargar roles</option>';
+        select.innerHTML = '<option value="">Sin rol musical asignado</option>';
     }
 }
 
@@ -393,10 +406,11 @@ async function openEditMemberModal(userId) {
 
     // Select system permission role
     const systemRoleSelect = document.getElementById('member-form-system-role');
-    systemRoleSelect.value = u.role === 'Líder' ? 'leader' : 'member';
+    const systemRole = u.account_type || (u.role === 'Líder' ? 'leader' : 'member');
+    systemRoleSelect.value = systemRole;
     
     // Don't allow changing Líder permissions to member
-    if (u.role === 'Líder') {
+    if (u.role === 'Líder' || u.account_type === 'leader') {
         systemRoleSelect.disabled = true;
     } else {
         systemRoleSelect.disabled = false;

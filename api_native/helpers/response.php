@@ -83,3 +83,13 @@ function getGroupIdHeader(): ?int {
     }
     return null;
 }
+
+function getJsonInput(): array {
+    $rawInput = file_get_contents('php://input');
+    if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
+        $rawInput = $GLOBALS['rawInput'];
+    }
+    $data = json_decode($rawInput, true);
+    return is_array($data) ? $data : ($_POST ?? []);
+}
+
