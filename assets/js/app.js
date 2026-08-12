@@ -1064,3 +1064,49 @@ function handleMoreMenuGroupChange(groupId) {
     window.location.reload();
 }
 
+/* ==========================================================================
+   PWA SERVICE WORKER & INSTALL PROMPT LOGIC
+   ========================================================================== */
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const installBtn = document.getElementById('btn-install-pwa');
+    if (installBtn) {
+        installBtn.classList.remove('hidden');
+    }
+});
+
+async function installAppPWA() {
+    if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        if (outcome === 'accepted') {
+            showToast('¡Gracias por instalar Levare!', 'success');
+        }
+        deferredInstallPrompt = null;
+    } else {
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        if (isStandalone) {
+            showToast('Levare ya está instalada y ejecutándose como App.', 'info');
+        } else {
+            showToast('Para instalar: abre el menú del navegador y selecciona "Agregar a la pantalla de inicio" o "Instalar".', 'info');
+        }
+    }
+}
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js?v=2.0.0')
+            .then(reg => {
+                console.log('PWA ServiceWorker activo:', reg.scope);
+            })
+            .catch(err => {
+                console.warn('PWA ServiceWorker no registrado:', err);
+            });
+    });
+}
+
+

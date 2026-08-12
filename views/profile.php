@@ -112,7 +112,7 @@
             </div>
 
             <!-- Band Members Link -->
-            <button type="button" onclick="navigateTo('members')" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left">
+            <button type="button" onclick="navigateTo('members')" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left border-t border-zinc-100 dark:border-zinc-800/60">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-users text-zinc-500 dark:text-zinc-400 text-sm"></i>
                     <span class="text-sm font-medium text-zinc-900 dark:text-zinc-200">Miembros de la Banda</span>
