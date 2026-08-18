@@ -26,6 +26,8 @@ class EventController {
             } else {
                 $ev['setlist'] = null;
             }
+            $ev['setlist_name'] = $ev['setlist'] ? $ev['setlist']['name'] : null;
+            $ev['repertoire'] = $ev['setlist_name'];
 
             $stmtM = $pdo->prepare("
                 SELECT u.id, u.name, u.lastname, em.role 

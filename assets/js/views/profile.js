@@ -25,29 +25,38 @@ function initProfileView() {
         emailInput.value = currentUser.email || '';
         const emailContainer = document.getElementById('profile-email-container');
         if (emailContainer) {
-            if (currentUser.account_type === 'member') {
-                emailContainer.style.display = 'none';
-                emailInput.required = false;
-            } else {
-                emailContainer.style.display = 'block';
-                emailInput.required = true;
-            }
+            emailContainer.style.display = 'block';
         }
     }
 
     // Render profile header card details
-    const profileNameElem = document.getElementById('profile-user-name');
+    const profileNameElem = document.getElementById('profile-full-name') || document.getElementById('profile-user-name');
     if (profileNameElem) profileNameElem.textContent = `${currentUser.name} ${currentUser.lastname || ''}`.trim();
+
+    // System role badge (SUPERADMIN / LÍDER / MIEMBRO)
+    const roleBadgeElem = document.getElementById('profile-system-role-badge');
+    if (roleBadgeElem) {
+        if (currentUser.account_type === 'superadmin') {
+            roleBadgeElem.textContent = 'SUPERADMIN';
+            roleBadgeElem.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-400 border border-purple-300 dark:border-purple-800/60 uppercase';
+        } else if (currentUser.account_type === 'leader') {
+            roleBadgeElem.textContent = 'LÍDER';
+            roleBadgeElem.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/60 uppercase';
+        } else {
+            roleBadgeElem.textContent = 'MIEMBRO';
+            roleBadgeElem.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700 uppercase';
+        }
+    }
     
     const profileDetailsElem = document.getElementById('profile-user-details');
     const userGroups = getData('userGroups') || [];
     const activeGroup = userGroups.find(g => g.id == currentGroupId);
     const activeGroupName = activeGroup ? activeGroup.name : 'Sin Banda';
-    const activeRole = activeGroup ? (activeGroup.role || 'Miembro') : (currentUser.account_type === 'leader' ? 'Líder' : 'Miembro');
+    const activeRole = activeGroup && activeGroup.role ? activeGroup.role : 'Sin rol musical';
     if (profileDetailsElem) profileDetailsElem.textContent = `Banda ${activeGroupName} • Rol: ${activeRole}`;
 
     // Render avatar photo / initials
-    const profileAvatarBox = document.getElementById('profile-avatar-box');
+    const profileAvatarBox = document.getElementById('profile-avatar-container') || document.getElementById('profile-avatar-box');
     if (profileAvatarBox) {
         const initials = getInitials(`${currentUser.name} ${currentUser.lastname || ''}`);
         if (currentUser.avatar) {
@@ -434,8 +443,7 @@ function openEditProfileModal() {
         emailInput.value = currentUser.email || '';
         const emailContainer = document.getElementById('profile-email-container');
         if (emailContainer) {
-            emailContainer.style.display = currentUser.account_type === 'member' ? 'none' : 'block';
-            emailInput.required = currentUser.account_type !== 'member';
+            emailContainer.style.display = 'block';
         }
     }
 

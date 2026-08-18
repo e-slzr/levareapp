@@ -1,13 +1,14 @@
-const CACHE_NAME = "levare-cache-v2";
+const CACHE_NAME = "levare-cache-v2.0.0";
 const ASSETS = [
   "./",
-  "./index.html",
-  "./assets/css/main.css?v=1.2.1",
-  "./assets/js/db.js?v=1.2.3",
-  "./assets/js/utils.js?v=1.2.3",
-  "./assets/js/transposer.js?v=1.2.3",
-  "./assets/js/app.js?v=1.2.3",
-  "./icon.svg?v=1.0.1"
+  "./index.php",
+  "./assets/css/main.css?v=2.0.0",
+  "./assets/js/db.js?v=2.0.0",
+  "./assets/js/utils.js?v=2.0.0",
+  "./assets/js/transposer.js?v=2.0.0",
+  "./assets/js/app.js?v=2.0.0",
+  "./icon-levareapp.svg?v=2.0.0",
+  "./manifest.json?v=2.0.0"
 ];
 
 // Install Event

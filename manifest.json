@@ -1,16 +1,16 @@
 {
-  "name": "Levare",
+  "name": "Levare - Gestión de Bandas",
   "short_name": "Levare",
-  "description": "Gestión de Bandas Musicales, repertorios, eventos e integrantes.",
-  "start_url": "./",
+  "description": "Plataforma de gestión de bandas musicales, repertorios, eventos e integrantes.",
+  "start_url": "./index.php",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#121318",
-  "theme_color": "#7c3aed",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "icons": [
     {
-      "src": "icon-levareapp.svg?v=1.0.1",
+      "src": "icon-levareapp.svg?v=2.0.0",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"

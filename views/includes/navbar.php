@@ -1,44 +1,44 @@
-<!-- App Reusable Navbar / Navigation Bar (Responsive Desktop & Mobile) -->
-<nav id="app-bottom-nav" class="bg-white/90 dark:bg-zinc-950/90 backdrop-blur border-t border-zinc-200 dark:border-zinc-900 px-4 py-2.5 flex justify-around items-center z-30 fixed bottom-0 left-0 right-0 max-w-4xl mx-auto md:rounded-t-2xl md:border-x transition-colors shadow-lg">
+<!-- App Reusable Navbar / Navigation Bar (Always Dark Bar with Identical Active Pill) -->
+<nav id="app-bottom-nav" class="backdrop-blur px-3 py-2 flex justify-around items-center z-30 fixed bottom-0 left-0 right-0 max-w-4xl mx-auto md:rounded-t-2xl md:border-x shadow-2xl">
 
     <!-- Inicio -->
-    <button type="button" data-view="dashboard" onclick="navigateTo('dashboard')" class="nav-item cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs font-medium text-zinc-900 dark:text-zinc-100 hover:text-zinc-900 dark:hover:text-white transition min-w-0">
+    <button type="button" data-view="dashboard" onclick="navigateTo('dashboard')" class="app-nav-btn active cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-solid fa-house text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Inicio</span>
     </button>
 
     <!-- Canciones -->
-    <button type="button" data-view="songs" onclick="navigateTo('songs')" class="nav-item cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition min-w-0">
+    <button type="button" data-view="songs" onclick="navigateTo('songs')" class="app-nav-btn cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-solid fa-music text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Canciones</span>
     </button>
 
     <!-- Repertorios -->
-    <button type="button" data-view="setlists" onclick="navigateTo('setlists')" class="nav-item cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition min-w-0">
+    <button type="button" data-view="setlists" onclick="navigateTo('setlists')" class="app-nav-btn cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-solid fa-list-check text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Repertorios</span>
     </button>
 
     <!-- Eventos -->
-    <button type="button" data-view="events" onclick="navigateTo('events')" class="nav-item cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition min-w-0">
+    <button type="button" data-view="events" onclick="navigateTo('events')" class="app-nav-btn cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-regular fa-calendar-days text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Eventos</span>
     </button>
 
     <!-- Sugerencias — Desktop / Tablet -->
-    <button type="button" data-view="suggestions" onclick="navigateTo('suggestions')" class="nav-item desktop-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition min-w-0">
+    <button type="button" data-view="suggestions" onclick="navigateTo('suggestions')" class="app-nav-btn desktop-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-regular fa-lightbulb text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Sugerencias</span>
     </button>
 
     <!-- Perfil — Desktop / Tablet -->
-    <button type="button" data-view="profile" onclick="navigateTo('profile')" class="nav-item desktop-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition min-w-0">
+    <button type="button" data-view="profile" onclick="navigateTo('profile')" class="app-nav-btn desktop-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-solid fa-sliders text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Perfil</span>
     </button>
 
     <!-- Botón "Más" — Mobile only -->
-    <button type="button" id="btn-nav-more" onclick="openMoreMenu()" class="nav-item mobile-only-nav cursor-pointer flex flex-col items-center gap-1 text-xs font-medium text-zinc-500 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition min-w-0">
+    <button type="button" id="btn-nav-more" onclick="openMoreMenu()" class="app-nav-btn mobile-only-nav cursor-pointer flex flex-col items-center gap-1 text-xs min-w-0">
         <i class="fa-solid fa-ellipsis text-base pointer-events-none"></i>
         <span class="pointer-events-none">Más</span>
     </button>

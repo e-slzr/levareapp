@@ -47,6 +47,19 @@ switch ($path) {
         if ($method === 'POST') AuthController::login();
         break;
 
+    case '/auth/register/leader':
+    case '/auth/register':
+        if ($method === 'POST') AuthController::registerLeader();
+        break;
+
+    case '/auth/register/member':
+        if ($method === 'POST') AuthController::registerMember();
+        break;
+
+    case '/auth/validate-invite-code':
+        if ($method === 'POST') AuthController::validateInviteCode();
+        break;
+
     case '/user/profile':
         if ($method === 'GET') AuthController::profile();
         if ($method === 'POST') AuthController::updateProfile();
@@ -91,15 +104,23 @@ switch ($path) {
     // Groups
     case '/groups':
         if ($method === 'GET') GroupController::index();
+        if ($method === 'POST') GroupController::store();
         break;
+
+    case '/groups/join':
+        if ($method === 'POST') GroupController::join();
+        break;
+
 
     // Members & Roles
     case '/members':
         if ($method === 'GET') MemberController::index();
+        if ($method === 'POST') MemberController::store();
         break;
 
     case '/members/roles':
         if ($method === 'GET') MemberController::roles();
+        if ($method === 'POST') MemberController::addRole();
         break;
 
     // Suggestions
@@ -114,7 +135,36 @@ switch ($path) {
         break;
 
     default:
+        // Check for parameterized /members/roles/{roleName}
+        if (preg_match('#^/members/roles/(.+)$#', $path, $matches)) {
+            if ($method === 'DELETE') MemberController::deleteRole($matches[1]);
+            break;
+        }
+
+        // Check for parameterized /members/{id}/reset-password
+        if (preg_match('#^/members/(\d+)/reset-password$#', $path, $matches)) {
+            $userId = (int)$matches[1];
+            if ($method === 'POST') MemberController::resetPassword($userId);
+            break;
+        }
+
+        // Check for parameterized /members/{id}
+        if (preg_match('#^/members/(\d+)$#', $path, $matches)) {
+            $userId = (int)$matches[1];
+            if ($method === 'PUT' || $method === 'POST') MemberController::update($userId);
+            if ($method === 'DELETE') MemberController::destroy($userId);
+            break;
+        }
+
+        // Check for parameterized /groups/{id}/reset-invite-code
+        if (preg_match('#^/groups/(\d+)/reset-invite-code$#', $path, $matches)) {
+            $groupId = (int)$matches[1];
+            if ($method === 'POST') GroupController::resetInviteCode($groupId);
+            break;
+        }
+
         // Check for parameterized /suggestions/{id}/vote
+
         if (preg_match('#^/suggestions/(\d+)/vote$#', $path, $matches)) {
             $id = (int)$matches[1];
             if ($method === 'POST') SuggestionController::vote($id);

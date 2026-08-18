@@ -29,21 +29,21 @@
         </div>
     </header>
 
-    <!-- Welcome Hero Card -->
-    <div class="p-6 rounded-2xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 space-y-4 shadow-sm">
+    <!-- Welcome Hero Card (Always Dark for Rich Contrast) -->
+    <div class="p-6 rounded-2xl bg-zinc-900 text-zinc-100 border border-zinc-800 space-y-4 shadow-md">
         <div class="flex items-center justify-between">
-            <span id="dashboard-date" class="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase">MARTES, 11 DE AGOSTO</span>
-            <span id="dashboard-user-role-badge" class="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/60 uppercase">
+            <span id="dashboard-date" class="text-xs font-semibold tracking-wider text-zinc-400 uppercase">MARTES, 11 DE AGOSTO</span>
+            <span id="dashboard-user-role-badge" class="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800/60 uppercase">
                 LÍDER DE BANDA
             </span>
         </div>
         <div class="flex items-center gap-4">
-            <div id="dashboard-user-avatar" class="w-14 h-14 rounded-full bg-zinc-900 dark:bg-zinc-800 text-white dark:text-zinc-100 flex items-center justify-center font-bold text-xl uppercase shadow-md border border-zinc-200 dark:border-zinc-700 cursor-pointer" onclick="navigateTo('profile')" title="Ver mi perfil">
+            <div id="dashboard-user-avatar" class="w-14 h-14 rounded-full bg-zinc-800 text-zinc-100 flex items-center justify-center font-bold text-xl uppercase shadow-md border border-zinc-700 cursor-pointer" onclick="navigateTo('profile')" title="Ver mi perfil">
                 E
             </div>
             <div>
-                <h2 id="welcome-message" class="font-serif text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100">¡Hola, Eliu!</h2>
-                <p id="dashboard-user-subtitle" class="text-xs text-zinc-500 dark:text-zinc-400">Te damos la bienvenida a tu panel musical</p>
+                <h2 id="welcome-message" class="font-serif text-2xl md:text-3xl font-bold text-zinc-100">¡Hola, Eliu!</h2>
+                <p id="dashboard-user-subtitle" class="text-xs text-zinc-400">Te damos la bienvenida a tu panel musical</p>
             </div>
         </div>
     </div>
@@ -67,7 +67,7 @@
         </div>
         <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between text-xs">
             <span class="text-zinc-600 dark:text-zinc-400">Repertorio: <strong id="next-event-setlist-name" class="text-zinc-900 dark:text-zinc-200 font-semibold">Sin repertorio asignado</strong></span>
-            <button type="button" onclick="navigateTo('events')" class="text-zinc-900 dark:text-zinc-100 font-semibold hover:underline flex items-center gap-1">Ver detalles <i class="fa-solid fa-chevron-right text-[10px]"></i></button>
+            <button type="button" onclick="navigateTo('events')" class="text-zinc-900 dark:text-zinc-100 font-semibold hover:underline flex items-center gap-1">Ir a eventos <i class="fa-solid fa-chevron-right text-[10px]"></i></button>
         </div>
     </div>
 

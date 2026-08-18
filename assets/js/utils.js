@@ -2,26 +2,10 @@
    WorshipApp — UTILITIES & COMMON HELPERS
    ========================================================================== */
 
-// Helper to check if current user has leader/admin permissions in the active group
 function canEdit() {
-    const currentUser = getData('currentUser');
-    if (!currentUser) return false;
-
-    // Superadmin and Leader account types have full edit permissions
-    if (currentUser.account_type === 'superadmin' || currentUser.account_type === 'leader') return true;
-
-    const currentGroupId = getData('currentGroupId');
-    const userGroups = getData('userGroups') || [];
-
-    if (currentGroupId && userGroups.length > 0) {
-        const activeGroup = userGroups.find(g => g.id == currentGroupId);
-        if (activeGroup) {
-            const role = String(activeGroup.role || '').toLowerCase();
-            return role.includes('líder') || role.includes('lider') || role.includes('leader') || role.includes('admin');
-        }
-    }
-
-    return false;
+    const user = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : getData('currentUser');
+    if (!user) return false;
+    return user.account_type === 'superadmin' || user.account_type === 'leader';
 }
 
 // Get the user's role string inside a specific group

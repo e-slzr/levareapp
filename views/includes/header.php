@@ -26,10 +26,15 @@
     </script>
     <!-- Main Styles -->
     <link rel="stylesheet" href="assets/css/main.css?v=2.0.0">
-    <!-- PWA Manifest & Meta Tags -->
-    <link rel="icon" type="image/svg+xml" href="icon-levareapp.svg">
+    <!-- PWA Manifest & iOS Meta Tags -->
+    <link rel="icon" type="image/svg+xml" href="icon-levareapp.svg?v=2.0.0">
     <link rel="alternate icon" href="favicon.ico">
-    <link rel="manifest" href="manifest.json?v=1.0.1">
-    <meta name="theme-color" content="#0d0d0d">
+    <link rel="apple-touch-icon" href="icon-levareapp.svg?v=2.0.0">
+    <link rel="manifest" href="manifest.json?v=2.0.0">
+    <meta name="theme-color" content="#09090b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Levare">
 </head>
 <body class="bg-zinc-950 text-zinc-100 font-sans antialiased min-h-screen flex flex-col">
