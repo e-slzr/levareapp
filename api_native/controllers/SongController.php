@@ -53,16 +53,21 @@ class SongController {
 
         $title = trim($input['title'] ?? '');
         $artist = trim($input['artist'] ?? '');
+        if (empty($artist)) {
+            $artist = 'Desconocido';
+        }
+        $album = !empty(trim($input['album'] ?? '')) ? trim($input['album']) : null;
         $key = trim($input['key'] ?? 'C');
+        $isMedley = !empty($input['is_medley']) ? 1 : 0;
         $url = trim($input['url'] ?? '');
         $content = trim($input['content'] ?? '');
 
-        if (empty($title) || empty($artist)) {
-            jsonResponse(['message' => 'Título y Artista son obligatorios.'], 422);
+        if (empty($title)) {
+            jsonResponse(['message' => 'El título de la canción es obligatorio.'], 422);
         }
 
-        $stmt = $pdo->prepare("INSERT INTO songs (group_id, title, artist, `key`, content, url, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())");
-        $stmt->execute([$groupId, $title, $artist, $key, $content, $url, $user['id']]);
+        $stmt = $pdo->prepare("INSERT INTO songs (group_id, title, artist, album, `key`, is_medley, content, url, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())");
+        $stmt->execute([$groupId, $title, $artist, $album, $key, $isMedley, $content, $url, $user['id']]);
 
         $id = $pdo->lastInsertId();
 
@@ -79,7 +84,9 @@ class SongController {
                 'group_id' => (int)$groupId,
                 'title' => $title,
                 'artist' => $artist,
+                'album' => $album,
                 'key' => $key,
+                'is_medley' => $isMedley,
                 'content' => $content,
                 'url' => $url,
                 'created_by' => (int)$user['id']
@@ -97,17 +104,22 @@ class SongController {
 
         $title = trim($input['title'] ?? '');
         $artist = trim($input['artist'] ?? '');
+        if (empty($artist)) {
+            $artist = 'Desconocido';
+        }
+        $album = !empty(trim($input['album'] ?? '')) ? trim($input['album']) : null;
         $key = trim($input['key'] ?? 'C');
+        $isMedley = !empty($input['is_medley']) ? 1 : 0;
         $url = trim($input['url'] ?? '');
         $content = trim($input['content'] ?? '');
 
-        if (empty($title) || empty($artist)) {
-            jsonResponse(['message' => 'Título y Artista son obligatorios.'], 422);
+        if (empty($title)) {
+            jsonResponse(['message' => 'El título de la canción es obligatorio.'], 422);
         }
 
         $pdo = DB::getConnection();
-        $stmt = $pdo->prepare("UPDATE songs SET title = ?, artist = ?, `key` = ?, content = ?, url = ?, updated_at = NOW() WHERE id = ?");
-        $stmt->execute([$title, $artist, $key, $content, $url, $id]);
+        $stmt = $pdo->prepare("UPDATE songs SET title = ?, artist = ?, album = ?, `key` = ?, is_medley = ?, content = ?, url = ?, updated_at = NOW() WHERE id = ?");
+        $stmt->execute([$title, $artist, $album, $key, $isMedley, $content, $url, $id]);
 
         jsonResponse(['message' => 'Canción actualizada correctamente.']);
     }

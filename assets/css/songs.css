@@ -287,12 +287,19 @@
 .chord-el {
     font-size: 0.85rem;
     font-weight: 700;
-    color: var(--primary);
+    font-family: var(--font-secondary, monospace);
+    color: #2563eb; /* Azul elegante en Modo Claro */
     height: 1.3em;
     user-select: none;
     display: inline-block;
     padding: 0;
     margin-bottom: 1px;
+    letter-spacing: 0.02em;
+    transition: color 0.15s ease;
+}
+
+.dark .chord-el {
+    color: #fbbf24; /* Amarillo ámbar en Modo Oscuro */
 }
 
 .chord-el.empty-chord {
@@ -311,23 +318,31 @@
 .instrumental-line {
     display: block;
     font-family: var(--font-mono);
-    white-space: pre; /* Essential to respect spaces written by user */
-    margin-bottom: 6px;
-    line-height: 1.6;
+    white-space: pre;
+    margin-bottom: 8px;
+    line-height: 1.8;
 }
 
 .instrumental-line .chord-el {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    color: var(--primary);
-    background-color: var(--primary-soft);
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
+    color: #2563eb;
+    background-color: rgba(37, 99, 235, 0.1);
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    padding: 2px 8px;
+    border-radius: 8px;
     display: inline-block;
     vertical-align: middle;
+    margin-right: 4px;
     margin-bottom: 0;
-    height: auto; /* Override fixed height of lyrics display */
+    height: auto;
     user-select: none;
+}
+
+.dark .instrumental-line .chord-el {
+    color: #fbbf24;
+    background-color: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.35);
 }
 
 /* Song Form Monospace Textarea */
@@ -577,4 +592,127 @@
         min-width: 0;
         overflow-x: hidden; /* Aísla completamente el scroll horizontal */
     }
+/* ==========================================================================
+   CONSTRUCTOR VISUAL & BADGES INTERACTIVOS
+   ========================================================================== */
+
+.chord-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    margin: 0 3px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: var(--font-secondary, monospace);
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    cursor: grab;
+    user-select: none;
+    transition: all 0.15s ease;
+    vertical-align: middle;
+    line-height: 1.2;
 }
+
+.dark .chord-badge {
+    background-color: rgba(245, 158, 11, 0.18);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.chord-badge:hover {
+    background-color: rgba(245, 158, 11, 0.28);
+    border-color: #f59e0b;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.2);
+}
+
+.chord-badge:active, .chord-badge.dragging {
+    cursor: grabbing;
+    opacity: 0.6;
+    transform: scale(0.96);
+}
+
+.editor-section-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    margin: 8px 0 4px 0;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background-color: #f4f4f5;
+    color: #27272a;
+    border: 1px solid #e4e4e7;
+    user-select: none;
+}
+
+.dark .editor-section-badge {
+    background-color: #27272a;
+    color: #f4f4f5;
+    border-color: #3f3f46;
+}
+
+.editor-line {
+    min-height: 1.8rem;
+    line-height: 2;
+    padding: 1px 0;
+}
+
+.editor-section-row {
+    margin-top: 10px;
+    margin-bottom: 2px;
+}
+
+.editor-instrumental-row {
+    color: #71717a;
+    font-style: italic;
+}
+
+.dark .editor-instrumental-row {
+    color: #a1a1aa;
+}
+
+.instrumental-prefix {
+    font-weight: bold;
+    margin-right: 4px;
+    opacity: 0.7;
+}
+
+.chord-picker-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: var(--font-secondary, monospace);
+    border: 1px solid #e4e4e7;
+    background-color: #ffffff;
+    color: #18181b;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.dark .chord-picker-btn {
+    border-color: #27272a;
+    background-color: #18181b;
+    color: #f4f4f5;
+}
+
+.chord-picker-btn:hover {
+    border-color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.08);
+    color: #d97706;
+    transform: translateY(-1px);
+}
+
+.dark .chord-picker-btn:hover {
+    color: #fbbf24;
+    background-color: rgba(245, 158, 11, 0.15);
+}
+

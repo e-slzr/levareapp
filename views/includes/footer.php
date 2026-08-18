@@ -2,6 +2,7 @@
     <script src="assets/js/db.js?v=2.0.0"></script>
     <script src="assets/js/utils.js?v=2.0.0"></script>
     <script src="assets/js/transposer.js?v=2.0.0"></script>
+    <script src="assets/js/chordParser.js?v=2.0.0"></script>
     <script src="assets/js/app.js?v=2.0.0"></script>
 
     <!-- View Controllers -->

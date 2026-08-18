@@ -1,0 +1,6 @@
+# Local development files
+bs-config.js
+node_modules/
+.DS_Store
+storage/avatars/*
+!storage/avatars/.gitkeep

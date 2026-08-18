@@ -8,8 +8,9 @@ const isLocal = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostn
                 window.location.hostname.startsWith('10.') || 
                 window.location.hostname.startsWith('172.');
 
+const portSuffix = window.location.port ? `:${window.location.port}` : '';
 const API_URL = isLocal 
-    ? `${window.location.protocol}//${window.location.hostname}:9080/levareapp-dev/api_native/index.php` 
+    ? `${window.location.protocol}//${window.location.hostname}${portSuffix}/levareapp-dev/api_native/index.php` 
     : `${window.location.protocol}//${window.location.hostname}/api_native/index.php`;
 /**
  * Basic LocalStorage Helpers (for session state)
