@@ -1,5 +1,7 @@
 <!-- LOGIN VIEW (Minimalist UI - Fixed Dark Theme) -->
 <div class="min-h-screen w-full bg-zinc-950 text-zinc-100 flex items-center justify-center p-4 screen-fade">
+    
+    <!-- LOGIN VIEW -->
     <div id="view-login" class="w-full max-w-md p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-5 text-center">
         <div class="flex flex-col items-center gap-2">
             <img src="icon-levareapp.svg" alt="Levare Logo" class="w-12 h-12 rounded-2xl shadow-sm object-cover border border-zinc-800" />
@@ -61,6 +63,67 @@
         </div>
     </div>
 
+    <!-- MEMBER INVITE CODE VIEW -->
+    <div id="view-member-invite" class="w-full max-w-md p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-5 text-center hidden">
+        <div class="flex flex-col items-center gap-2">
+            <div class="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700/50 flex items-center justify-center text-zinc-100 text-lg mb-1">
+                <i class="fa-solid fa-ticket"></i>
+            </div>
+            <h2 class="font-serif text-2xl font-bold text-zinc-100">Unirse a una Banda</h2>
+            <p class="text-xs text-zinc-400">Ingresa el código de 6 dígitos que te compartió tu líder</p>
+        </div>
+        <form id="member-invite-form" class="space-y-4 text-left">
+            <div class="space-y-1">
+                <label for="invite-code-entry" class="text-xs text-zinc-400">Código de Invitación</label>
+                <input type="text" id="invite-code-entry" placeholder="123456" required maxlength="6" inputmode="numeric" pattern="[0-9]{6}" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-center font-mono text-xl tracking-[0.25em] text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+            </div>
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-white text-zinc-950 font-semibold text-xs hover:bg-zinc-200 transition shadow-sm">
+                Validar Código
+            </button>
+        </form>
+        <div class="text-xs text-zinc-400">
+            <p><a href="#" class="go-back-to-login text-zinc-400 hover:text-zinc-200 transition">Volver al inicio de sesión</a></p>
+        </div>
+    </div>
+
+    <!-- MEMBER REGISTER VIEW -->
+    <div id="view-member-register" class="w-full max-w-md p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-5 text-center hidden">
+        <div class="flex flex-col items-center gap-2">
+            <div class="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700/50 flex items-center justify-center text-zinc-100 text-lg mb-1">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h2 class="font-serif text-2xl font-bold text-zinc-100">Registro de Integrante</h2>
+            <p class="text-xs text-zinc-400">Te unirás a: <span id="register-member-group-name" class="font-semibold text-zinc-100">—</span></p>
+        </div>
+        <form id="member-register-form" class="space-y-3.5 text-left">
+            <input type="hidden" id="register-member-invite-code" />
+            <div class="grid grid-cols-2 gap-2">
+                <div class="space-y-1">
+                    <label for="member-register-name" class="text-xs text-zinc-400">Nombre</label>
+                    <input type="text" id="member-register-name" placeholder="Ej. Juan" required class="w-full px-3 py-2 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                </div>
+                <div class="space-y-1">
+                    <label for="member-register-lastname" class="text-xs text-zinc-400">Apellido</label>
+                    <input type="text" id="member-register-lastname" placeholder="Ej. Pérez" required class="w-full px-3 py-2 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                </div>
+            </div>
+            <div class="space-y-1">
+                <label for="member-register-email" class="text-xs text-zinc-400">Correo Electrónico</label>
+                <input type="email" id="member-register-email" placeholder="miembro@levare.com" required class="w-full px-3 py-2 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+            </div>
+            <div class="space-y-1">
+                <label for="member-register-password" class="text-xs text-zinc-400">Contraseña</label>
+                <input type="password" id="member-register-password" placeholder="Mínimo 6 caracteres" required minlength="6" class="w-full px-3 py-2 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+            </div>
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-white text-zinc-950 font-semibold text-xs hover:bg-zinc-200 transition shadow-sm">
+                Completar Registro
+            </button>
+        </form>
+        <div class="text-xs text-zinc-400">
+            <p>¿Quieres cambiar de código? <a href="#" id="go-back-to-invite" class="text-zinc-100 font-semibold hover:underline">Volver atrás</a></p>
+        </div>
+    </div>
+
     <!-- MANDATORY PASSWORD RESET VIEW -->
     <div id="view-force-password" class="w-full max-w-md p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-5 text-center hidden">
         <div class="flex flex-col items-center gap-2">
@@ -85,4 +148,3 @@
         </form>
     </div>
 </div>
-
