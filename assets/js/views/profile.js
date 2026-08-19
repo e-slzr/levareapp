@@ -202,7 +202,13 @@ function initProfileView() {
             }, 400);
         };
     }
+
+    // Sync Web Push Notifications switch state
+    if (typeof syncPushNotificationState === 'function') {
+        syncPushNotificationState();
+    }
 }
+
 
 
 function initAccentColorSelectors(activeAccent) {

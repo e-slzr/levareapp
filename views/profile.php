@@ -111,6 +111,27 @@
                 </button>
             </div>
 
+            <!-- Push Notifications Switcher -->
+            <div class="p-4 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/60">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-bell text-zinc-500 dark:text-zinc-400 text-sm"></i>
+                    <div>
+                        <h4 class="text-sm font-semibold text-zinc-900 dark:text-zinc-200">Notificaciones Push</h4>
+                        <p id="profile-push-status-text" class="text-xs text-zinc-500 dark:text-zinc-400">Recibe alertas en este dispositivo</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-test-push-notif" onclick="triggerTestPushNotification()" class="hidden px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition" title="Enviar notificación de prueba">
+                        <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                        <span class="hidden sm:inline ml-1">Probar</span>
+                    </button>
+                    <button type="button" id="push-switch-btn" onclick="togglePushNotifications()" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-zinc-300 dark:bg-zinc-700">
+                        <span id="push-switch-knob" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"></span>
+                    </button>
+                </div>
+            </div>
+
+
             <!-- Band Members Link -->
             <button type="button" onclick="navigateTo('members')" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left border-t border-zinc-100 dark:border-zinc-800/60">
                 <div class="flex items-center gap-3">

@@ -151,63 +151,89 @@ function getLocalDateString() {
 // Helper to get notification icon & styling by announcement content/type
 function getAnnouncementIconConfig(announcement) {
     const text = String(announcement.text || '').toLowerCase();
+    const meta = announcement.meta || {};
 
-    // 1. Sugerencia de canción -> Icono de audífonos / auriculares
+    // 1. Likes en la Comunidad -> Icono de corazón
+    if (meta.source === 'community' || text.includes('gustado') || text.includes('like') || text.includes('comunidad') || text.includes('corazón') || text.includes('corazon')) {
+        return {
+            iconHtml: `<i class="fa-solid fa-heart text-sm"></i>`,
+            badgeClass: 'bg-pink-50 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-900/50',
+            notifTypeClass: 'pink',
+            categoryLabel: 'Comunidad'
+        };
+    }
+
+    // 2. Sugerencia de canción -> Icono de audífonos / auriculares
     if (text.includes('sugiri') || text.includes('sugerencia') || text.includes('propuso')) {
         return {
             iconHtml: `<i class="fa-solid fa-headphones text-sm"></i>`,
             badgeClass: 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50',
-            notifTypeClass: 'purple'
+            notifTypeClass: 'purple',
+            categoryLabel: meta.band_name || 'Banda'
         };
     }
 
-    // 2. Nueva canción -> Icono de nota musical
+    // 3. Nueva canción -> Icono de nota musical
     if (text.includes('canción') || text.includes('cancion') || text.includes('añadió') || text.includes('anadió')) {
         return {
             iconHtml: `<i class="fa-solid fa-music text-sm"></i>`,
             badgeClass: 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50',
-            notifTypeClass: 'blue'
+            notifTypeClass: 'blue',
+            categoryLabel: meta.band_name || 'Banda'
         };
     }
 
-    // 3. Repertorio -> Icono de lista de verificación (setlist)
+    // 4. Repertorio -> Icono de lista de verificación (setlist)
     if (text.includes('repertorio') || text.includes('setlist')) {
         return {
             iconHtml: `<i class="fa-solid fa-list-check text-sm"></i>`,
             badgeClass: 'bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-900/50',
-            notifTypeClass: 'green'
+            notifTypeClass: 'green',
+            categoryLabel: meta.band_name || 'Banda'
         };
     }
 
-    // 4. Eventos -> Icono de calendario
+    // 5. Eventos -> Icono de calendario
     if (text.includes('evento') || text.includes('programó') || text.includes('programo') || text.includes('culto') || text.includes('ensayo') || text.includes('concierto')) {
         return {
             iconHtml: `<i class="fa-solid fa-calendar-days text-sm"></i>`,
             badgeClass: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50',
-            notifTypeClass: 'green'
+            notifTypeClass: 'green',
+            categoryLabel: meta.band_name || 'Banda'
         };
     }
 
     // Fallbacks por propiedad type
-    if (announcement.type === 'purple') {
+    if (announcement.type === 'pink') {
+        return {
+            iconHtml: `<i class="fa-solid fa-heart text-sm"></i>`,
+            badgeClass: 'bg-pink-50 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-900/50',
+            notifTypeClass: 'pink',
+            categoryLabel: 'Comunidad'
+        };
+    } else if (announcement.type === 'purple') {
         return {
             iconHtml: `<i class="fa-solid fa-headphones text-sm"></i>`,
             badgeClass: 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50',
-            notifTypeClass: 'purple'
+            notifTypeClass: 'purple',
+            categoryLabel: 'Banda'
         };
     } else if (announcement.type === 'green') {
         return {
             iconHtml: `<i class="fa-solid fa-calendar-days text-sm"></i>`,
             badgeClass: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50',
-            notifTypeClass: 'green'
+            notifTypeClass: 'green',
+            categoryLabel: 'Banda'
         };
     }
 
     return {
         iconHtml: `<i class="fa-solid fa-music text-sm"></i>`,
         badgeClass: 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50',
-        notifTypeClass: 'blue'
+        notifTypeClass: 'blue',
+        categoryLabel: 'Banda'
     };
 }
+
 
 

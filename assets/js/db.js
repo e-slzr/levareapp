@@ -32,9 +32,16 @@ function setData(key, val) {
 }
 
 /**
- * Global HTTP Fetcher for Laravel API
+ * Global HTTP Fetcher for Native API
  */
-async function apiFetch(endpoint, options = {}) {
+async function apiFetch(endpoint, options = {}, maybeBody = null) {
+    if (typeof options === 'string') {
+        options = {
+            method: options,
+            body: maybeBody
+        };
+    }
+
     const token = getData('token');
     const groupId = getData('currentGroupId');
 
@@ -42,6 +49,7 @@ async function apiFetch(endpoint, options = {}) {
         'Accept': 'application/json',
         ...(options.headers || {})
     };
+
 
     // If body is NOT a FormData instance, set content-type header to json
     if (options.body && !(options.body instanceof FormData)) {

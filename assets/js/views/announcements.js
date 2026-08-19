@@ -113,6 +113,12 @@ function renderAnnouncementsFullList() {
         card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-start gap-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition';
 
         const iconConfig = getAnnouncementIconConfig(a);
+        const categoryLabel = iconConfig.categoryLabel || 'Banda';
+        const isCommunity = categoryLabel.toLowerCase() === 'comunidad';
+        const categoryChipClass = isCommunity 
+            ? 'bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-900/60'
+            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700';
+
         const iconContainer = `<div class="w-9 h-9 rounded-xl ${iconConfig.badgeClass} flex items-center justify-center flex-shrink-0">${iconConfig.iconHtml}</div>`;
 
         // Format created date & time
@@ -126,9 +132,11 @@ function renderAnnouncementsFullList() {
 
         card.innerHTML = `
             ${iconContainer}
-            <div class="flex-1 min-w-0 space-y-1">
+            <div class="flex-1 min-w-0 space-y-1.5">
                 <p class="text-xs font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">${a.text}</p>
                 <div class="flex items-center gap-2 text-[11px] text-zinc-400 dark:text-zinc-500">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold border ${categoryChipClass} uppercase">${categoryLabel}</span>
+                    <span>•</span>
                     <span>${formattedDateStr}</span>
                     <span>•</span>
                     <span>${timeStr}</span>
@@ -138,4 +146,5 @@ function renderAnnouncementsFullList() {
 
         container.appendChild(card);
     });
+
 }
