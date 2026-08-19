@@ -22,53 +22,62 @@ function initApp() {
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) themeToggle.onclick = toggleTheme;
 
+    // Auth screens helper
+    function switchAuthTab(tab) {
+        const views = {
+            'login': 'view-login',
+            'register': 'view-leader-register',
+            'invite': 'view-member-invite',
+            'member-register': 'view-member-register',
+            'force-password': 'view-force-password'
+        };
+        Object.values(views).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+        const targetId = views[tab] || tab;
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) targetEl.classList.remove('hidden');
+    }
+    window.switchAuthTab = switchAuthTab;
+
     // Login page switches
     const goRegisterLink = document.getElementById('go-to-leader-register');
-    if (goRegisterLink) goRegisterLink.onclick = () => switchAuthTab('register');
-    const goLoginLink = document.getElementById('go-to-login');
-    if (goLoginLink) goLoginLink.onclick = () => switchAuthTab('login');
-    const goMemberInviteLink = document.getElementById('go-to-member-invite');
-    if (goMemberInviteLink) goMemberInviteLink.onclick = () => switchAuthTab('invite');
-    const goBackToInviteLink = document.getElementById('go-back-to-invite');
-    if (goBackToInviteLink) goBackToInviteLink.onclick = () => switchAuthTab('invite');
-    
     if (goRegisterLink) {
         goRegisterLink.onclick = (e) => {
             e.preventDefault();
-            document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-leader-register').classList.remove('hidden');
+            switchAuthTab('register');
         };
     }
     
+    const goLoginLink = document.getElementById('go-to-login');
     if (goLoginLink) {
         goLoginLink.onclick = (e) => {
             e.preventDefault();
-            document.getElementById('view-leader-register').classList.add('hidden');
-            document.getElementById('view-login').classList.remove('hidden');
+            switchAuthTab('login');
         };
     }
 
+    const goMemberInviteLink = document.getElementById('go-to-member-invite');
     if (goMemberInviteLink) {
         goMemberInviteLink.onclick = (e) => {
             e.preventDefault();
-            document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-member-invite').classList.remove('hidden');
+            switchAuthTab('invite');
         };
     }
 
     document.querySelectorAll('.go-back-to-login').forEach(link => {
         link.onclick = (e) => {
             e.preventDefault();
-            document.getElementById('view-member-invite').classList.add('hidden');
-            document.getElementById('view-login').classList.remove('hidden');
+            switchAuthTab('login');
         };
     });
 
+    const goBackToInviteLink = document.getElementById('go-back-to-invite');
     if (goBackToInviteLink) {
         goBackToInviteLink.onclick = (e) => {
             e.preventDefault();
-            document.getElementById('view-member-register').classList.add('hidden');
-            document.getElementById('view-member-invite').classList.remove('hidden');
+            switchAuthTab('invite');
         };
     }
 
@@ -777,7 +786,7 @@ async function handleJoinGroupSubmit(e) {
         currentGroupId = data.group.id;
         setData('currentGroupId', currentGroupId);
 
-        showToast(data.message, "success");
+        showToast(data.message || "Código de invitación verificado.", "success");
         await updateShellVisibility();
     } catch (err) {
         showToast(err.message, "danger");
@@ -1099,7 +1108,7 @@ async function installAppPWA() {
 // Register Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=2.0.0')
+        navigator.serviceWorker.register('sw.js?v=2.0.1')
             .then(reg => {
                 console.log('PWA ServiceWorker activo:', reg.scope);
             })

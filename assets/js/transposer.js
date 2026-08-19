@@ -65,13 +65,35 @@ function parseChordsToHTML(text, semitones = 0) {
             return;
         }
 
-        // 2. Section Headers (e.g., [Intro], [Verso 1])
+        // 2. Section Headers (e.g., [Intro], [Verso 1], [Coro])
         const sectionMatch = trimmed.match(/^\[([^\]]+)\]$/);
         if (sectionMatch) {
             const sectionName = sectionMatch[1];
-            const isCommonSection = /^(intro|verso|coro|puente|bridge|outro|pre-coro|solo|instrumental|chorus|verse|ending|coda)/i.test(sectionName) || sectionName.length > 4;
+            const isCommonSection = /^(intro|verso|coro|puente|bridge|outro|pre-coro|precoro|solo|interludio|instrumental|chorus|verse|ending|coda)/i.test(sectionName) || sectionName.length > 3;
             if (isCommonSection) {
-                html += `<div class="lyrics-section-header">${sectionName}</div>`;
+                let badgeClass = 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-300 border-zinc-500/20';
+                let dotColor = '#71717a';
+
+                if (typeof window !== 'undefined' && typeof window.getSectionTheme === 'function') {
+                    const theme = window.getSectionTheme(sectionName);
+                    if (theme) {
+                        badgeClass = theme.badgeBg;
+                        dotColor = theme.dotColor;
+                    }
+                } else if (typeof getSectionTheme === 'function') {
+                    const theme = getSectionTheme(sectionName);
+                    if (theme) {
+                        badgeClass = theme.badgeBg;
+                        dotColor = theme.dotColor;
+                    }
+                }
+
+                html += `<div class="lyrics-section-header-wrap">
+                    <span class="lyrics-section-pill ${badgeClass}">
+                        <span class="section-pill-dot" style="background-color: ${dotColor};"></span>
+                        <span>${escapeHtml(sectionName)}</span>
+                    </span>
+                </div>`;
                 return;
             }
         }
@@ -81,7 +103,7 @@ function parseChordsToHTML(text, semitones = 0) {
             const content = line.substring(1); // Remove the '#' prefix
             const parsedInstrumental = content.replace(/\[([^\]]+)\]/g, (match, chordName) => {
                 const transposed = transposeChord(chordName, semitones);
-                return `<span class="chord-el">${transposed}</span>`;
+                return `<span class="instrumental-viewer-badge">${escapeHtml(transposed)}</span>`;
             });
             html += `<div class="lyrics-line instrumental-line">${parsedInstrumental}</div>`;
             return;
@@ -107,7 +129,7 @@ function parseChordsToHTML(text, semitones = 0) {
                 }
 
                 lineHtml += `<span class="chord-segment">` +
-                            `<span class="chord-el">${transposedChord}</span>` +
+                            `<span class="chord-el">${escapeHtml(transposedChord)}</span>` +
                             `<span class="lyric-el">${escapeHtml(nextText) || ' '}</span>` +
                             `</span>`;
             } else {
@@ -134,4 +156,10 @@ function escapeHtml(text) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+}
+
+// Global browser export
+if (typeof window !== 'undefined') {
+    window.transposeChord = transposeChord;
+    window.parseChordsToHTML = parseChordsToHTML;
 }

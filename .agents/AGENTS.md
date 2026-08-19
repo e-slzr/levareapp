@@ -46,6 +46,36 @@ Este archivo establece las reglas, arquitectura y estándares de diseño y desar
 
 ---
 
+## 🐙 Estándares y Flujo de Trabajo en Git
+
+1. **Nomenclatura de Ramas con Correlativo:**
+   * Toda rama de trabajo debe incluir obligatoriamente un **número correlativo incremental de 3 dígitos (`001`, `002`, `003`...) al inicio** para identificar cronológicamente la versión más actual y mantener un ordenamiento natural en Git y GitHub.
+   * **Estructura oficial**: `<correlativo>-<tipo>/<descripcion-kebab-case>`
+   * **Tipos permitidos**:
+     * `feature`: Nuevas funcionalidades o módulos (ej. `001-feature/song-wizard-and-chord-builder`).
+     * `fix`: Corrección de errores o bugs (ej. `002-fix/touch-drag-reorder`).
+     * `refactor`: Mejoras o reestructuración de código sin alterar funcionalidad (ej. `003-refactor/auth-tokens-handler`).
+     * `style`: Ajustes puramente visuales, CSS o alineaciones (ej. `004-style/dark-mode-contrast`).
+     * `docs`: Actualización de documentación, guías o reglas (ej. `005-docs/agents-git-guidelines`).
+     * `chore`: Tareas de mantenimiento, dependencias o tooling (ej. `006-chore/cleanup-assets`).
+
+2. **Formato de Mensajes de Commit (Conventional Commits en Español):**
+   * Los commits deben ser atómicos, concisos y redactados en **español**.
+   * **Estructura**: `<tipo>(<alcance/módulo>): <descripción directa en presente/imperativo>`
+   * **Ejemplos**:
+     * `feat(songs): constructor modular de acordes con soporte táctil`
+     * `fix(setlists): sincronización de tono en vista de presentación`
+     * `refactor(db): optimizar consultas PDO con índices en canciones`
+     * `style(dashboard): ajustar padding y bordes en tarjetas de eventos`
+     * `docs(readme): actualizar instrucciones de despliegue y variables de entorno`
+
+3. **Buenas Prácticas de Versionado:**
+   * **Commits Atómicos**: No agrupar cambios de múltiples módulos no relacionados en un solo commit.
+   * **Seguridad**: Prohibido commitear archivos de entorno (`.env`), claves secretas o volcados temporales de base de datos.
+   * **Sincronización**: Al concluir una fase o requerimiento aprobado, verificar que el árbol de trabajo esté limpio (`git status`) y subir la rama a `origin`.
+
+---
+
 ## 🗣️ Idioma y Comunicación
 
 * Toda la interacción en chat, documentación, comentarios de código y mensajes de confirmación o tostadas (`showToast`) deben estar estrictamente redactados en **español**.

@@ -52,6 +52,7 @@ class AuthController {
                 'must_change_password' => (bool)$user['must_change_password'],
                 'accent_color' => $user['accent_color'],
                 'accentColor' => $user['accent_color'] ?? 'purple',
+                'community_points' => (float)($user['community_points'] ?? 0.00),
                 'avatar' => $user['avatar']
             ]
         ]);
@@ -70,6 +71,7 @@ class AuthController {
             'must_change_password' => (bool)$user['must_change_password'],
             'accent_color' => $user['accent_color'],
             'accentColor' => $user['accent_color'] ?? 'purple',
+            'community_points' => (float)($user['community_points'] ?? 0.00),
             'avatar' => $user['avatar']
         ]);
     }

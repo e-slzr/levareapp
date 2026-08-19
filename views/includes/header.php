@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Levare - Gestión de Bandas Musicales</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,12 +25,12 @@
         }
     </script>
     <!-- Main Styles -->
-    <link rel="stylesheet" href="assets/css/main.css?v=2.0.0">
+    <link rel="stylesheet" href="assets/css/main.css?v=2.0.1">
     <!-- PWA Manifest & iOS Meta Tags -->
-    <link rel="icon" type="image/svg+xml" href="icon-levareapp.svg?v=2.0.0">
+    <link rel="icon" type="image/svg+xml" href="icon-levareapp.svg?v=2.0.1">
     <link rel="alternate icon" href="favicon.ico">
-    <link rel="apple-touch-icon" href="icon-levareapp.svg?v=2.0.0">
-    <link rel="manifest" href="manifest.json?v=2.0.0">
+    <link rel="apple-touch-icon" href="icon-levareapp.svg?v=2.0.1">
+    <link rel="manifest" href="manifest.json?v=2.0.1">
     <meta name="theme-color" content="#09090b">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">

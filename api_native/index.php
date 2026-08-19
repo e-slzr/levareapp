@@ -89,6 +89,14 @@ switch ($path) {
         if ($method === 'POST') SongController::store();
         break;
 
+    case '/songs/community':
+        if ($method === 'GET') SongController::communityIndex();
+        break;
+
+    case '/songs/community/stats':
+        if ($method === 'GET') SongController::userCommunityStats();
+        break;
+
     // Setlists
     case '/setlists':
         if ($method === 'GET') SetlistController::index();
@@ -182,6 +190,20 @@ switch ($path) {
         if (preg_match('#^/suggestions/(\d+)$#', $path, $matches)) {
             $id = (int)$matches[1];
             if ($method === 'DELETE') SuggestionController::destroy($id);
+            break;
+        }
+
+        // Check for parameterized /songs/{id}/like
+        if (preg_match('#^/songs/(\d+)/like$#', $path, $matches)) {
+            $songId = (int)$matches[1];
+            if ($method === 'POST') SongController::toggleLike($songId);
+            break;
+        }
+
+        // Check for parameterized /songs/{id}/import
+        if (preg_match('#^/songs/(\d+)/import$#', $path, $matches)) {
+            $songId = (int)$matches[1];
+            if ($method === 'POST') SongController::importToGroup($songId);
             break;
         }
 

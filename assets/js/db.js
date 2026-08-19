@@ -2,15 +2,19 @@
    WorshipApp — API CLIENT & LOCAL STORAGE CLIENT
    ========================================================================== */
 
-// Resolve API server host dynamically to support local network mobile access
-const isLocal = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname) || 
-                window.location.hostname.startsWith('192.168.') || 
-                window.location.hostname.startsWith('10.') || 
-                window.location.hostname.startsWith('172.');
+// Dynamic base path and API URL resolution
+function getAppBasePath() {
+    let path = window.location.pathname;
+    // Remove filename like index.php or login.php if present
+    path = path.replace(/\/[^\/]+\.(php|html)$/i, '/');
+    if (!path.endsWith('/')) {
+        path += '/';
+    }
+    return path;
+}
 
-const API_URL = isLocal 
-    ? `${window.location.protocol}//${window.location.hostname}:9080/levareapp-dev/api_native/index.php` 
-    : `${window.location.protocol}//${window.location.hostname}/api_native/index.php`;
+const BASE_PATH = getAppBasePath();
+const API_URL = `${window.location.origin}${BASE_PATH}api_native/index.php`;
 /**
  * Basic LocalStorage Helpers (for session state)
  */
@@ -85,7 +89,14 @@ async function apiFetch(endpoint, options = {}) {
             return null;
         }
 
-        const data = await response.json();
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error("Respuesta del servidor no es JSON:", text);
+            throw new Error(`El servidor respondió con un error HTTP ${response.status} o una página HTML.`);
+        }
 
         if (!response.ok) {
             const err = new Error(data.message || 'Ocurrió un error en la solicitud.');
