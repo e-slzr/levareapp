@@ -2,6 +2,8 @@
 /**
  * Songs & Setlists Controller (Native PDO)
  */
+require_once __DIR__ . '/../services/NotificationService.php';
+
 class SongController {
 
     public static function index(): void {
@@ -120,10 +122,28 @@ class SongController {
             self::recalculateUserPoints((int)$user['id'], $pdo);
         }
 
-        // Create announcement
-        $userName = $user['name'];
-        $stmtAnn = $pdo->prepare("INSERT INTO announcements (group_id, text, type, created_at, updated_at) VALUES (?, ?, 'blue', NOW(), NOW())");
-        $stmtAnn->execute([$groupId, "{$userName} añadió una nueva canción: \"{$title}\" de {$artist}."]);
+        // Fetch band name for notification
+        $stmtG = $pdo->prepare("SELECT name FROM groups WHERE id = ? LIMIT 1");
+        $stmtG->execute([$groupId]);
+        $bandName = $stmtG->fetchColumn() ?: 'Banda';
+
+        // Dispatch Notification & Announcement
+        NotificationService::notifyGroup((int)$groupId, (int)$user['id'], [
+            'type'     => 'blue',
+            'title'    => "Nueva canción en {$bandName}",
+            'body'     => "{$user['name']} añadió \"{$title}\" de {$artist} al catálogo.",
+            'text'     => "{$user['name']} añadió una nueva canción: \"{$title}\" de {$artist}.",
+            'category' => 'songs',
+            'url'      => '#songs',
+            'meta'     => [
+                'song_id'    => $id,
+                'song_title' => $title,
+                'artist'     => $artist,
+                'band_name'  => $bandName,
+                'actor_name' => $user['name'],
+                'source'     => 'band'
+            ]
+        ]);
 
         jsonResponse([
             'message' => 'Canción registrada correctamente.',
@@ -357,6 +377,24 @@ class SongController {
         self::recalculateUserPoints($voterId, $pdo);
         if ($authorId !== $voterId) {
             self::recalculateUserPoints($authorId, $pdo);
+
+            // Send notification to the song author when liked
+            if ($liked) {
+                NotificationService::notifyUser($authorId, $voterId, [
+                    'type'     => 'pink',
+                    'title'    => 'Nuevo like en la Comunidad',
+                    'body'     => "A {$user['name']} le ha gustado tu canción \"{$song['title']}\".",
+                    'text'     => "A {$user['name']} le ha gustado tu canción \"{$song['title']}\".",
+                    'category' => 'community',
+                    'url'      => '#announcements',
+                    'meta'     => [
+                        'song_id'    => (int)$id,
+                        'song_title' => $song['title'],
+                        'actor_name' => $user['name'],
+                        'source'     => 'community'
+                    ]
+                ]);
+            }
         }
 
         jsonResponse([
@@ -393,12 +431,31 @@ class SongController {
         ");
         $stmtIns->execute([$groupId, $id, $user['id']]);
 
-        // Announcement
-        $userName = $user['name'];
+        // Fetch band name
+        $stmtG = $pdo->prepare("SELECT name FROM groups WHERE id = ? LIMIT 1");
+        $stmtG->execute([$groupId]);
+        $bandName = $stmtG->fetchColumn() ?: 'Banda';
+
         $title = $song['title'];
         $artist = $song['artist'];
-        $stmtAnn = $pdo->prepare("INSERT INTO announcements (group_id, text, type, created_at, updated_at) VALUES (?, ?, 'blue', NOW(), NOW())");
-        $stmtAnn->execute([$groupId, "{$userName} añadió al catálogo de la banda: \"{$title}\" de {$artist} (desde la comunidad)."]);
+
+        // Dispatch Notification & Announcement
+        NotificationService::notifyGroup((int)$groupId, (int)$user['id'], [
+            'type'     => 'blue',
+            'title'    => "Nueva canción en {$bandName}",
+            'body'     => "{$user['name']} añadió \"{$title}\" de {$artist} (desde la comunidad).",
+            'text'     => "{$user['name']} añadió al catálogo de la banda: \"{$title}\" de {$artist} (desde la comunidad).",
+            'category' => 'songs',
+            'url'      => '#songs',
+            'meta'     => [
+                'song_id'    => $id,
+                'song_title' => $title,
+                'artist'     => $artist,
+                'band_name'  => $bandName,
+                'actor_name' => $user['name'],
+                'source'     => 'band'
+            ]
+        ]);
 
         jsonResponse([
             'message' => 'Canción agregada al catálogo de tu banda con éxito.',
@@ -562,10 +619,27 @@ class SetlistController {
             $stmtSong->execute([$setlistId, (int)$songId, $index]);
         }
 
-        // Post announcement
-        $userName = $user['name'];
-        $stmtAnn = $pdo->prepare("INSERT INTO announcements (group_id, text, type, created_at, updated_at) VALUES (?, ?, 'green', NOW(), NOW())");
-        $stmtAnn->execute([$groupId, "{$userName} creó el repertorio: \"{$name}\"."]);
+        // Fetch band name
+        $stmtG = $pdo->prepare("SELECT name FROM groups WHERE id = ? LIMIT 1");
+        $stmtG->execute([$groupId]);
+        $bandName = $stmtG->fetchColumn() ?: 'Banda';
+
+        // Dispatch Notification & Announcement
+        NotificationService::notifyGroup((int)$groupId, (int)$user['id'], [
+            'type'     => 'green',
+            'title'    => "Nuevo repertorio en {$bandName}",
+            'body'     => "{$user['name']} creó el repertorio \"{$name}\".",
+            'text'     => "{$user['name']} creó el repertorio: \"{$name}\".",
+            'category' => 'setlists',
+            'url'      => '#setlists',
+            'meta'     => [
+                'setlist_id'   => (int)$setlistId,
+                'setlist_name' => $name,
+                'band_name'    => $bandName,
+                'actor_name'   => $user['name'],
+                'source'       => 'band'
+            ]
+        ]);
 
         jsonResponse(['message' => 'Repertorio creado con éxito.', 'id' => (int)$setlistId], 201);
     }

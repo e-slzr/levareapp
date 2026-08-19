@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../services/NotificationService.php';
 
 class SuggestionController {
 
@@ -78,6 +79,30 @@ class SuggestionController {
         $stmt->execute([$groupId, $title, $artist, $notes ?: null, $url ?: null, $user['id']]);
 
         $id = (int)$pdo->lastInsertId();
+
+        // Fetch band name
+        $stmtG = $pdo->prepare("SELECT name FROM groups WHERE id = ? LIMIT 1");
+        $stmtG->execute([$groupId]);
+        $bandName = $stmtG->fetchColumn() ?: 'Banda';
+
+        // Dispatch Notification & Announcement
+        NotificationService::notifyGroup((int)$groupId, (int)$user['id'], [
+            'type'     => 'purple',
+            'title'    => "Nueva sugerencia en {$bandName}",
+            'body'     => "{$user['name']} sugirió \"{$title}\" de {$artist}.",
+            'text'     => "{$user['name']} sugirió la canción: \"{$title}\" de {$artist}.",
+            'category' => 'suggestions',
+            'url'      => '#suggestions',
+            'meta'     => [
+                'suggestion_id' => $id,
+                'song_title'    => $title,
+                'artist'        => $artist,
+                'band_name'     => $bandName,
+                'actor_name'    => $user['name'],
+                'source'        => 'band'
+            ]
+        ]);
+
         jsonResponse(['message' => 'Sugerencia agregada con éxito.', 'id' => $id], 201);
     }
 

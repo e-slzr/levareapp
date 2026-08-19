@@ -21,6 +21,8 @@ require_once __DIR__ . '/controllers/EventController.php';
 require_once __DIR__ . '/controllers/MemberController.php';
 require_once __DIR__ . '/controllers/GroupController.php';
 require_once __DIR__ . '/controllers/SuggestionController.php';
+require_once __DIR__ . '/controllers/PushController.php';
+
 
 // Request parsing
 $requestUri = $_SERVER['REQUEST_URI'];
@@ -141,6 +143,28 @@ switch ($path) {
     case '/announcements':
         if ($method === 'GET') AnnouncementController::index();
         break;
+
+    // Web Push Notifications
+    case '/push/vapid-public-key':
+        if ($method === 'GET') PushController::getVapidPublicKey();
+        break;
+
+    case '/push/subscribe':
+        if ($method === 'POST') PushController::subscribe();
+        break;
+
+    case '/push/unsubscribe':
+        if ($method === 'POST') PushController::unsubscribe();
+        break;
+
+    case '/push/status':
+        if ($method === 'GET') PushController::status();
+        break;
+
+    case '/push/test':
+        if ($method === 'POST') PushController::test();
+        break;
+
 
     default:
         // Check for parameterized /members/roles/{roleName}

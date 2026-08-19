@@ -2,6 +2,8 @@
 /**
  * Event & Announcement Native Controllers
  */
+require_once __DIR__ . '/../services/NotificationService.php';
+
 class EventController {
 
     public static function index(): void {
@@ -94,10 +96,29 @@ class EventController {
             }
         }
 
-        // Announcement
-        $userName = $user['name'];
-        $stmtAnn = $pdo->prepare("INSERT INTO announcements (group_id, text, type, created_at, updated_at) VALUES (?, ?, 'green', NOW(), NOW())");
-        $stmtAnn->execute([$groupId, "{$userName} programó el evento: \"{$name}\" para el {$date}."]);
+        // Fetch band name
+        $stmtG = $pdo->prepare("SELECT name FROM groups WHERE id = ? LIMIT 1");
+        $stmtG->execute([$groupId]);
+        $bandName = $stmtG->fetchColumn() ?: 'Banda';
+
+        // Dispatch Notification & Announcement
+        NotificationService::notifyGroup((int)$groupId, (int)$user['id'], [
+            'type'     => 'green',
+            'title'    => "Nuevo evento en {$bandName}",
+            'body'     => "{$user['name']} programó \"{$name}\" para el {$date} ({$time} hs).",
+            'text'     => "{$user['name']} programó el evento: \"{$name}\" para el {$date} ({$time} hs).",
+            'category' => 'events',
+            'url'      => '#events',
+            'meta'     => [
+                'event_id'   => (int)$eventId,
+                'event_name' => $name,
+                'event_date' => $date,
+                'event_time' => $time,
+                'band_name'  => $bandName,
+                'actor_name' => $user['name'],
+                'source'     => 'band'
+            ]
+        ]);
 
         jsonResponse(['message' => 'Evento programado correctamente.', 'id' => (int)$eventId], 201);
     }
@@ -119,14 +140,34 @@ class AnnouncementController {
         $user = requireAuth();
         $groupId = getGroupIdHeader();
         $pdo = DB::getConnection();
+        $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 100) : 15;
 
         if ($groupId) {
-            $stmt = $pdo->prepare("SELECT * FROM announcements WHERE group_id = ? ORDER BY created_at DESC LIMIT 15");
-            $stmt->execute([$groupId]);
+            $stmt = $pdo->prepare("
+                SELECT * FROM announcements 
+                WHERE group_id = :group_id OR (user_id = :user_id AND group_id IS NULL) 
+                ORDER BY created_at DESC 
+                LIMIT {$limit}
+            ");
+            $stmt->execute(['group_id' => $groupId, 'user_id' => $user['id']]);
         } else {
-            $stmt = $pdo->query("SELECT * FROM announcements ORDER BY created_at DESC LIMIT 15");
+            $stmt = $pdo->prepare("
+                SELECT * FROM announcements 
+                WHERE user_id = :user_id OR group_id IS NOT NULL 
+                ORDER BY created_at DESC 
+                LIMIT {$limit}
+            ");
+            $stmt->execute(['user_id' => $user['id']]);
         }
 
-        jsonResponse($stmt->fetchAll());
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$r) {
+            if (!empty($r['meta']) && is_string($r['meta'])) {
+                $r['meta'] = json_decode($r['meta'], true);
+            }
+        }
+
+        jsonResponse($rows);
     }
 }
+
