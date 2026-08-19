@@ -1,13 +1,13 @@
 <!-- Onboarding / Group Setup Screen (Minimalist UI) -->
-<div class="space-y-6 screen-fade p-2 max-w-md mx-auto">
-    <div class="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4 text-center">
-        <div class="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-white text-zinc-950 mx-auto flex items-center justify-center font-bold text-xl shadow-sm">
-            +
-        </div>
-        <div>
-            <h2 class="font-serif text-2xl font-bold text-zinc-100">Configuración de Cuenta</h2>
-            <p class="text-xs text-zinc-400 mt-1">Para comenzar a usar Levare necesitas pertenecer a una banda o grupo musical.</p>
-        </div>
+<div class="w-full max-w-md p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-5 text-center">
+    <div class="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-white text-zinc-950 mx-auto flex items-center justify-center font-bold text-xl shadow-sm">
+        <i class="fa-solid fa-users text-lg"></i>
+    </div>
+    <div>
+        <h2 class="font-serif text-2xl font-bold text-zinc-100">Configuración de Cuenta</h2>
+        <p class="text-xs text-zinc-400 mt-1">Para comenzar a usar Levare necesitas pertenecer a una banda o grupo musical.</p>
+    </div>
+
 
         <!-- Mode Choices -->
         <div class="onboarding-choices space-y-3 pt-2">
@@ -51,4 +51,4 @@
             </div>
         </form>
     </div>
-</div>
+

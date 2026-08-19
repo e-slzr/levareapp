@@ -319,30 +319,38 @@ function toggleTheme() {
 
 async function updateShellVisibility() {
     const authContainer = document.getElementById('auth-container');
-    const mainContainer = document.getElementById('main-container');
+    const authFormsWrapper = document.getElementById('auth-forms-wrapper');
     const authOnboardingPanel = document.getElementById('auth-onboarding-panel');
+    const mainContainer = document.getElementById('main-container');
     const viewLogin = document.getElementById('view-login');
     const viewRegister = document.getElementById('view-leader-register');
+    const viewMemberInvite = document.getElementById('view-member-invite');
+    const viewMemberRegister = document.getElementById('view-member-register');
     const viewForcePassword = document.getElementById('view-force-password');
 
     // Hide everything first
     if (authContainer) authContainer.classList.add('hidden');
-    if (mainContainer) mainContainer.classList.add('hidden');
+    if (authFormsWrapper) authFormsWrapper.classList.add('hidden');
     if (authOnboardingPanel) authOnboardingPanel.classList.add('hidden');
+    if (mainContainer) mainContainer.classList.add('hidden');
     if (viewLogin) viewLogin.classList.add('hidden');
     if (viewRegister) viewRegister.classList.add('hidden');
+    if (viewMemberInvite) viewMemberInvite.classList.add('hidden');
+    if (viewMemberRegister) viewMemberRegister.classList.add('hidden');
     if (viewForcePassword) viewForcePassword.classList.add('hidden');
 
     if (!currentUser) {
         if (authContainer) authContainer.classList.remove('hidden');
+        if (authFormsWrapper) authFormsWrapper.classList.remove('hidden');
         if (viewLogin) viewLogin.classList.remove('hidden');
         return;
     }
 
     // Check force password reset flag
     if (currentUser.must_change_password) {
-        authContainer.classList.remove('hidden');
-        viewForcePassword.classList.remove('hidden');
+        if (authContainer) authContainer.classList.remove('hidden');
+        if (authFormsWrapper) authFormsWrapper.classList.remove('hidden');
+        if (viewForcePassword) viewForcePassword.classList.remove('hidden');
         return;
     }
 
@@ -361,6 +369,7 @@ async function updateShellVisibility() {
         if (!Array.isArray(userGroups) || userGroups.length === 0) {
             // Authenticated user with no active groups. Open Onboarding Setup.
             if (authContainer) authContainer.classList.remove('hidden');
+            if (authFormsWrapper) authFormsWrapper.classList.add('hidden');
             if (authOnboardingPanel) authOnboardingPanel.classList.remove('hidden');
             loadOnboardingLayout();
             return;
@@ -773,26 +782,6 @@ async function handleCreateGroupSubmit(e) {
     }
 }
 
-async function handleJoinGroupSubmit(e) {
-    e.preventDefault();
-    const code = document.getElementById('invite-code-input').value.trim();
-
-    try {
-        const data = await apiFetch('/groups/join', {
-            method: 'POST',
-            body: { invite_code: code }
-        });
-
-        currentGroupId = data.group.id;
-        setData('currentGroupId', currentGroupId);
-
-        showToast(data.message || "Código de invitación verificado.", "success");
-        await updateShellVisibility();
-    } catch (err) {
-        showToast(err.message, "danger");
-    }
-}
-
 // LOGOUTS
 async function confirmLogout() {
     const btn = document.getElementById('btn-confirm-logout');
@@ -920,16 +909,23 @@ window.openJoinGroupModal = openJoinGroupModal;
 async function handleJoinGroupSubmit(e) {
     e.preventDefault();
     const form = e.target;
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn ? submitBtn.textContent : 'Unirme';
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    const originalText = submitBtn ? submitBtn.textContent : 'Validar Código';
 
     // Support both onboarding input and global modal input
-    const inviteCode = (document.getElementById('invite-code-input')?.value || 
-                        document.getElementById('join-group-invite-code')?.value || '').trim();
+    const codeInput = (form ? form.querySelector('input') : null) || 
+                      document.getElementById('invite-code-input') || 
+                      document.getElementById('join-group-invite-code');
+    const inviteCode = codeInput ? codeInput.value.trim() : '';
+
+    if (!inviteCode) {
+        showToast('Por favor, ingresa el código de invitación.', 'danger');
+        return;
+    }
 
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Procesando...';
+        submitBtn.textContent = 'Validando...';
     }
 
     try {
@@ -944,7 +940,7 @@ async function handleJoinGroupSubmit(e) {
             globalModal.classList.add('hidden');
         }
         
-        showToast(data.message || 'Te has unido al grupo con éxito.', 'success');
+        showToast(data.message || 'Te has unido a la banda con éxito.', 'success');
 
         // Refetch active user groups list
         const updatedGroups = await apiFetch('/groups');
@@ -954,14 +950,12 @@ async function handleJoinGroupSubmit(e) {
         currentGroupId = data.group.id;
         setData('currentGroupId', currentGroupId);
 
-        // Switch view to dashboard and reload
+        // Switch view to dashboard and reload UI
+        await updateShellVisibility();
         window.location.hash = '#dashboard';
-        setTimeout(() => {
-            window.location.reload();
-        }, 300);
-
+        navigateTo('dashboard');
     } catch (err) {
-        showToast(err.message || 'Error al intentar unirse al grupo.', 'danger');
+        showToast(err.message || 'Error al validar el código.', 'danger');
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
@@ -981,16 +975,32 @@ function openCreateGroupModal() {
 }
 window.openCreateGroupModal = openCreateGroupModal;
 
-
-
 async function handleCreateGroupSubmit(e) {
     e.preventDefault();
-    const name = document.getElementById('create-group-name').value.trim();
-    const description = document.getElementById('create-group-description').value.trim();
-    const submitBtn = document.getElementById('btn-submit-create-group');
+    const form = e.target;
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    const originalText = submitBtn ? submitBtn.textContent : 'Crear Banda';
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Procesando...';
+    // Support both onboarding input ('new-group-name') and modal input ('create-group-name')
+    const nameInput = (form ? form.querySelector('input[type="text"]') : null) || 
+                      document.getElementById('new-group-name') || 
+                      document.getElementById('create-group-name');
+    const descInput = (form ? form.querySelector('textarea') : null) || 
+                      document.getElementById('new-group-desc') || 
+                      document.getElementById('create-group-description');
+
+    const name = nameInput ? nameInput.value.trim() : '';
+    const description = descInput ? descInput.value.trim() : '';
+
+    if (!name) {
+        showToast('El nombre de la banda o grupo es obligatorio.', 'danger');
+        return;
+    }
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Procesando...';
+    }
 
     try {
         const data = await apiFetch('/groups', {
@@ -998,8 +1008,10 @@ async function handleCreateGroupSubmit(e) {
             body: { name, description }
         });
 
-        // Hide modal
-        document.getElementById('modal-create-group-global').classList.add('hidden');
+        // Hide modal if open
+        const globalModal = document.getElementById('modal-create-group-global');
+        if (globalModal) globalModal.classList.add('hidden');
+
         showToast(data.message || 'Banda creada correctamente.', 'success');
 
         // Refetch active user groups list
@@ -1010,19 +1022,26 @@ async function handleCreateGroupSubmit(e) {
         currentGroupId = data.group.id;
         setData('currentGroupId', currentGroupId);
 
-        // Switch view to dashboard and reload
-        window.location.hash = '#dashboard';
-        setTimeout(() => {
-            window.location.reload();
-        }, 300);
+        // Update user state to leader if applicable
+        if (currentUser && currentUser.account_type !== 'superadmin') {
+            currentUser.account_type = 'leader';
+            setData('currentUser', currentUser);
+        }
 
+        // Switch view to dashboard and update UI
+        await updateShellVisibility();
+        window.location.hash = '#dashboard';
+        navigateTo('dashboard');
     } catch (err) {
         showToast(err.message || 'Error al intentar crear la banda.', 'danger');
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Crear Banda';
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
     }
 }
+
 
 
 // Initialize app on load

@@ -3,8 +3,9 @@
     <script src="assets/js/utils.js?v=2.0.4"></script>
     <script src="assets/js/chordParser.js?v=2.0.2"></script>
     <script src="assets/js/transposer.js?v=2.0.2"></script>
-    <script src="assets/js/app.js?v=2.0.4"></script>
+    <script src="assets/js/app.js?v=2.0.5"></script>
     <script src="assets/js/push.js?v=2.0.4"></script>
+
 
 
 

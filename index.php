@@ -32,12 +32,15 @@ require_once __DIR__ . '/views/includes/header.php';
 <div id="app" class="min-h-screen flex flex-col justify-between">
     <!-- AUTH CONTAINER (Login / Register / Onboarding) -->
     <div id="auth-container" class="auth-container">
-        <?php include __DIR__ . '/views/login.php'; ?>
+        <div id="auth-forms-wrapper" class="min-h-screen w-full bg-zinc-950 text-zinc-100 flex items-center justify-center p-4 screen-fade">
+            <?php include __DIR__ . '/views/login.php'; ?>
+        </div>
         
-        <div id="auth-onboarding-panel" class="hidden">
+        <div id="auth-onboarding-panel" class="min-h-screen w-full bg-zinc-950 text-zinc-100 flex items-center justify-center p-4 screen-fade hidden">
             <?php include __DIR__ . '/views/onboarding.php'; ?>
         </div>
     </div>
+
 
     <!-- MAIN APP CONTAINER (Responsive Desktop & Mobile Layout) -->
     <div id="main-container" class="main-container hidden w-full max-w-4xl mx-auto min-h-screen flex flex-col relative pb-36 md:pb-20 px-4 md:px-8">

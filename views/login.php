@@ -1,5 +1,4 @@
 <!-- LOGIN VIEW (Minimalist UI - Fixed Dark Theme) -->
-<div class="min-h-screen w-full bg-zinc-950 text-zinc-100 flex items-center justify-center p-4 screen-fade">
     
     <!-- LOGIN VIEW -->
     <div id="view-login" class="w-full max-w-md p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-5 text-center">
@@ -147,4 +146,3 @@
             </button>
         </form>
     </div>
-</div>
