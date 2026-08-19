@@ -1105,17 +1105,23 @@ async function installAppPWA() {
     }
 }
 
-// Register Service Worker
+// Register Service Worker with Web Push Support
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=2.0.1')
+        navigator.serviceWorker.register('sw.js?v=2.0.4')
             .then(reg => {
                 console.log('PWA ServiceWorker activo:', reg.scope);
+                // Force update check
+                if (typeof reg.update === 'function') {
+                    reg.update();
+                }
             })
             .catch(err => {
                 console.warn('PWA ServiceWorker no registrado:', err);
             });
     });
 }
+
+
 
 

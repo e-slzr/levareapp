@@ -63,7 +63,12 @@ async function initDashboardView() {
                 item.className = 'p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-start gap-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition';
                 
                 const iconConfig = getAnnouncementIconConfig(a);
-                
+                const categoryLabel = iconConfig.categoryLabel || 'Banda';
+                const isCommunity = categoryLabel.toLowerCase() === 'comunidad';
+                const categoryChipClass = isCommunity 
+                    ? 'bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-900/60'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700';
+
                 // Formatear hora de creación
                 const timeStr = a.created_at ? new Date(a.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + ' hs' : '';
                 
@@ -72,12 +77,19 @@ async function initDashboardView() {
                         ${iconConfig.iconHtml}
                     </div>
                     <div class="flex-1 min-w-0 space-y-1">
-                        <p class="text-xs font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">${a.text}</p>
-                        <span class="text-[11px] text-zinc-400 dark:text-zinc-500 block">${timeStr}</span>
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="text-xs font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">${a.text}</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-[11px] text-zinc-400 dark:text-zinc-500">
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold border ${categoryChipClass} uppercase">${categoryLabel}</span>
+                            <span>•</span>
+                            <span>${timeStr}</span>
+                        </div>
                     </div>
                 `;
                 if (listContainer) listContainer.appendChild(item);
             });
+
 
             // Mostrar el botón de ver todas las novedades siempre que existan registros
             if (viewAllBtnContainer) {

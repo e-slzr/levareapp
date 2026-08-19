@@ -61,3 +61,28 @@
         </div>
     </div>
 </div>
+
+<!-- 4. Global Push Notifications Invitation Modal -->
+<div id="modal-push-permission-invitation" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden px-4">
+    <div class="w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden screen-fade p-6 space-y-4 text-center">
+        <div class="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center mx-auto shadow-sm border border-zinc-200 dark:border-zinc-700">
+            <i class="fa-solid fa-bell text-lg"></i>
+        </div>
+        <div class="space-y-1.5">
+            <h3 class="font-serif text-lg font-bold text-zinc-900 dark:text-zinc-100">Notificaciones en tu Dispositivo</h3>
+            <p class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                Entérate al instante cuando tu banda agregue nuevas canciones, programe eventos, cree repertorios o cuando le den like a tus canciones comunitarias.
+            </p>
+        </div>
+        <div class="pt-2 flex flex-col gap-2">
+            <button type="button" onclick="acceptPushInvitationModal()" class="w-full py-2.5 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-check text-xs"></i>
+                <span>Activar Notificaciones</span>
+            </button>
+            <button type="button" onclick="dismissPushInvitationModal()" class="w-full py-2 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+                Ahora no
+            </button>
+        </div>
+    </div>
+</div>
+
