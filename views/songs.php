@@ -184,6 +184,24 @@
                     </div>
                 </div>
 
+                <!-- Switch Compartir en la Comunidad -->
+                <div class="space-y-1.5 pt-1">
+                    <label class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">Comunidad Levare</label>
+                    <div class="flex items-center justify-between p-3 px-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+                        <div class="space-y-0.5 pr-2">
+                            <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                                <i class="fa-solid fa-earth-americas text-blue-500 text-xs"></i>
+                                Compartir en la Comunidad
+                            </span>
+                            <span class="text-[10px] text-zinc-500 dark:text-zinc-400 block">Permite que otras bandas descubran y agreguen esta canción a su catálogo.</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                            <input type="checkbox" id="song-form-is-public" class="sr-only peer" checked>
+                            <div class="w-9 h-5 bg-zinc-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900 dark:peer-checked:bg-white dark:peer-checked:after:bg-zinc-950"></div>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Enlace Multimedia -->
                 <div class="space-y-1.5 pt-1">
                     <label for="song-form-url" class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">Enlace a Video o Audio <span class="text-xs text-zinc-400 font-normal normal-case">(Opcional)</span></label>
@@ -249,6 +267,59 @@
     </div>
 </div>
 
+<!-- Subpanel 4: Catálogo de Canciones de la Comunidad -->
+<div id="subpanel-community-catalog" class="space-y-5 screen-fade hidden pb-24 md:pb-16">
+    <header class="flex items-center justify-between pt-2">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+            <button type="button" id="btn-community-back-to-list" class="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-1.5 transition flex-shrink-0 cursor-pointer">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+                <span>Mi Repertorio</span>
+            </button>
+            <div class="min-w-0 flex-1">
+                <h1 class="font-serif text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">Comunidad</h1>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">Canciones compartidas por bandas y usuarios de Levare</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search and Filters Bar -->
+    <div class="space-y-3">
+        <!-- Search Input -->
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+            </div>
+            <input type="text" id="community-songs-search-input" placeholder="Buscar en la comunidad por título, artista o álbum..." style="padding-left: 40px !important;" class="w-full pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+        </div>
+
+        <!-- Filter / Order Tabs -->
+        <div class="flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs">
+            <div class="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <button type="button" id="filter-comm-popular" class="btn-community-sort active px-3 py-1.5 rounded-lg font-bold bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm transition flex items-center gap-1.5 cursor-pointer" data-sort="popular">
+                    <i class="fa-solid fa-fire text-amber-500 text-xs"></i>
+                    <span>Más Populares</span>
+                </button>
+                <button type="button" id="filter-comm-recent" class="btn-community-sort px-3 py-1.5 rounded-lg font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition flex items-center gap-1.5 cursor-pointer" data-sort="recent">
+                    <i class="fa-solid fa-clock text-xs"></i>
+                    <span>Más Recientes</span>
+                </button>
+                <button type="button" id="filter-comm-alpha" class="btn-community-sort px-3 py-1.5 rounded-lg font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition flex items-center gap-1.5 cursor-pointer" data-sort="alpha">
+                    <i class="fa-solid fa-arrow-down-a-z text-xs"></i>
+                    <span>A - Z</span>
+                </button>
+            </div>
+            <div id="community-songs-count" class="text-[11px] font-semibold text-zinc-400 px-2 flex-shrink-0">
+                0 canciones
+            </div>
+        </div>
+    </div>
+
+    <!-- Community Songs Grid -->
+    <div id="community-songs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <!-- Rendered dynamically by JS -->
+    </div>
+</div>
+
 <!-- ================= MODALS SECTION ================= -->
 
 <!-- 1. MODAL SELECTOR INICIAL: AGREGAR CANCIÓN (CREAR NUEVA / CATÁLOGO) -->
@@ -259,7 +330,7 @@
                 <h3 class="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100">Nueva Canción</h3>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">Selecciona cómo deseas registrar la canción</p>
             </div>
-            <button type="button" class="btn-close-choose-type text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-bold">&times;</button>
+            <button type="button" class="btn-close-choose-type text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-bold cursor-pointer">&times;</button>
         </div>
 
         <div class="grid grid-cols-1 gap-3">
@@ -274,19 +345,76 @@
                 </div>
             </button>
 
-            <!-- Opción 2: Desde Catálogo (Próximamente) -->
-            <div class="w-full p-4 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-950/30 opacity-75 flex items-start gap-3.5 cursor-not-allowed">
-                <div class="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                    <i class="fa-solid fa-cloud-arrow-down"></i>
+            <!-- Opción 2: Desde Catálogo de la Comunidad -->
+            <button type="button" id="btn-choose-from-catalog" class="w-full p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/50 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition text-left flex items-start gap-3.5 group cursor-pointer">
+                <div class="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center text-sm font-bold flex-shrink-0 group-hover:scale-105 transition">
+                    <i class="fa-solid fa-earth-americas text-base"></i>
                 </div>
                 <div class="space-y-0.5 flex-1 min-w-0">
                     <div class="flex items-center justify-between gap-2">
-                        <h4 class="font-bold text-sm text-zinc-700 dark:text-zinc-300">Desde Catálogo</h4>
-                        <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">Próximamente</span>
+                        <h4 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-700 dark:group-hover:text-white">Desde Catálogo de la Comunidad</h4>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">Levare OS</span>
                     </div>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">Explora canciones de la biblioteca compartida para importarlas directamente.</p>
                 </div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 2. MODAL VISTA PREVIA CANCIÓN DE LA COMUNIDAD -->
+<div id="modal-community-song-preview" class="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-3 md:p-4 z-50 hidden screen-fade">
+    <div class="w-full max-w-2xl max-h-[90vh] flex flex-col p-4 md:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-4">
+        
+        <!-- Header del Modal -->
+        <div class="flex items-start justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3.5 flex-shrink-0 gap-3">
+            <div class="min-w-0 flex-1 space-y-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h3 id="comm-preview-title" class="font-serif text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100 truncate">Título</h3>
+                    <span id="comm-preview-key-badge" class="px-2 py-0.5 rounded-lg text-xs font-bold font-mono bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30">C</span>
+                    <span id="comm-preview-medley-badge" class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hidden">Medley</span>
+                </div>
+                <p id="comm-preview-artist-album" class="text-xs text-zinc-500 dark:text-zinc-400 truncate">Artista • Álbum</p>
+                <p id="comm-preview-creator" class="text-[11px] text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-pen text-[10px]"></i>
+                    <span>Agregada por:</span>
+                    <strong class="text-zinc-700 dark:text-zinc-300 font-semibold" id="comm-preview-creator-name">---</strong>
+                </p>
             </div>
+            <button type="button" id="btn-close-comm-preview-x" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xl font-bold p-1 flex-shrink-0 cursor-pointer">&times;</button>
+        </div>
+
+        <!-- Action Bar: Like Button & Add to Band Button -->
+        <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/80 border border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+            <!-- Like Button -->
+            <button type="button" id="btn-comm-preview-like" class="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold transition flex items-center gap-2 hover:scale-105 cursor-pointer">
+                <i id="comm-preview-like-icon" class="fa-regular fa-heart text-zinc-400 text-sm"></i>
+                <span id="comm-preview-likes-count" class="text-zinc-700 dark:text-zinc-300 font-mono">0</span>
+                <span class="text-[11px] text-zinc-400 font-normal">Likes</span>
+            </button>
+
+            <!-- Import / Add Button -->
+            <div id="comm-preview-import-container">
+                <button type="button" id="btn-comm-preview-import" class="px-5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>Agregar a mi Repertorio</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chords and Lyrics View -->
+        <div class="flex-1 min-h-[220px] max-h-[50vh] overflow-y-auto p-4 rounded-xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 font-mono text-xs leading-relaxed">
+            <div id="comm-preview-chords-content" class="whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">
+                <!-- Chords rendered via parseChordsToHTML -->
+            </div>
+        </div>
+
+        <!-- Audio/Video url link if exists -->
+        <div id="comm-preview-url-wrapper" class="text-xs hidden flex-shrink-0">
+            <a id="comm-preview-url-link" href="#" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                <span id="comm-preview-url-text">Ver enlace de video o audio</span>
+            </a>
         </div>
     </div>
 </div>

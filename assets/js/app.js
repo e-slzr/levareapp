@@ -1108,7 +1108,7 @@ async function installAppPWA() {
 // Register Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=2.0.0')
+        navigator.serviceWorker.register('sw.js?v=2.0.1')
             .then(reg => {
                 console.log('PWA ServiceWorker activo:', reg.scope);
             })

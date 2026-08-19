@@ -1,14 +1,14 @@
-const CACHE_NAME = "levare-cache-v2.0.0";
+const CACHE_NAME = "levare-cache-v2.0.2";
 const ASSETS = [
   "./",
   "./index.php",
-  "./assets/css/main.css?v=2.0.0",
-  "./assets/js/db.js?v=2.0.0",
-  "./assets/js/utils.js?v=2.0.0",
-  "./assets/js/transposer.js?v=2.0.0",
-  "./assets/js/app.js?v=2.0.0",
-  "./icon-levareapp.svg?v=2.0.0",
-  "./manifest.json?v=2.0.0"
+  "./assets/css/main.css?v=2.0.1",
+  "./assets/js/db.js?v=2.0.2",
+  "./assets/js/utils.js?v=2.0.2",
+  "./assets/js/transposer.js?v=2.0.2",
+  "./assets/js/app.js?v=2.0.2",
+  "./icon-levareapp.svg?v=2.0.1",
+  "./manifest.json?v=2.0.1"
 ];
 
 // Install Event
@@ -37,8 +37,12 @@ self.addEventListener("activate", (e) => {
 
 // Fetch Event - Stale-While-Revalidate for local assets, Network-Only for API
 self.addEventListener("fetch", (e) => {
-  const isApi = e.request.url.includes("/api/") || e.request.url.includes("/index.php/");
-  const isLocal = e.request.url.startsWith(self.location.origin);
+  const url = e.request.url;
+  const isApi = url.includes("/api/") || 
+                url.includes("/api_native") || 
+                url.includes("api_native") || 
+                url.includes("/index.php/");
+  const isLocal = url.startsWith(self.location.origin);
 
   if (isApi || !isLocal) {
     return; // Let browser handle it normally
@@ -59,3 +63,4 @@ self.addEventListener("fetch", (e) => {
     })
   );
 });
+
