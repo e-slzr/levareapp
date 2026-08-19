@@ -420,50 +420,53 @@
 </div>
 
 <!-- 3. MODAL DEL CONSTRUCTOR VISUAL DE LETRA Y ACORDES -->
-<div id="modal-chord-builder" class="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-2 md:p-4 z-50 hidden screen-fade">
-    <div class="w-full max-w-3xl h-[92vh] flex flex-col p-4 md:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-3.5">
+<div id="modal-chord-builder" class="fixed inset-0 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-1 sm:p-2 md:p-4 z-50 hidden screen-fade">
+    <div class="w-full max-w-3xl h-[96vh] md:h-[92vh] flex flex-col p-2.5 sm:p-4 md:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-2.5 md:space-y-3.5">
         
         <!-- Header del Constructor -->
-        <div class="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3 flex-shrink-0">
+        <div class="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-2.5 md:pb-3 flex-shrink-0">
             <div>
-                <h3 class="font-serif text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100">Editor de Letra y Acordes</h3>
-                <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Ubica el cursor de escritura e inserta acordes o secciones interactivas.</p>
+                <h3 class="font-serif text-base sm:text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100">Editor de Letra y Acordes</h3>
+                <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400">Ubica el cursor e inserta acordes en la posición exacta.</p>
             </div>
             <div class="flex items-center gap-2">
-                <button type="button" id="btn-apply-chord-builder" class="px-4 py-1.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition">
+                <button type="button" id="btn-apply-chord-builder" class="px-3.5 sm:px-4 py-1.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition cursor-pointer">
                     Listo
                 </button>
-                <button type="button" id="btn-close-chord-builder-x" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xl font-bold p-1">&times;</button>
+                <button type="button" id="btn-close-chord-builder-x" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xl font-bold p-1 cursor-pointer">&times;</button>
             </div>
         </div>
 
-        <!-- Barra de Herramientas Flotante del Constructor -->
-        <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-950/80 border border-zinc-200 dark:border-zinc-800 flex-shrink-0 text-xs">
+        <!-- Barra de Herramientas del Constructor -->
+        <div class="flex flex-wrap items-center justify-between gap-2 p-2 sm:p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-950/80 border border-zinc-200 dark:border-zinc-800 flex-shrink-0 text-xs">
             <div class="flex items-center gap-2">
-                <button type="button" id="btn-toolbar-add-chord" class="px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700 font-bold hover:border-zinc-400 transition flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-circle-plus text-amber-500 text-xs"></i>
-                    <span>Agregar Acorde</span>
-                </button>
-                <button type="button" id="btn-toolbar-add-section" class="px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700 font-bold hover:border-zinc-400 transition flex items-center gap-1.5 shadow-sm">
-                    <i class="fa-solid fa-bookmark text-zinc-400 text-xs"></i>
+                <button type="button" id="btn-toolbar-add-section" class="px-3 sm:px-3.5 py-1.5 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 font-bold hover:opacity-90 transition flex items-center gap-1.5 shadow-sm cursor-pointer text-xs">
+                    <i class="fa-solid fa-plus text-xs"></i>
                     <span>Agregar Sección</span>
+                </button>
+                <button type="button" id="btn-toggle-reorder-mode" class="px-3 sm:px-3.5 py-1.5 rounded-lg bg-zinc-200/80 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-medium hover:bg-zinc-300 dark:hover:bg-zinc-700 transition flex items-center gap-1.5 shadow-sm cursor-pointer text-xs" title="Colapsar secciones para reordenar rápidamente">
+                    <i class="fa-solid fa-arrows-up-down text-xs"></i>
+                    <span id="reorder-mode-btn-label">Modo Ordenar</span>
                 </button>
             </div>
 
             <div class="flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
-                <span>Tono Base: <strong id="builder-current-key-badge" class="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold">C</strong></span>
+                <span>Tono Base: <strong id="builder-current-key-badge" class="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold font-mono">C</strong></span>
             </div>
         </div>
 
-        <!-- Lienzo de Edición Enriquecido -->
+        <!-- Contenedor Dinámico de Bloques / Tarjetas de Sección (Drag & Drop) -->
         <div class="flex-1 min-h-0 relative border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-950/50 overflow-hidden flex flex-col">
-            <div id="visual-chord-editor" contenteditable="true" spellcheck="false" class="flex-1 p-4 overflow-y-auto font-mono text-sm leading-loose text-zinc-900 dark:text-zinc-100 focus:outline-none select-text whitespace-pre-wrap">
-                <!-- Se inyectan las líneas estructuradas con Badges -->
+            <div id="section-cards-container" class="flex-1 p-1.5 sm:p-3 md:p-4 overflow-y-auto space-y-2.5 sm:space-y-3.5 select-text">
+                <!-- Se inyectan las tarjetas modulares dinámicamente (.section-card-block) -->
             </div>
         </div>
 
-        <div class="flex items-center justify-between text-[11px] text-zinc-400 flex-shrink-0 pt-1">
-            <span>Tip: Puedes arrastrar cualquier acorde para ajustar su posición, o hacer clic sobre él para cambiarlo o eliminarlo.</span>
+        <div class="flex items-center justify-between text-[10px] sm:text-[11px] text-zinc-400 flex-shrink-0 pt-0.5">
+            <span class="flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-info text-[10px] text-zinc-500"></i>
+                <span>Arrastra el icono <i class="fa-solid fa-grip-vertical text-[10px] px-0.5"></i> para reordenar. El botón <strong class="text-rose-500 font-bold">+</strong> agrega acordes en el cursor.</span>
+            </span>
         </div>
     </div>
 </div>
@@ -547,27 +550,46 @@
             <button type="button" class="btn-close-section-picker text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg font-bold">&times;</button>
         </div>
 
-        <div class="grid grid-cols-2 gap-2">
-            <button type="button" class="btn-insert-section p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-900 dark:text-zinc-100 transition text-center" data-section="INTRO">
-                [INTRO]
+        <div class="grid grid-cols-2 gap-2.5">
+            <!-- INTRO -->
+            <button type="button" class="btn-insert-section p-3 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/15 text-xs font-bold text-purple-600 dark:text-purple-400 transition flex items-center justify-between group cursor-pointer" data-section="INTRO">
+                <span>[INTRO]</span>
+                <span class="text-[10px] opacity-70 font-normal">Instrumental</span>
             </button>
-            <button type="button" class="btn-insert-section p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-900 dark:text-zinc-100 transition text-center" data-section="VERSO">
-                [VERSO] <span class="text-[10px] text-zinc-400 block font-normal">(Autocorrelativo)</span>
+            <!-- VERSO -->
+            <button type="button" class="btn-insert-section p-3 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/15 text-xs font-bold text-blue-600 dark:text-blue-400 transition flex items-center justify-between group cursor-pointer" data-section="VERSO">
+                <span>[VERSO]</span>
+                <span class="text-[10px] opacity-70 font-normal">Auto #</span>
             </button>
-            <button type="button" class="btn-insert-section p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-900 dark:text-zinc-100 transition text-center" data-section="PRE-CORO">
-                [PRE-CORO]
+            <!-- PRE-CORO -->
+            <button type="button" class="btn-insert-section p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/15 text-xs font-bold text-amber-600 dark:text-amber-400 transition flex items-center justify-between group cursor-pointer" data-section="PRE-CORO">
+                <span>[PRE-CORO]</span>
+                <span class="text-[10px] opacity-70 font-normal">Letra</span>
             </button>
-            <button type="button" class="btn-insert-section p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-900 dark:text-zinc-100 transition text-center" data-section="CORO">
-                [CORO]
+            <!-- CORO -->
+            <button type="button" class="btn-insert-section p-3 rounded-xl border border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/15 text-xs font-bold text-rose-600 dark:text-rose-400 transition flex items-center justify-between group cursor-pointer" data-section="CORO">
+                <span>[CORO]</span>
+                <span class="text-[10px] opacity-70 font-normal">Principal</span>
             </button>
-            <button type="button" class="btn-insert-section p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-900 dark:text-zinc-100 transition text-center" data-section="PUENTE">
-                [PUENTE]
+            <!-- PUENTE -->
+            <button type="button" class="btn-insert-section p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/15 text-xs font-bold text-amber-600 dark:text-amber-400 transition flex items-center justify-between group cursor-pointer" data-section="PUENTE">
+                <span>[PUENTE]</span>
+                <span class="text-[10px] opacity-70 font-normal">Bridge</span>
             </button>
-            <button type="button" class="btn-insert-section p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-900 dark:text-zinc-100 transition text-center" data-section="SOLO">
-                [SOLO]
+            <!-- SOLO -->
+            <button type="button" class="btn-insert-section p-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/15 text-xs font-bold text-emerald-600 dark:text-emerald-400 transition flex items-center justify-between group cursor-pointer" data-section="SOLO">
+                <span>[SOLO]</span>
+                <span class="text-[10px] opacity-70 font-normal">Instrumental</span>
             </button>
-            <button type="button" class="btn-insert-section col-span-2 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-900 dark:text-zinc-100 transition text-center" data-section="OUTRO">
-                [OUTRO]
+            <!-- INTERLUDIO -->
+            <button type="button" class="btn-insert-section p-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/15 text-xs font-bold text-emerald-600 dark:text-emerald-400 transition flex items-center justify-between group cursor-pointer" data-section="INTERLUDIO">
+                <span>[INTERLUDIO]</span>
+                <span class="text-[10px] opacity-70 font-normal">Instrumental</span>
+            </button>
+            <!-- OUTRO -->
+            <button type="button" class="btn-insert-section p-3 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/15 text-xs font-bold text-purple-600 dark:text-purple-400 transition flex items-center justify-between group cursor-pointer" data-section="OUTRO">
+                <span>[OUTRO]</span>
+                <span class="text-[10px] opacity-70 font-normal">Final</span>
             </button>
         </div>
     </div>

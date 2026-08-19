@@ -414,6 +414,278 @@ function escapeHtmlText(text) {
         .replace(/>/g, "&gt;");
 }
 
+/**
+ * Retorna el tema visual (colores y clases) según el tipo de sección.
+ */
+function getSectionTheme(sectionType) {
+    const clean = (sectionType || '').toUpperCase();
+    if (clean.includes('PRE-CORO') || clean.includes('PRECORO') || clean.includes('PRE-CHORUS')) {
+        return {
+            name: 'PRE-CORO',
+            headerColor: 'text-amber-500 dark:text-amber-400',
+            badgeBg: 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20',
+            borderColor: 'border-amber-500/30 dark:border-amber-500/20',
+            dotColor: '#f59e0b'
+        };
+    }
+    if (clean.includes('CORO') || clean.includes('CHORUS')) {
+        return {
+            name: 'CORO',
+            headerColor: 'text-rose-500 dark:text-rose-400',
+            badgeBg: 'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20',
+            borderColor: 'border-rose-500/30 dark:border-rose-500/20',
+            dotColor: '#f43f5e'
+        };
+    }
+    if (clean.includes('VERSO') || clean.includes('VERSE')) {
+        return {
+            name: 'VERSO',
+            headerColor: 'text-blue-500 dark:text-blue-400',
+            badgeBg: 'bg-blue-500/10 text-blue-500 dark:text-blue-400 border-blue-500/20',
+            borderColor: 'border-blue-500/30 dark:border-blue-500/20',
+            dotColor: '#3b82f6'
+        };
+    }
+    if (clean.includes('INTRO')) {
+        return {
+            name: 'INTRO',
+            headerColor: 'text-purple-500 dark:text-purple-400',
+            badgeBg: 'bg-purple-500/10 text-purple-500 dark:text-purple-400 border-purple-500/20',
+            borderColor: 'border-purple-500/30 dark:border-purple-500/20',
+            dotColor: '#a855f7'
+        };
+    }
+    if (clean.includes('OUTRO') || clean.includes('FINAL') || clean.includes('CODA') || clean.includes('ENDING')) {
+        return {
+            name: 'OUTRO',
+            headerColor: 'text-purple-500 dark:text-purple-400',
+            badgeBg: 'bg-purple-500/10 text-purple-500 dark:text-purple-400 border-purple-500/20',
+            borderColor: 'border-purple-500/30 dark:border-purple-500/20',
+            dotColor: '#a855f7'
+        };
+    }
+    if (clean.includes('PUENTE') || clean.includes('BRIDGE')) {
+        return {
+            name: 'PUENTE',
+            headerColor: 'text-amber-500 dark:text-amber-400',
+            badgeBg: 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20',
+            borderColor: 'border-amber-500/30 dark:border-amber-500/20',
+            dotColor: '#f59e0b'
+        };
+    }
+    if (clean.includes('SOLO') || clean.includes('INTERLUDIO') || clean.includes('INSTRUMENTAL')) {
+        return {
+            name: clean.includes('SOLO') ? 'SOLO' : (clean.includes('INTERLUDIO') ? 'INTERLUDIO' : 'INSTRUMENTAL'),
+            headerColor: 'text-emerald-500 dark:text-emerald-400',
+            badgeBg: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20',
+            borderColor: 'border-emerald-500/30 dark:border-emerald-500/20',
+            dotColor: '#10b981'
+        };
+    }
+    return {
+        name: 'SECCIÓN',
+        headerColor: 'text-zinc-500 dark:text-zinc-400',
+        badgeBg: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-300 border-zinc-500/20',
+        borderColor: 'border-zinc-300 dark:border-zinc-700',
+        dotColor: '#71717a'
+    };
+}
+
+/**
+ * Determina si un tipo de sección es instrumental por defecto.
+ */
+function isInstrumentalSectionType(type) {
+    const clean = (type || '').toUpperCase();
+    return /^(INTRO|SOLO|INTERLUDIO|INSTRUMENTAL|OUTRO)/i.test(clean);
+}
+
+/**
+ * Convierte texto plano ChordPro en un array de objetos de sección estructurados.
+ */
+function chordProToSections(chordProText) {
+    if (!chordProText) return [];
+
+    // Si viene en formato 2 líneas de internet, convertir primero a ChordPro
+    if (!chordProText.includes('[') && (isChordLine(chordProText) || detectSectionHeader(chordProText))) {
+        chordProText = parseInternetLyricsToChordPro(chordProText);
+    }
+
+    const lines = chordProText.split(/\r?\n/);
+    const sections = [];
+    let currentSection = null;
+
+    const finalizeSection = () => {
+        if (!currentSection) return;
+
+        // Determinar si es instrumental:
+        // 1. Si todas las líneas no vacías son instrumentales (#) o no tiene líneas de texto y su tipo es instrumental
+        const nonEmptyLines = currentSection.lines.filter(l => l.trim() !== '');
+        const allInstrumentalLines = nonEmptyLines.length > 0 && nonEmptyLines.every(l => l.trim().startsWith('#'));
+
+        if (allInstrumentalLines || (nonEmptyLines.length === 0 && isInstrumentalSectionType(currentSection.type))) {
+            currentSection.isInstrumental = true;
+            // Extraer acordes de las líneas instrumentales
+            const chords = [];
+            currentSection.lines.forEach(line => {
+                const matches = line.match(/\[([^\]]+)\]/g);
+                if (matches) {
+                    matches.forEach(m => {
+                        const c = formatMusicalChord(m.slice(1, -1));
+                        if (c) chords.push(c);
+                    });
+                }
+            });
+            currentSection.chords = chords;
+            currentSection.lines = [];
+        } else {
+            currentSection.isInstrumental = false;
+            currentSection.chords = [];
+        }
+
+        sections.push(currentSection);
+    };
+
+    lines.forEach(line => {
+        const trimmed = line.trim();
+
+        // Detección de encabezado de sección [INTRO], [VERSO 1], etc.
+        const sectionMatch = trimmed.match(/^\[([^\]]+)\]$/);
+        if (sectionMatch) {
+            const secName = formatSectionHeader(sectionMatch[1]);
+            const isCommonSection = /^(intro|verso|coro|puente|bridge|outro|pre-coro|precoro|solo|interludio|instrumental|chorus|verse|ending|coda)/i.test(secName) || secName.length > 3;
+
+            if (isCommonSection) {
+                finalizeSection();
+                currentSection = {
+                    id: 'sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                    type: secName,
+                    isInstrumental: isInstrumentalSectionType(secName),
+                    chords: [],
+                    lines: []
+                };
+                return;
+            }
+        }
+
+        // Si no hay sección activa, crear una por defecto
+        if (!currentSection) {
+            const defaultType = line.startsWith('#') ? 'INTRO' : 'VERSO 1';
+            currentSection = {
+                id: 'sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                type: defaultType,
+                isInstrumental: isInstrumentalSectionType(defaultType),
+                chords: [],
+                lines: []
+            };
+        }
+
+        currentSection.lines.push(line);
+    });
+
+    finalizeSection();
+
+    // Si aún está vacío, devolver una sección por defecto
+    if (sections.length === 0) {
+        sections.push({
+            id: 'sec_' + Date.now() + '_init',
+            type: 'VERSO 1',
+            isInstrumental: false,
+            chords: [],
+            lines: ['']
+        });
+    }
+
+    return sections;
+}
+
+/**
+ * Convierte un array de objetos de sección de vuelta a texto plano ChordPro estándar.
+ */
+function sectionsToChordPro(sections) {
+    if (!Array.isArray(sections) || sections.length === 0) return '';
+    const result = [];
+
+    sections.forEach((sec, idx) => {
+        const type = formatSectionHeader(sec.type || 'VERSO');
+        result.push(`[${type}]`);
+
+        if (sec.isInstrumental) {
+            if (Array.isArray(sec.chords) && sec.chords.length > 0) {
+                const formattedChords = sec.chords.map(c => `[${formatMusicalChord(c)}]`).join(' ');
+                result.push(`#${formattedChords}`);
+            }
+        } else {
+            if (Array.isArray(sec.lines)) {
+                sec.lines.forEach(l => result.push(l));
+            } else if (typeof sec.content === 'string') {
+                result.push(sec.content);
+            }
+        }
+
+        // Salto de separación entre secciones excepto en la última
+        if (idx < sections.length - 1) {
+            result.push('');
+        }
+    });
+
+    return result.join('\n').trim();
+}
+
+/**
+ * Parsea una línea en formato ChordPro y extrae el texto plano limpio y los acordes con sus offsets de caracteres exactos.
+ * Ejemplo: "[C]Cambiaré [F]mi tristeza" -> { text: "Cambiaré mi tristeza", chords: [{ chord: "C", offset: 0 }, { chord: "F", offset: 9 }] }
+ */
+function parseLineChordPro(lineStr) {
+    if (!lineStr) return { text: '', chords: [] };
+
+    let text = '';
+    const chords = [];
+    const parts = lineStr.split(/(\[[^\]]+\])/g);
+
+    parts.forEach(part => {
+        if (!part) return;
+        if (part.startsWith('[') && part.endsWith(']')) {
+            const chord = formatMusicalChord(part.slice(1, -1));
+            if (chord) {
+                chords.push({
+                    chord: chord,
+                    offset: text.length
+                });
+            }
+        } else {
+            text += part;
+        }
+    });
+
+    return { text, chords };
+}
+
+/**
+ * Reconstruye una línea ChordPro a partir de texto plano y un arreglo de acordes con sus offsets.
+ */
+function formatLineChordPro(text, chords) {
+    if (!Array.isArray(chords) || chords.length === 0) {
+        return text || '';
+    }
+
+    // Ordenar de mayor a menor offset para insertar sin desplazar índices
+    const sorted = [...chords].sort((a, b) => b.offset - a.offset);
+    let result = text || '';
+
+    sorted.forEach(({ chord, offset }) => {
+        const chordBracket = `[${formatMusicalChord(chord)}]`;
+        const off = Math.max(0, parseInt(offset) || 0);
+
+        if (off >= result.length) {
+            result = result + ' '.repeat(off - result.length) + chordBracket;
+        } else {
+            result = result.slice(0, off) + chordBracket + result.slice(off);
+        }
+    });
+
+    return result;
+}
+
 // Exportación global para navegadores
 window.formatMusicalChord = formatMusicalChord;
 function getNextVerseNumberGlobal(text) { return getNextVerseNumber(text); }
@@ -424,3 +696,11 @@ window.parseInternetLyricsToChordPro = parseInternetLyricsToChordPro;
 window.getNextVerseNumber = getNextVerseNumber;
 window.chordProToEditorHTML = chordProToEditorHTML;
 window.editorHTMLToChordPro = editorHTMLToChordPro;
+window.getSectionTheme = getSectionTheme;
+window.isInstrumentalSectionType = isInstrumentalSectionType;
+window.chordProToSections = chordProToSections;
+window.sectionsToChordPro = sectionsToChordPro;
+window.parseLineChordPro = parseLineChordPro;
+window.formatLineChordPro = formatLineChordPro;
+
+

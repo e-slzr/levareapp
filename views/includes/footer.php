@@ -1,8 +1,8 @@
     <!-- Application Scripts -->
     <script src="assets/js/db.js?v=2.0.2"></script>
     <script src="assets/js/utils.js?v=2.0.2"></script>
-    <script src="assets/js/transposer.js?v=2.0.2"></script>
     <script src="assets/js/chordParser.js?v=2.0.2"></script>
+    <script src="assets/js/transposer.js?v=2.0.2"></script>
     <script src="assets/js/app.js?v=2.0.2"></script>
 
     <!-- View Controllers -->

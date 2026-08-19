@@ -260,17 +260,34 @@
     white-space: nowrap; /* Avoid automatic breaking that desynchronizes chords */
 }
 
-.lyrics-section-header {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--primary);
+.lyrics-section-header-wrap {
+    display: flex;
+    align-items: center;
     margin-top: 24px;
     margin-bottom: 12px;
-    border-bottom: 1px dashed var(--border-color);
-    padding-bottom: 4px;
+}
+
+.lyrics-section-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    font-family: var(--font-secondary, monospace);
+    text-transform: uppercase;
     letter-spacing: 0.05em;
+    border-width: 1px;
+    border-style: solid;
+    user-select: none;
+}
+
+.section-pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    flex-shrink: 0;
 }
 
 .lyrics-empty-line {
@@ -285,10 +302,10 @@
 }
 
 .chord-el {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     font-weight: 700;
     font-family: var(--font-secondary, monospace);
-    color: #2563eb; /* Azul elegante en Modo Claro */
+    color: #e11d48; /* Coral elegante en Modo Claro */
     height: 1.3em;
     user-select: none;
     display: inline-block;
@@ -299,7 +316,7 @@
 }
 
 .dark .chord-el {
-    color: #fbbf24; /* Amarillo ámbar en Modo Oscuro */
+    color: #fb7185; /* Coral suave brillante en Modo Oscuro */
 }
 
 .chord-el.empty-chord {
@@ -316,33 +333,38 @@
 
 /* Instrumental-only lines (Intro, Solo, etc.) */
 .instrumental-line {
-    display: block;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
     font-family: var(--font-mono);
-    white-space: pre;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     line-height: 1.8;
 }
 
-.instrumental-line .chord-el {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #2563eb;
-    background-color: rgba(37, 99, 235, 0.1);
-    border: 1px solid rgba(37, 99, 235, 0.25);
-    padding: 2px 8px;
+.instrumental-viewer-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 12px;
     border-radius: 8px;
-    display: inline-block;
-    vertical-align: middle;
-    margin-right: 4px;
-    margin-bottom: 0;
-    height: auto;
+    font-size: 0.95rem;
+    font-weight: 800;
+    font-family: var(--font-secondary, monospace);
+    background-color: rgba(244, 63, 94, 0.08);
+    color: #e11d48;
+    border: 1px solid rgba(244, 63, 94, 0.25);
     user-select: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
-.dark .instrumental-line .chord-el {
-    color: #fbbf24;
-    background-color: rgba(245, 158, 11, 0.15);
-    border-color: rgba(245, 158, 11, 0.35);
+.dark .instrumental-viewer-badge {
+    background-color: rgba(244, 63, 94, 0.15);
+    color: #fb7185;
+    border-color: rgba(244, 63, 94, 0.35);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* Song Form Monospace Textarea */
@@ -592,6 +614,8 @@
         min-width: 0;
         overflow-x: hidden; /* Aísla completamente el scroll horizontal */
     }
+}
+
 /* ==========================================================================
    CONSTRUCTOR VISUAL & BADGES INTERACTIVOS
    ========================================================================== */
@@ -715,4 +739,429 @@
     color: #fbbf24;
     background-color: rgba(245, 158, 11, 0.15);
 }
+
+/* ==========================================================================
+   EDITOR MODULAR DE SECCIONES (CARDS, DRAG & DROP Y BOTÓN FLOTANTE FAB)
+   ========================================================================== */
+
+.section-card-block {
+    position: relative;
+    border-radius: 12px;
+    border: 1px solid #e4e4e7;
+    background-color: #ffffff;
+    overflow: visible;
+    transition: transform 0.22s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dark .section-card-block {
+    background-color: #18181b;
+    border-color: #27272a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.section-card-block:hover {
+    border-color: #d4d4d8;
+}
+
+.dark .section-card-block:hover {
+    border-color: #3f3f46;
+}
+
+.section-card-block.dragging {
+    opacity: 0.35;
+    transform: scale(0.97);
+    border: 1px dashed #f43f5e !important;
+}
+
+/* Desplazamiento dinámico en vivo: abre el espacio visual exacto donde aterrizará la tarjeta */
+.section-card-block.drag-over-top {
+    transform: translateY(24px);
+    border-top: 2px solid #f43f5e !important;
+    box-shadow: 0 -6px 16px rgba(244, 63, 94, 0.15);
+}
+
+.section-card-block.drag-over-bottom {
+    transform: translateY(-24px);
+    border-bottom: 2px solid #f43f5e !important;
+    box-shadow: 0 6px 16px rgba(244, 63, 94, 0.15);
+}
+
+.section-card-header {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark .section-card-header {
+    border-bottom-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* MODO COMPACTO DE REORDENAMIENTO */
+#section-cards-container.reorder-mode-active {
+    display: flex;
+    flex-direction: column;
+    gap: 8px !important;
+}
+
+#section-cards-container.reorder-mode-active .section-card-block {
+    margin-bottom: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+#section-cards-container.reorder-mode-active .section-card-body {
+    display: none !important;
+}
+
+#section-cards-container.reorder-mode-active .section-card-header {
+    border-bottom: none;
+    padding: 12px 14px;
+    background-color: transparent;
+}
+
+#section-cards-container.reorder-mode-active .btn-toggle-section-mode {
+    display: none;
+}
+
+.btn-move-section-up,
+.btn-move-section-down {
+    display: none;
+}
+
+#section-cards-container.reorder-mode-active .btn-move-section-up,
+#section-cards-container.reorder-mode-active .btn-move-section-down {
+    display: inline-flex;
+}
+
+#btn-toggle-reorder-mode.active {
+    background-color: #f43f5e !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(244, 63, 94, 0.3);
+}
+
+.section-card-header-drag-zone {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: none;
+}
+
+.section-card-header-drag-zone:active {
+    cursor: grabbing;
+}
+
+.section-drag-handle {
+    cursor: grab;
+    color: #a1a1aa;
+    padding: 2px 4px;
+    transition: color 0.15s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+.section-drag-handle:hover {
+    color: #71717a;
+}
+
+.dark .section-drag-handle:hover {
+    color: #f4f4f5;
+}
+
+.section-drag-handle:active {
+    cursor: grabbing;
+}
+
+.section-card-body {
+    position: relative;
+    min-height: 72px;
+}
+
+.section-lyrics-editor {
+    min-height: 72px;
+    padding: 10px 48px 10px 14px;
+    font-family: var(--font-secondary, monospace);
+    font-size: 0.88rem;
+    line-height: 2.2;
+    outline: none;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #18181b;
+}
+
+.dark .section-lyrics-editor {
+    color: #f4f4f5;
+}
+
+.section-lyrics-editor:empty:before {
+    content: "Escribe o pega la letra de esta sección...";
+    color: #a1a1aa;
+    font-style: italic;
+}
+
+.dark .section-lyrics-editor:empty:before {
+    color: #52525b;
+}
+
+/* Botón Circular Flotante Contextual (+ FAB) */
+.btn-section-add-chord-fab {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f43f5e;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 2px 8px rgba(244, 63, 94, 0.35);
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    z-index: 5;
+}
+
+.btn-section-add-chord-fab:hover {
+    transform: scale(1.1);
+    background-color: #e11d48;
+}
+
+.btn-section-add-chord-fab:active {
+    transform: scale(0.95);
+}
+
+/* Contenedor de Secciones Instrumentales (Acordes Grandes Badges) */
+.section-instrumental-container {
+    padding: 12px 48px 12px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-height: 60px;
+}
+
+.instrumental-chord-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-family: var(--font-secondary, monospace);
+    font-size: 0.95rem;
+    font-weight: 800;
+    background-color: rgba(244, 63, 94, 0.1);
+    color: #e11d48;
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.dark .instrumental-chord-badge {
+    background-color: rgba(244, 63, 94, 0.15);
+    color: #fb7185;
+    border-color: rgba(244, 63, 94, 0.35);
+}
+
+.instrumental-chord-badge:hover {
+    transform: translateY(-1px);
+    border-color: #f43f5e;
+    box-shadow: 0 3px 8px rgba(244, 63, 94, 0.2);
+}
+
+.instrumental-chord-badge.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+/* ==========================================================================
+   LÍNEAS APILADAS: ACORDES EN LÍNEA SUPERIOR SOBRE LETRA EN LÍNEA INFERIOR
+   ========================================================================== */
+
+.section-stacked-container {
+    padding: 10px 42px 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (max-width: 640px) {
+    .section-stacked-container {
+        padding: 8px 36px 8px 6px;
+        gap: 8px;
+    }
+}
+
+.stacked-line-scroller {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    border-radius: 8px;
+}
+
+.stacked-line-scroller::-webkit-scrollbar {
+    height: 3px;
+}
+
+.stacked-line-scroller::-webkit-scrollbar-thumb {
+    background-color: rgba(150, 150, 150, 0.3);
+    border-radius: 3px;
+}
+
+.stacked-line-content {
+    display: inline-block;
+    min-width: 100%;
+    width: max-content;
+    position: relative;
+    padding-bottom: 2px;
+}
+
+.stacked-line-block {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    transition: background-color 0.15s ease;
+    width: 100%;
+}
+
+.stacked-line-block.drag-target-line {
+    background-color: rgba(244, 63, 94, 0.08);
+}
+
+/* Carril Superior de Acordes */
+.stacked-chords-lane {
+    position: relative;
+    min-height: 28px;
+    height: 28px;
+    margin-bottom: 2px;
+    user-select: none;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 15px;
+    width: 100%;
+}
+
+.stacked-chord-badge {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: grab;
+    z-index: 10;
+    user-select: none;
+    touch-action: none;
+}
+
+.stacked-chord-badge:active {
+    cursor: grabbing;
+}
+
+.stacked-chord-pill {
+    padding: 1px 7px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    font-family: var(--font-secondary, monospace);
+    background-color: #f43f5e;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(244, 63, 94, 0.35);
+    transition: transform 0.15s ease;
+    white-space: nowrap;
+}
+
+.stacked-chord-badge:hover .stacked-chord-pill {
+    transform: scale(1.08);
+}
+
+.stacked-chord-arrow {
+    width: 2px;
+    height: 6px;
+    background-color: #f43f5e;
+    border-radius: 1px;
+    margin-top: 1px;
+}
+
+/* Carril Inferior de Letra */
+.stacked-lyrics-lane {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.stacked-lyrics-input {
+    width: 100%;
+    min-width: 100%;
+    padding: 4px 6px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #18181b;
+    outline: none;
+    letter-spacing: 0;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+    touch-action: pan-y;
+    white-space: pre;
+}
+
+@media (max-width: 768px) {
+    .stacked-lyrics-input {
+        font-size: 16px !important; /* Previene el auto-zoom nativo de Safari en iOS */
+    }
+}
+
+.dark .stacked-lyrics-input {
+    color: #f4f4f5;
+}
+
+.stacked-lyrics-input:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.dark .stacked-lyrics-input:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.stacked-lyrics-input:focus {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-color: rgba(228, 228, 231, 0.8);
+}
+
+.dark .stacked-lyrics-input:focus {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(63, 63, 70, 0.8);
+}
+
+/* Indicador de posición visual al arrastrar acorde sobre la letra */
+.char-drop-indicator {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background-color: #f43f5e;
+    box-shadow: 0 0 8px #f43f5e;
+    pointer-events: none;
+    z-index: 20;
+    transition: left 0.04s ease;
+}
+
+
+
 

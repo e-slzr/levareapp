@@ -19,9 +19,14 @@ let currentCommunityViewingSong = null;
 // Wizard & Builder State
 let wizardCurrentStep = 1;
 let wizardPrefilledData = null;
-let savedEditorRange = null;
+let currentEditorSections = [];
+let activeSectionId = null;
+let activeLineIdx = null;
+let activeCharOffset = 0;
 let activeSelectedBadge = null;
 let editingBadgeTarget = null;
+let draggedSectionCard = null;
+let draggedChordData = null;
 let chordPickerMode = 'editor'; // 'editor' (insert/change badge in editor) or 'baseKey' (select base key in step 1)
 
 // Chord Picker Filters State
@@ -610,10 +615,11 @@ async function renderSongsCatalog(forceRefresh = false) {
 }
 
 function syncEditorToFormContent() {
-    const editor = document.getElementById('visual-chord-editor');
-    if (editor && editor.children.length > 0) {
-        const chordPro = editorHTMLToChordPro(editor);
-        if (chordPro) {
+    const container = document.getElementById('section-cards-container');
+    if (container && container.children.length > 0) {
+        syncCurrentEditorDOMToSections();
+        const chordPro = sectionsToChordPro(currentEditorSections);
+        if (chordPro !== undefined) {
             document.getElementById('song-form-content').value = chordPro;
             renderWizardLivePreview();
         }
@@ -1065,31 +1071,42 @@ async function importCommunitySong(songId) {
 }
 
 /* ==========================================================================
-   CONSTRUCTOR VISUAL DE LETRA Y ACORDES CON BADGES Y DRAG & DROP
+   CONSTRUCTOR VISUAL DE LETRA Y ACORDES POR SECCIONES MODULARES (CARDS)
    ========================================================================== */
 
 function openChordBuilderModal() {
     const content = document.getElementById('song-form-content').value;
     const isMedley = document.getElementById('song-form-is-medley')?.checked;
     const baseKey = isMedley ? 'Medley' : (document.getElementById('song-form-key').value || 'C');
-    const editor = document.getElementById('visual-chord-editor');
     const keyBadge = document.getElementById('builder-current-key-badge');
 
     if (keyBadge) keyBadge.textContent = baseKey;
-    if (editor) {
-        editor.innerHTML = chordProToEditorHTML(content);
-        attachBadgeInteractions(editor);
+
+    // Convertir ChordPro a array de objetos de sección
+    currentEditorSections = chordProToSections(content);
+    if (!currentEditorSections || currentEditorSections.length === 0) {
+        currentEditorSections = [{
+            id: 'sec_' + Date.now(),
+            type: 'VERSO 1',
+            isInstrumental: false,
+            chords: [],
+            lines: ['']
+        }];
     }
 
+    isReorderModeActive = false;
+    renderSectionCards();
+    updateReorderModeUI();
     document.getElementById('modal-chord-builder').classList.remove('hidden');
 }
+
+let isReorderModeActive = false;
 
 function setupChordBuilderEvents() {
     const btnApply = document.getElementById('btn-apply-chord-builder');
     const btnCloseX = document.getElementById('btn-close-chord-builder-x');
-    const btnAddChord = document.getElementById('btn-toolbar-add-chord');
     const btnAddSection = document.getElementById('btn-toolbar-add-section');
-    const editor = document.getElementById('visual-chord-editor');
+    const btnToggleReorder = document.getElementById('btn-toggle-reorder-mode');
 
     if (btnApply) {
         btnApply.onclick = () => {
@@ -1105,100 +1122,725 @@ function setupChordBuilderEvents() {
         };
     }
 
-    // Guardar selección del cursor antes de abrir modales de acorde o sección
-    if (editor) {
-        ['keyup', 'mouseup', 'touchend'].forEach(evt => {
-            editor.addEventListener(evt, () => saveEditorSelection());
-        });
-
-        // Soporte Drag & Drop dentro del editor
-        editor.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        });
-
-        editor.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const chordName = e.dataTransfer.getData('text/plain');
-            if (!chordName) return;
-
-            let range;
-            if (document.caretRangeFromPoint) {
-                range = document.caretRangeFromPoint(e.clientX, e.clientY);
-            } else if (document.caretPositionFromPoint) {
-                const pos = document.caretPositionFromPoint(e.clientX, e.clientY);
-                range = document.createRange();
-                range.setStart(pos.offsetNode, pos.offset);
-                range.collapse(true);
-            }
-
-            if (range) {
-                const draggingBadge = editor.querySelector('.chord-badge.dragging');
-                if (draggingBadge) draggingBadge.remove();
-
-                const newBadge = createChordBadgeElement(chordName);
-                range.insertNode(newBadge);
-                attachBadgeInteractions(editor);
-            }
-        });
-    }
-
-    if (btnAddChord) {
-        btnAddChord.onclick = () => {
-            saveEditorSelection();
-            chordPickerMode = 'editor';
-            editingBadgeTarget = null;
-            openChordPickerModal();
+    if (btnAddSection) {
+        btnAddSection.onclick = () => {
+            syncCurrentEditorDOMToSections();
+            document.getElementById('modal-section-picker').classList.remove('hidden');
         };
     }
 
-    if (btnAddSection) {
-        btnAddSection.onclick = () => {
-            saveEditorSelection();
-            document.getElementById('modal-section-picker').classList.remove('hidden');
+    if (btnToggleReorder) {
+        btnToggleReorder.onclick = () => {
+            isReorderModeActive = !isReorderModeActive;
+            updateReorderModeUI();
         };
     }
 
     setupPopoverChordActions();
 }
 
-function saveEditorSelection() {
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
-        savedEditorRange = sel.getRangeAt(0);
+function updateReorderModeUI() {
+    const container = document.getElementById('section-cards-container');
+    const btn = document.getElementById('btn-toggle-reorder-mode');
+    const label = document.getElementById('reorder-mode-btn-label');
+
+    if (!container || !btn) return;
+
+    if (isReorderModeActive) {
+        container.classList.add('reorder-mode-active');
+        btn.classList.add('active');
+        if (label) label.textContent = 'Ver Normal';
+        btn.innerHTML = '<i class="fa-solid fa-check text-xs"></i> <span id="reorder-mode-btn-label">Ver Normal</span>';
+    } else {
+        container.classList.remove('reorder-mode-active');
+        btn.classList.remove('active');
+        if (label) label.textContent = 'Modo Ordenar';
+        btn.innerHTML = '<i class="fa-solid fa-arrows-up-down text-xs"></i> <span id="reorder-mode-btn-label">Modo Ordenar</span>';
+        
+        // Re-posicionar badges al expandir
+        setTimeout(() => {
+            document.querySelectorAll('.stacked-line-block').forEach(lineBlock => {
+                const input = lineBlock.querySelector('.stacked-lyrics-input');
+                if (input) updateStackedBadgesPosition(lineBlock, input);
+            });
+        }, 50);
     }
 }
 
-function restoreEditorSelection() {
-    if (savedEditorRange) {
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(savedEditorRange);
-    }
+/**
+ * Renderiza dinámicamente las tarjetas de sección en el contenedor del modal
+ */
+function renderSectionCards() {
+    const container = document.getElementById('section-cards-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    currentEditorSections.forEach((sec, secIdx) => {
+        const theme = getSectionTheme(sec.type);
+        const card = document.createElement('div');
+        card.className = 'section-card-block group';
+        card.setAttribute('data-section-id', sec.id);
+
+        // Header de la Tarjeta (Toda el área izquierda/central es zona de arrastre)
+        const header = document.createElement('div');
+        header.className = 'section-card-header';
+        header.innerHTML = `
+            <div class="section-card-header-drag-zone flex-1 flex items-center gap-2 cursor-grab select-none touch-none py-1" title="Arrastrar para reordenar sección">
+                <span class="section-drag-handle">
+                    <i class="fa-solid fa-grip-vertical text-xs"></i>
+                </span>
+                <span class="px-2 py-0.5 rounded-md text-xs font-bold font-mono uppercase border ${theme.badgeBg}">
+                    ${escapeHtmlText(sec.type)}
+                </span>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+                <button type="button" class="btn-move-section-up p-1.5 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs transition cursor-pointer ${secIdx === 0 ? 'opacity-25 pointer-events-none' : ''}" title="Subir sección">
+                    <i class="fa-solid fa-arrow-up text-xs"></i>
+                </button>
+                <button type="button" class="btn-move-section-down p-1.5 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs transition cursor-pointer ${secIdx === currentEditorSections.length - 1 ? 'opacity-25 pointer-events-none' : ''}" title="Bajar sección">
+                    <i class="fa-solid fa-arrow-down text-xs"></i>
+                </button>
+                <button type="button" class="btn-toggle-section-mode p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs transition cursor-pointer" title="${sec.isInstrumental ? 'Cambiar a modo Letra' : 'Cambiar a modo Instrumental'}">
+                    <i class="fa-solid ${sec.isInstrumental ? 'fa-align-left' : 'fa-guitar'}"></i>
+                </button>
+                <button type="button" class="btn-delete-section p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 text-xs transition cursor-pointer" title="Eliminar sección">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+
+        // Body de la Tarjeta
+        const body = document.createElement('div');
+        body.className = 'section-card-body';
+
+        if (sec.isInstrumental) {
+            // MODO INSTRUMENTAL: Badges grandes cuadrados
+            const instContainer = document.createElement('div');
+            instContainer.className = 'section-instrumental-container';
+
+            if (Array.isArray(sec.chords) && sec.chords.length > 0) {
+                sec.chords.forEach((chordName, chordIdx) => {
+                    const badge = createInstrumentalChordBadge(chordName, sec.id, chordIdx);
+                    instContainer.appendChild(badge);
+                });
+            } else {
+                const emptyNotice = document.createElement('span');
+                emptyNotice.className = 'text-xs text-zinc-400 italic pointer-events-none select-none';
+                emptyNotice.textContent = 'Sin acordes aún. Usa el botón + para agregar acordes a este instrumental.';
+                instContainer.appendChild(emptyNotice);
+            }
+
+            body.appendChild(instContainer);
+        } else {
+            // MODO LETRA: Líneas Apiladas (Acordes en línea superior + Letra en línea inferior)
+            const stackedContainer = document.createElement('div');
+            stackedContainer.className = 'section-stacked-container';
+
+            if (!Array.isArray(sec.lines) || sec.lines.length === 0) {
+                sec.lines = [''];
+            }
+
+            sec.lines.forEach((lineStr, lineIdx) => {
+                const { text, chords } = parseLineChordPro(lineStr);
+
+                const scroller = document.createElement('div');
+                scroller.className = 'stacked-line-scroller';
+
+                const lineContent = document.createElement('div');
+                lineContent.className = 'stacked-line-content';
+
+                const lineBlock = document.createElement('div');
+                lineBlock.className = 'stacked-line-block';
+                lineBlock.setAttribute('data-line-idx', lineIdx);
+
+                // 1. Carril Superior de Acordes
+                const chordsLane = document.createElement('div');
+                chordsLane.className = 'stacked-chords-lane';
+
+                chords.forEach((chordItem, chordIdx) => {
+                    const badge = createStackedChordBadge(chordItem.chord, sec.id, lineIdx, chordIdx, chordItem.offset);
+                    chordsLane.appendChild(badge);
+                });
+
+                // 2. Carril Inferior de Letra
+                const lyricsLane = document.createElement('div');
+                lyricsLane.className = 'stacked-lyrics-lane';
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'stacked-lyrics-input';
+                input.setAttribute('data-sec-id', sec.id);
+                input.setAttribute('data-line-idx', lineIdx);
+                input.setAttribute('spellcheck', 'false');
+                input.value = text;
+                input.placeholder = 'Escribe la letra o acordes de esta línea...';
+
+                const updateInputWidth = () => {
+                    const len = Math.max(input.value.length, 12);
+                    input.style.width = `max(100%, ${len + 8}ch)`;
+                };
+                updateInputWidth();
+
+                // Tracking infalible del cursor y línea activa
+                const updateActiveCursor = () => {
+                    activeSectionId = sec.id;
+                    activeLineIdx = lineIdx;
+                    activeCharOffset = (input.selectionStart !== undefined) ? input.selectionStart : input.value.length;
+                };
+
+                ['focus', 'click', 'keyup', 'select'].forEach(evt => {
+                    input.addEventListener(evt, updateActiveCursor);
+                });
+
+                // Al escribir en la línea, actualizar sec.lines[lineIdx]
+                input.addEventListener('input', () => {
+                    updateInputWidth();
+                    updateActiveCursor();
+                    sec.lines[lineIdx] = formatLineChordPro(input.value, chords);
+                    updateStackedBadgesPosition(lineBlock, input);
+                });
+
+                // Teclas de navegación / enter / backspace
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        syncCurrentEditorDOMToSections();
+                        sec.lines.splice(lineIdx + 1, 0, '');
+                        activeSectionId = sec.id;
+                        activeLineIdx = lineIdx + 1;
+                        activeCharOffset = 0;
+                        renderSectionCards();
+                        focusLyricsInput(sec.id, lineIdx + 1);
+                    } else if (e.key === 'Backspace' && input.value === '' && sec.lines.length > 1) {
+                        e.preventDefault();
+                        syncCurrentEditorDOMToSections();
+                        sec.lines.splice(lineIdx, 1);
+                        activeSectionId = sec.id;
+                        activeLineIdx = Math.max(0, lineIdx - 1);
+                        activeCharOffset = 0;
+                        renderSectionCards();
+                        focusLyricsInput(sec.id, activeLineIdx);
+                    }
+                });
+
+                // Soporte para pegar texto multilínea
+                input.addEventListener('paste', (e) => {
+                    const pasted = e.clipboardData?.getData('text/plain') || '';
+                    if (pasted.includes('\n')) {
+                        e.preventDefault();
+                        syncCurrentEditorDOMToSections();
+                        const pastedLines = pasted.split(/\r?\n/).filter(l => l.trim() !== '');
+                        if (pastedLines.length > 0) {
+                            sec.lines.splice(lineIdx, 1, ...pastedLines);
+                            renderSectionCards();
+                        }
+                    }
+                });
+
+                lyricsLane.appendChild(input);
+
+                // Soporte Drag & Drop con Resalto de Letras
+                attachStackedLineDragDrop(lineBlock, input, sec.id, lineIdx, chords);
+
+                lineBlock.appendChild(chordsLane);
+                lineBlock.appendChild(lyricsLane);
+                lineContent.appendChild(lineBlock);
+                scroller.appendChild(lineContent);
+                stackedContainer.appendChild(scroller);
+
+                // Posicionar con precisión métrica de píxeles y anticolisión
+                setTimeout(() => updateStackedBadgesPosition(lineBlock, input), 0);
+            });
+
+            body.appendChild(stackedContainer);
+        }
+
+        // Botón Circular Flotante (+ FAB) en la esquina inferior derecha
+        const fabBtn = document.createElement('button');
+        fabBtn.type = 'button';
+        fabBtn.className = 'btn-section-add-chord-fab cursor-pointer';
+        fabBtn.setAttribute('title', 'Agregar acorde en la posición del puntero');
+        fabBtn.innerHTML = '<i class="fa-solid fa-plus text-xs"></i>';
+        fabBtn.onclick = (e) => {
+            e.stopPropagation();
+            activeSectionId = sec.id;
+
+            // Si la sección no tenía línea enfocada aún, seleccionar la última línea o primera
+            if (activeLineIdx === null || activeLineIdx >= (sec.lines || []).length) {
+                activeLineIdx = (sec.lines && sec.lines.length > 0) ? sec.lines.length - 1 : 0;
+                activeCharOffset = 0;
+            }
+
+            chordPickerMode = 'editor';
+            editingBadgeTarget = null;
+            openChordPickerModal();
+        };
+        body.appendChild(fabBtn);
+
+        card.appendChild(header);
+        card.appendChild(body);
+
+        // Eventos del Header
+        const btnUp = header.querySelector('.btn-move-section-up');
+        if (btnUp) {
+            btnUp.onclick = (e) => {
+                e.stopPropagation();
+                moveSectionPosition(secIdx, secIdx - 1);
+            };
+        }
+
+        const btnDown = header.querySelector('.btn-move-section-down');
+        if (btnDown) {
+            btnDown.onclick = (e) => {
+                e.stopPropagation();
+                moveSectionPosition(secIdx, secIdx + 1);
+            };
+        }
+
+        const btnToggleMode = header.querySelector('.btn-toggle-section-mode');
+        if (btnToggleMode) {
+            btnToggleMode.onclick = (e) => {
+                e.stopPropagation();
+                syncCurrentEditorDOMToSections();
+                sec.isInstrumental = !sec.isInstrumental;
+                renderSectionCards();
+            };
+        }
+
+        const btnDeleteSec = header.querySelector('.btn-delete-section');
+        if (btnDeleteSec) {
+            btnDeleteSec.onclick = (e) => {
+                e.stopPropagation();
+                syncCurrentEditorDOMToSections();
+                currentEditorSections = currentEditorSections.filter(s => s.id !== sec.id);
+                if (currentEditorSections.length === 0) {
+                    currentEditorSections.push({
+                        id: 'sec_' + Date.now(),
+                        type: 'VERSO 1',
+                        isInstrumental: false,
+                        chords: [],
+                        lines: ['']
+                    });
+                }
+                renderSectionCards();
+            };
+        }
+
+        // Configurar Drag & Drop de la tarjeta de sección
+        setupSectionCardDragAndDrop(card, sec.id);
+
+        container.appendChild(card);
+    });
+
+    attachAllBadgeInteractions();
 }
 
-function createChordBadgeElement(chordName) {
-    const badge = document.createElement('span');
-    badge.className = 'chord-badge';
-    badge.setAttribute('contenteditable', 'false');
+/**
+ * Mueve una sección de posición con animación suave de intercambio
+ */
+function moveSectionPosition(fromIndex, toIndex) {
+    if (toIndex < 0 || toIndex >= currentEditorSections.length || fromIndex === toIndex) return;
+
+    syncCurrentEditorDOMToSections();
+
+    const container = document.getElementById('section-cards-container');
+    const cards = container?.querySelectorAll('.section-card-block');
+    if (!cards || !cards[fromIndex] || !cards[toIndex]) {
+        const [movedSec] = currentEditorSections.splice(fromIndex, 1);
+        currentEditorSections.splice(toIndex, 0, movedSec);
+        renderSectionCards();
+        if (isReorderModeActive) updateReorderModeUI();
+        return;
+    }
+
+    const cardA = cards[fromIndex];
+    const cardB = cards[toIndex];
+
+    const distY = cardB.offsetTop - cardA.offsetTop;
+
+    cardA.style.transition = 'transform 0.22s cubic-bezier(0.2, 0, 0, 1)';
+    cardB.style.transition = 'transform 0.22s cubic-bezier(0.2, 0, 0, 1)';
+    cardA.style.transform = `translateY(${distY}px)`;
+    cardB.style.transform = `translateY(${-distY}px)`;
+    cardA.style.zIndex = '20';
+
+    setTimeout(() => {
+        const [movedSec] = currentEditorSections.splice(fromIndex, 1);
+        currentEditorSections.splice(toIndex, 0, movedSec);
+        renderSectionCards();
+        if (isReorderModeActive) {
+            updateReorderModeUI();
+        }
+    }, 220);
+}
+
+/**
+ * Enfoca el input de letra de una sección y línea específica
+ */
+function focusLyricsInput(secId, lineIdx) {
+    setTimeout(() => {
+        const input = document.querySelector(`.stacked-lyrics-input[data-sec-id="${secId}"][data-line-idx="${lineIdx}"]`);
+        if (input) {
+            input.focus();
+            input.setSelectionRange(input.value.length, input.value.length);
+        }
+    }, 30);
+}
+
+/**
+ * Medición de alta precisión de métricas de caracteres (charWidth y paddingLeft)
+ */
+function getCharMetrics(inputEl) {
+    const computed = window.getComputedStyle(inputEl || document.body);
+    const paddingLeft = parseFloat(computed.paddingLeft) || 6;
+
+    const testSpan = document.createElement('span');
+    testSpan.style.font = computed.font;
+    testSpan.style.fontFamily = computed.fontFamily;
+    testSpan.style.fontSize = computed.fontSize;
+    testSpan.style.letterSpacing = computed.letterSpacing;
+    testSpan.style.visibility = 'hidden';
+    testSpan.style.position = 'absolute';
+    testSpan.style.whiteSpace = 'pre';
+    testSpan.textContent = 'WWWWWWWWWW'; // 10 caracteres monospace para promedio exacto
+    document.body.appendChild(testSpan);
+    const totalWidth = testSpan.getBoundingClientRect().width;
+    document.body.removeChild(testSpan);
+
+    const charWidth = totalWidth > 0 ? (totalWidth / 10) : 9.0;
+    return { charWidth, paddingLeft };
+}
+
+/**
+ * Crea un badge de acorde posicionado en la línea superior sobre la letra
+ */
+function createStackedChordBadge(chordName, secId, lineIdx, chordIdx, offset) {
+    const badge = document.createElement('div');
+    badge.className = 'stacked-chord-badge';
     badge.setAttribute('draggable', 'true');
     badge.setAttribute('data-chord', chordName);
+    badge.setAttribute('data-sec-id', secId);
+    badge.setAttribute('data-line-idx', lineIdx);
+    badge.setAttribute('data-chord-idx', chordIdx);
+    badge.setAttribute('data-offset', offset);
+
+    badge.innerHTML = `
+        <div class="stacked-chord-pill">${escapeHtmlText(chordName)}</div>
+        <div class="stacked-chord-arrow"></div>
+    `;
+
+    return badge;
+}
+
+/**
+ * Actualiza las posiciones horizontales de los badges de acordes en una línea con algoritmo anticolisión
+ */
+function updateStackedBadgesPosition(lineBlock, input) {
+    if (!lineBlock || !input) return;
+    const { charWidth, paddingLeft } = getCharMetrics(input);
+    const badges = Array.from(lineBlock.querySelectorAll('.stacked-chord-badge'));
+
+    // Ordenar por offset ascendente
+    badges.sort((a, b) => {
+        const offA = parseInt(a.getAttribute('data-offset')) || 0;
+        const offB = parseInt(b.getAttribute('data-offset')) || 0;
+        return offA - offB;
+    });
+
+    let lastRightEdge = -Infinity;
+
+    badges.forEach(badge => {
+        const offset = parseInt(badge.getAttribute('data-offset')) || 0;
+        let targetX = paddingLeft + (offset * charWidth) + (charWidth / 2);
+
+        // Anticolisión: Evitar que los acordes se sobrepongan visualmente
+        const pill = badge.querySelector('.stacked-chord-pill');
+        const badgeHalfWidth = ((pill ? pill.offsetWidth : 36) / 2) + 2;
+
+        if (targetX - badgeHalfWidth < lastRightEdge + 4) {
+            targetX = lastRightEdge + 4 + badgeHalfWidth;
+        }
+
+        badge.style.left = `${targetX}px`;
+        lastRightEdge = targetX + badgeHalfWidth;
+    });
+}
+
+// Recalcular posiciones si cambia el tamaño o la orientación en móvil
+window.addEventListener('resize', () => {
+    document.querySelectorAll('.stacked-line-block').forEach(lineBlock => {
+        const input = lineBlock.querySelector('.stacked-lyrics-input');
+        if (input) updateStackedBadgesPosition(lineBlock, input);
+    });
+});
+
+/**
+ * Soporte Drag & Drop para mover acordes entre caracteres y líneas con resalto visual
+ */
+function attachStackedLineDragDrop(lineBlock, input, secId, lineIdx, chords) {
+    lineBlock.addEventListener('dragover', (e) => {
+        if (!draggedChordData) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        lineBlock.classList.add('drag-target-line');
+
+        const rect = input.getBoundingClientRect();
+        const { charWidth, paddingLeft } = getCharMetrics(input);
+        const relativeX = Math.max(0, e.clientX - rect.left - paddingLeft);
+        const targetOffset = Math.min(input.value.length, Math.round(relativeX / charWidth));
+
+        // Mostrar u orientar el indicador de caída vertical exactamente en la división del carácter
+        let indicator = lineBlock.querySelector('.char-drop-indicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.className = 'char-drop-indicator';
+            input.parentElement.appendChild(indicator);
+        }
+        indicator.style.left = `${paddingLeft + (targetOffset * charWidth)}px`;
+    });
+
+    lineBlock.addEventListener('dragleave', (e) => {
+        if (!lineBlock.contains(e.relatedTarget)) {
+            lineBlock.classList.remove('drag-target-line');
+            const indicator = lineBlock.querySelector('.char-drop-indicator');
+            if (indicator) indicator.remove();
+        }
+    });
+
+    lineBlock.addEventListener('drop', (e) => {
+        if (!draggedChordData) return;
+        e.preventDefault();
+
+        lineBlock.classList.remove('drag-target-line');
+        const indicator = lineBlock.querySelector('.char-drop-indicator');
+        if (indicator) indicator.remove();
+
+        const rect = input.getBoundingClientRect();
+        const { charWidth, paddingLeft } = getCharMetrics(input);
+        const relativeX = Math.max(0, e.clientX - rect.left - paddingLeft);
+        const targetOffset = Math.min(input.value.length, Math.round(relativeX / charWidth));
+
+        moveChordToNewPosition(draggedChordData, secId, lineIdx, targetOffset);
+    });
+}
+
+/**
+ * Mueve un acorde desde su posición original a una nueva línea y offset
+ */
+function moveChordToNewPosition(srcData, destSecId, destLineIdx, destOffset) {
+    syncCurrentEditorDOMToSections();
+
+    // 1. Remover acorde de la posición de origen
+    const srcSec = currentEditorSections.find(s => s.id === srcData.secId);
+    if (srcSec && srcSec.lines && srcSec.lines[srcData.lineIdx]) {
+        const { text: srcText, chords: srcChords } = parseLineChordPro(srcSec.lines[srcData.lineIdx]);
+        srcChords.splice(srcData.chordIdx, 1);
+        srcSec.lines[srcData.lineIdx] = formatLineChordPro(srcText, srcChords);
+    }
+
+    // 2. Insertar en la posición de destino
+    const destSec = currentEditorSections.find(s => s.id === destSecId);
+    if (destSec && destSec.lines) {
+        if (!destSec.lines[destLineIdx]) destSec.lines[destLineIdx] = '';
+        const { text: destText, chords: destChords } = parseLineChordPro(destSec.lines[destLineIdx]);
+        destChords.push({ chord: srcData.chord, offset: destOffset });
+        destSec.lines[destLineIdx] = formatLineChordPro(destText, destChords);
+    }
+
+    draggedChordData = null;
+    renderSectionCards();
+}
+
+/**
+ * Reordenamiento vertical de tarjetas de secciones por Drag & Drop (Desktop + Mobile Touch)
+ */
+function setupSectionCardDragAndDrop(card, secId) {
+    const dragZone = card.querySelector('.section-card-header-drag-zone') || card.querySelector('.section-drag-handle');
+    if (!dragZone) return;
+
+    // ==========================================
+    // 1. SOPORTE PARA ESCRITORIO (HTML5 Drag & Drop)
+    // ==========================================
+    dragZone.setAttribute('draggable', 'true');
+
+    dragZone.addEventListener('dragstart', (e) => {
+        draggedSectionCard = card;
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/section-id', secId);
+    });
+
+    dragZone.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        document.querySelectorAll('.section-card-block').forEach(c => {
+            c.classList.remove('drag-over-top', 'drag-over-bottom');
+        });
+        draggedSectionCard = null;
+    });
+
+    card.addEventListener('dragover', (e) => {
+        if (!draggedSectionCard || draggedSectionCard === card) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+
+        const rect = card.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        if (e.clientY < midY) {
+            card.classList.add('drag-over-top');
+            card.classList.remove('drag-over-bottom');
+        } else {
+            card.classList.add('drag-over-bottom');
+            card.classList.remove('drag-over-top');
+        }
+    });
+
+    card.addEventListener('dragleave', () => {
+        card.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+
+    card.addEventListener('drop', (e) => {
+        if (!draggedSectionCard || draggedSectionCard === card) return;
+        e.preventDefault();
+
+        syncCurrentEditorDOMToSections();
+
+        const fromId = draggedSectionCard.getAttribute('data-section-id');
+        const toId = card.getAttribute('data-section-id');
+
+        const fromIndex = currentEditorSections.findIndex(s => s.id === fromId);
+        const toIndex = currentEditorSections.findIndex(s => s.id === toId);
+
+        if (fromIndex !== -1 && toIndex !== -1) {
+            const [movedSec] = currentEditorSections.splice(fromIndex, 1);
+            const rect = card.getBoundingClientRect();
+            const insertIndex = (e.clientY < rect.top + rect.height / 2) ? toIndex : toIndex + 1;
+            currentEditorSections.splice(insertIndex > fromIndex ? insertIndex - 1 : insertIndex, 0, movedSec);
+            renderSectionCards();
+        }
+    });
+
+    // ==========================================
+    // 2. SOPORTE PARA DISPOSITIVOS MÓVILES (Touch Events)
+    // ==========================================
+    let touchTargetCard = null;
+    let touchInsertAbove = true;
+
+    dragZone.addEventListener('touchstart', () => {
+        draggedSectionCard = card;
+        card.classList.add('dragging');
+        touchTargetCard = null;
+    }, { passive: true });
+
+    dragZone.addEventListener('touchmove', (e) => {
+        if (!draggedSectionCard) return;
+        const touch = e.touches[0];
+        if (!touch) return;
+
+        // Evitar el scroll de la página mientras se arrastra la sección
+        if (e.cancelable) e.preventDefault();
+
+        const touchX = touch.clientX;
+        const touchY = touch.clientY;
+
+        // Detectar la tarjeta de sección que se encuentra bajo el dedo
+        const elements = document.elementsFromPoint(touchX, touchY) || [];
+        const hoveredCard = elements.find(el => el.classList && el.classList.contains('section-card-block') && el !== card);
+
+        document.querySelectorAll('.section-card-block').forEach(c => {
+            c.classList.remove('drag-over-top', 'drag-over-bottom');
+        });
+
+        if (hoveredCard) {
+            touchTargetCard = hoveredCard;
+            const rect = hoveredCard.getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+            touchInsertAbove = (touchY < midY);
+
+            if (touchInsertAbove) {
+                hoveredCard.classList.add('drag-over-top');
+            } else {
+                hoveredCard.classList.add('drag-over-bottom');
+            }
+        } else {
+            touchTargetCard = null;
+        }
+    }, { passive: false });
+
+    const handleTouchEnd = () => {
+        if (!draggedSectionCard) return;
+
+        card.classList.remove('dragging');
+        document.querySelectorAll('.section-card-block').forEach(c => {
+            c.classList.remove('drag-over-top', 'drag-over-bottom');
+        });
+
+        if (touchTargetCard && touchTargetCard !== card) {
+            syncCurrentEditorDOMToSections();
+
+            const fromId = card.getAttribute('data-section-id');
+            const toId = touchTargetCard.getAttribute('data-section-id');
+
+            const fromIndex = currentEditorSections.findIndex(s => s.id === fromId);
+            const toIndex = currentEditorSections.findIndex(s => s.id === toId);
+
+            if (fromIndex !== -1 && toIndex !== -1) {
+                const [movedSec] = currentEditorSections.splice(fromIndex, 1);
+                const insertIndex = touchInsertAbove ? toIndex : toIndex + 1;
+                currentEditorSections.splice(insertIndex > fromIndex ? insertIndex - 1 : insertIndex, 0, movedSec);
+                renderSectionCards();
+            }
+        }
+
+        draggedSectionCard = null;
+        touchTargetCard = null;
+    };
+
+    dragZone.addEventListener('touchend', handleTouchEnd);
+    dragZone.addEventListener('touchcancel', handleTouchEnd);
+}
+
+function createInstrumentalChordBadge(chordName, secId, chordIdx) {
+    const badge = document.createElement('span');
+    badge.className = 'instrumental-chord-badge';
+    badge.setAttribute('draggable', 'true');
+    badge.setAttribute('data-chord', chordName);
+    badge.setAttribute('data-sec-id', secId);
+    badge.setAttribute('data-chord-idx', chordIdx);
     badge.textContent = chordName;
     return badge;
 }
 
-function attachBadgeInteractions(container) {
-    container.querySelectorAll('.chord-badge').forEach(badge => {
+function attachAllBadgeInteractions() {
+    // 1. Badges apilados en letra (.stacked-chord-badge)
+    document.querySelectorAll('.stacked-chord-badge').forEach(badge => {
         badge.ondragstart = (e) => {
-            badge.classList.add('dragging');
-            e.dataTransfer.setData('text/plain', badge.getAttribute('data-chord') || badge.textContent);
+            e.stopPropagation();
+            const secId = badge.getAttribute('data-sec-id');
+            const lineIdx = parseInt(badge.getAttribute('data-line-idx'));
+            const chordIdx = parseInt(badge.getAttribute('data-chord-idx'));
+            const chord = badge.getAttribute('data-chord');
+
+            draggedChordData = { secId, lineIdx, chordIdx, chord };
+            e.dataTransfer.setData('text/plain', chord);
             e.dataTransfer.effectAllowed = 'move';
         };
 
         badge.ondragend = () => {
-            badge.classList.remove('dragging');
+            draggedChordData = null;
+            document.querySelectorAll('.drag-target-line').forEach(el => el.classList.remove('drag-target-line'));
+            document.querySelectorAll('.char-drop-indicator').forEach(el => el.remove());
         };
 
+        badge.onclick = (e) => {
+            e.stopPropagation();
+            showPopoverForBadge(badge);
+        };
+    });
+
+    // 2. Badges instrumentales (.instrumental-chord-badge)
+    document.querySelectorAll('.instrumental-chord-badge').forEach(badge => {
         badge.onclick = (e) => {
             e.stopPropagation();
             showPopoverForBadge(badge);
@@ -1244,7 +1886,26 @@ function setupPopoverChordActions() {
     if (btnDelete) {
         btnDelete.onclick = () => {
             if (activeSelectedBadge) {
-                activeSelectedBadge.remove();
+                const secId = activeSelectedBadge.getAttribute('data-sec-id');
+                const chordIdx = activeSelectedBadge.getAttribute('data-chord-idx');
+                const lineIdx = activeSelectedBadge.getAttribute('data-line-idx');
+
+                if (secId !== null && chordIdx !== null) {
+                    const sec = currentEditorSections.find(s => s.id === secId);
+                    if (sec) {
+                        if (sec.isInstrumental && Array.isArray(sec.chords)) {
+                            sec.chords.splice(parseInt(chordIdx), 1);
+                        } else if (lineIdx !== null && sec.lines && sec.lines[parseInt(lineIdx)]) {
+                            const { text, chords } = parseLineChordPro(sec.lines[parseInt(lineIdx)]);
+                            chords.splice(parseInt(chordIdx), 1);
+                            sec.lines[parseInt(lineIdx)] = formatLineChordPro(text, chords);
+                        }
+                        renderSectionCards();
+                    }
+                } else {
+                    activeSelectedBadge.remove();
+                }
+
                 activeSelectedBadge = null;
                 popover.classList.add('hidden');
             }
@@ -1460,35 +2121,82 @@ function selectChordFromPicker(chordName) {
         return;
     }
 
-    // Caso 2: Edición de un Badge existente en el editor
+    // Caso 2: Edición de un Badge existente
     if (editingBadgeTarget) {
-        editingBadgeTarget.setAttribute('data-chord', formatted);
-        editingBadgeTarget.textContent = formatted;
-        editingBadgeTarget = null;
-    } else {
-        // Caso 3: Inserción de un nuevo Badge en el caret
-        const editor = document.getElementById('visual-chord-editor');
-        if (editor) {
-            editor.focus();
-            restoreEditorSelection();
+        const secId = editingBadgeTarget.getAttribute('data-sec-id');
+        const chordIdx = parseInt(editingBadgeTarget.getAttribute('data-chord-idx'));
+        const lineIdx = editingBadgeTarget.getAttribute('data-line-idx');
 
-            const badge = createChordBadgeElement(formatted);
-            const sel = window.getSelection();
-
-            if (sel && sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
-                const range = sel.getRangeAt(0);
-                range.deleteContents();
-                range.insertNode(badge);
-
-                range.setStartAfter(badge);
-                range.collapse(true);
-                sel.removeAllRanges();
-                sel.addRange(range);
-            } else {
-                editor.appendChild(badge);
+        if (secId !== null && !isNaN(chordIdx)) {
+            const sec = currentEditorSections.find(s => s.id === secId);
+            if (sec) {
+                if (sec.isInstrumental && Array.isArray(sec.chords)) {
+                    sec.chords[chordIdx] = formatted;
+                } else if (lineIdx !== null && sec.lines && sec.lines[parseInt(lineIdx)]) {
+                    const lIdx = parseInt(lineIdx);
+                    const { text, chords } = parseLineChordPro(sec.lines[lIdx]);
+                    if (chords[chordIdx]) {
+                        chords[chordIdx].chord = formatted;
+                        sec.lines[lIdx] = formatLineChordPro(text, chords);
+                    }
+                }
+                renderSectionCards();
             }
+        }
 
-            attachBadgeInteractions(editor);
+        editingBadgeTarget = null;
+        document.getElementById('modal-chord-picker').classList.add('hidden');
+        return;
+    }
+
+    // Caso 3: Inserción en la Sección Activa (+ FAB)
+    if (activeSectionId) {
+        syncCurrentEditorDOMToSections();
+        const sec = currentEditorSections.find(s => s.id === activeSectionId);
+        if (sec) {
+            if (sec.isInstrumental) {
+                if (!Array.isArray(sec.chords)) sec.chords = [];
+                sec.chords.push(formatted);
+                renderSectionCards();
+            } else {
+                if (!Array.isArray(sec.lines) || sec.lines.length === 0) {
+                    sec.lines = [''];
+                }
+                if (activeLineIdx === null || activeLineIdx >= sec.lines.length) {
+                    activeLineIdx = 0;
+                }
+
+                const lineStr = sec.lines[activeLineIdx] || '';
+                let { text, chords } = parseLineChordPro(lineStr);
+
+                let targetOffset = activeCharOffset || 0;
+
+                // Si ya existe un acorde en este mismo offset exacto, desplazar el nuevo al lado
+                const existingAtOffset = chords.filter(c => Math.abs(c.offset - targetOffset) < 2);
+                if (existingAtOffset.length > 0) {
+                    targetOffset = Math.max(...existingAtOffset.map(c => c.offset)) + 3;
+                }
+
+                chords.push({ chord: formatted, offset: targetOffset });
+                sec.lines[activeLineIdx] = formatLineChordPro(text, chords);
+
+                renderSectionCards();
+                focusLyricsInput(sec.id, activeLineIdx);
+
+                // Auto-scroll del scroller horizontal hacia el acorde insertado
+                setTimeout(() => {
+                    const block = document.querySelector(`.section-card-block[data-section-id="${sec.id}"] .stacked-line-block[data-line-idx="${activeLineIdx}"]`);
+                    const scroller = block?.closest('.stacked-line-scroller');
+                    const input = block?.querySelector('.stacked-lyrics-input');
+                    if (scroller && input) {
+                        const { charWidth, paddingLeft } = getCharMetrics(input);
+                        const targetX = paddingLeft + (targetOffset * charWidth);
+                        if (targetX > scroller.clientWidth - 80) {
+                            scroller.scrollTo({ left: targetX - 60, behavior: 'smooth' });
+                        }
+                    }
+                }, 50);
+            }
         }
     }
 
@@ -1514,55 +2222,65 @@ function setupSectionPickerEvents() {
 }
 
 function insertSectionIntoEditor(sectionKey) {
-    const editor = document.getElementById('visual-chord-editor');
-    if (!editor) return;
+    syncCurrentEditorDOMToSections();
 
     let secName = formatSectionHeader(sectionKey);
     if (secName === 'VERSO') {
-        const currentText = editorHTMLToChordPro(editor);
+        const currentText = sectionsToChordPro(currentEditorSections);
         const nextNum = getNextVerseNumber(currentText);
         secName = `VERSO ${nextNum}`;
     }
 
-    const row = document.createElement('div');
-    row.className = 'editor-line editor-section-row';
-    row.setAttribute('data-section', secName);
-    row.innerHTML = `<span class="editor-section-badge" contenteditable="false">[${secName}]</span>`;
+    const isInst = isInstrumentalSectionType(secName);
+    const newSection = {
+        id: 'sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+        type: secName,
+        isInstrumental: isInst,
+        chords: isInst ? [] : [],
+        lines: isInst ? [] : ['']
+    };
 
-    const nextLine = document.createElement('div');
-    nextLine.className = 'editor-line';
-    nextLine.innerHTML = '<br>';
+    currentEditorSections.push(newSection);
+    renderSectionCards();
 
-    editor.focus();
-    restoreEditorSelection();
-
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
-        let node = sel.anchorNode;
-        // Subir hasta encontrar el hijo directo de editor
-        while (node && node.parentNode !== editor) {
-            node = node.parentNode;
+    // Scroll suave hacia la nueva tarjeta agregada
+    setTimeout(() => {
+        const container = document.getElementById('section-cards-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
         }
+    }, 50);
+}
 
-        if (node && node.parentNode === editor) {
-            node.after(row);
-            row.after(nextLine);
+function syncCurrentEditorDOMToSections() {
+    const container = document.getElementById('section-cards-container');
+    if (!container) return;
+
+    const cards = container.querySelectorAll('.section-card-block');
+    const updated = [];
+
+    cards.forEach(card => {
+        const secId = card.getAttribute('data-section-id');
+        const existing = currentEditorSections.find(s => s.id === secId);
+        if (!existing) return;
+
+        if (existing.isInstrumental) {
+            updated.push(existing);
         } else {
-            editor.appendChild(row);
-            editor.appendChild(nextLine);
+            const inputs = card.querySelectorAll('.stacked-lyrics-input');
+            const lines = [];
+            inputs.forEach((input, lIdx) => {
+                const currentLineStr = (existing.lines && existing.lines[lIdx]) ? existing.lines[lIdx] : '';
+                const { chords } = parseLineChordPro(currentLineStr);
+                lines.push(formatLineChordPro(input.value, chords));
+            });
+            existing.lines = lines.length > 0 ? lines : [''];
+            updated.push(existing);
         }
-    } else {
-        editor.appendChild(row);
-        editor.appendChild(nextLine);
-    }
+    });
 
-    // Posicionar cursor en la nueva línea creada
-    const range = document.createRange();
-    range.setStart(nextLine, 0);
-    range.collapse(true);
-    if (sel) {
-        sel.removeAllRanges();
-        sel.addRange(range);
+    if (updated.length > 0) {
+        currentEditorSections = updated;
     }
 }
 
