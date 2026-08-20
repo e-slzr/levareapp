@@ -10,32 +10,22 @@ class SuggestionController {
 
         $userId = (int)$user['id'];
 
-        if ($groupId) {
-            $stmt = $pdo->prepare("
-                SELECT s.*, 
-                       u.name as suggested_by_name, 
-                       u.lastname as suggested_by_lastname,
-                       (SELECT COUNT(*) FROM suggestion_votes WHERE suggestion_id = s.id) as votes_count,
-                       (SELECT COUNT(*) FROM suggestion_votes WHERE suggestion_id = s.id AND user_id = :user_id) as has_voted
-                FROM suggestions s
-                JOIN users u ON u.id = s.suggested_by
-                WHERE s.group_id = :group_id
-                ORDER BY votes_count DESC, s.created_at DESC
-            ");
-            $stmt->execute(['user_id' => $userId, 'group_id' => $groupId]);
-        } else {
-            $stmt = $pdo->prepare("
-                SELECT s.*, 
-                       u.name as suggested_by_name, 
-                       u.lastname as suggested_by_lastname,
-                       (SELECT COUNT(*) FROM suggestion_votes WHERE suggestion_id = s.id) as votes_count,
-                       (SELECT COUNT(*) FROM suggestion_votes WHERE suggestion_id = s.id AND user_id = :user_id) as has_voted
-                FROM suggestions s
-                JOIN users u ON u.id = s.suggested_by
-                ORDER BY votes_count DESC, s.created_at DESC
-            ");
-            $stmt->execute(['user_id' => $userId]);
+        if (!$groupId) {
+            jsonResponse([]);
         }
+
+        $stmt = $pdo->prepare("
+            SELECT s.*, 
+                   u.name as suggested_by_name, 
+                   u.lastname as suggested_by_lastname,
+                   (SELECT COUNT(*) FROM suggestion_votes WHERE suggestion_id = s.id) as votes_count,
+                   (SELECT COUNT(*) FROM suggestion_votes WHERE suggestion_id = s.id AND user_id = :user_id) as has_voted
+            FROM suggestions s
+            JOIN users u ON u.id = s.suggested_by
+            WHERE s.group_id = :group_id
+            ORDER BY votes_count DESC, s.created_at DESC
+        ");
+        $stmt->execute(['user_id' => $userId, 'group_id' => $groupId]);
 
         $raw = $stmt->fetchAll();
         $suggestions = array_map(function($r) {

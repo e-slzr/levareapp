@@ -9,7 +9,16 @@ let announcementsDateQuery = "";
 function initAnnouncementsView() {
     const currentUser = getData('currentUser');
     const currentGroupId = getData('currentGroupId');
-    if (!currentUser || !currentGroupId) return;
+    if (!currentUser) return;
+
+    if (!currentGroupId) {
+        cachedAnnouncementsList = [];
+        const container = document.getElementById('announcements-full-list');
+        if (container) {
+            container.innerHTML = `<div class="p-8 text-center text-zinc-500 dark:text-zinc-400 text-xs">No perteneces a ninguna banda activa.</div>`;
+        }
+        return;
+    }
 
     // Reset filters
     announcementsSearchQuery = "";

@@ -11,12 +11,12 @@ class EventController {
         $groupId = getGroupIdHeader();
         $pdo = DB::getConnection();
 
-        if ($groupId) {
-            $stmt = $pdo->prepare("SELECT * FROM events WHERE group_id = ? ORDER BY date ASC, time ASC");
-            $stmt->execute([$groupId]);
-        } else {
-            $stmt = $pdo->query("SELECT * FROM events ORDER BY date ASC, time ASC");
+        if (!$groupId) {
+            jsonResponse([]);
         }
+
+        $stmt = $pdo->prepare("SELECT * FROM events WHERE group_id = ? ORDER BY date ASC, time ASC");
+        $stmt->execute([$groupId]);
 
         $events = $stmt->fetchAll();
 
@@ -153,7 +153,7 @@ class AnnouncementController {
         } else {
             $stmt = $pdo->prepare("
                 SELECT * FROM announcements 
-                WHERE user_id = :user_id OR group_id IS NOT NULL 
+                WHERE user_id = :user_id AND group_id IS NULL 
                 ORDER BY created_at DESC 
                 LIMIT {$limit}
             ");

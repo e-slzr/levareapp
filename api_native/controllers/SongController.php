@@ -12,10 +12,7 @@ class SongController {
         $pdo = DB::getConnection();
 
         if (!$groupId) {
-            $stmtG = $pdo->prepare("SELECT group_id FROM group_user WHERE user_id = ? LIMIT 1");
-            $stmtG->execute([$user['id']]);
-            $rowG = $stmtG->fetch();
-            $groupId = $rowG ? (int)$rowG['group_id'] : 3;
+            jsonResponse([]);
         }
 
         $stmt = $pdo->prepare("
@@ -274,7 +271,7 @@ class SongController {
             $stmtG = $pdo->prepare("SELECT group_id FROM group_user WHERE user_id = ? LIMIT 1");
             $stmtG->execute([$user['id']]);
             $rowG = $stmtG->fetch();
-            $groupId = $rowG ? (int)$rowG['group_id'] : 3;
+            $groupId = $rowG ? (int)$rowG['group_id'] : 0;
         }
 
         $q = trim($_GET['q'] ?? '');
@@ -558,12 +555,12 @@ class SetlistController {
         $groupId = getGroupIdHeader();
         $pdo = DB::getConnection();
 
-        if ($groupId) {
-            $stmt = $pdo->prepare("SELECT * FROM setlists WHERE group_id = ? ORDER BY date DESC");
-            $stmt->execute([$groupId]);
-        } else {
-            $stmt = $pdo->query("SELECT * FROM setlists ORDER BY date DESC");
+        if (!$groupId) {
+            jsonResponse([]);
         }
+
+        $stmt = $pdo->prepare("SELECT * FROM setlists WHERE group_id = ? ORDER BY date DESC");
+        $stmt->execute([$groupId]);
 
         $setlists = $stmt->fetchAll();
 
