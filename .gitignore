@@ -4,3 +4,6 @@ node_modules/
 .DS_Store
 storage/avatars/*
 !storage/avatars/.gitkeep
+storage/announcements/*
+!storage/announcements/.gitkeep
+

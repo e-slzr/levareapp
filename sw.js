@@ -77,13 +77,14 @@ self.addEventListener("push", (event) => {
       data = event.data.json();
     } catch (e) {
       data = {
-        title: "Levare OS",
+        title: "Levare",
         body: event.data.text()
       };
     }
   }
 
-  const title = data.title || "Levare OS";
+  const title = data.title || "Levare";
+
   const iconUrl = new URL("icon-levareapp.png", self.location.origin).href;
   const options = {
     body: data.body || "Tienes una nueva actualización en tu grupo musical.",

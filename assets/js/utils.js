@@ -150,16 +150,54 @@ function getLocalDateString() {
 
 // Helper to get notification icon & styling by announcement content/type
 function getAnnouncementIconConfig(announcement) {
-    const text = String(announcement.text || '').toLowerCase();
+    const type = String(announcement.type || '').toLowerCase();
     const meta = announcement.meta || {};
+    const category = String(meta.category || '').toLowerCase();
+    const text = String(announcement.text || '').toLowerCase();
+
+    // 0. Anuncios y Comunicados Globales del Sistema (Superadmin)
+    if (type === 'system_update' || category === 'system_update') {
+        return {
+            iconHtml: `<i class="fa-solid fa-rocket text-sm"></i>`,
+            badgeClass: 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/60',
+            chipClass: 'bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-900/60',
+            notifTypeClass: 'indigo',
+            categoryLabel: 'Actualización',
+            isGlobal: true
+        };
+    }
+
+    if (type === 'system_announcement' || category === 'system_announcement') {
+        return {
+            iconHtml: `<i class="fa-solid fa-bullhorn text-sm"></i>`,
+            badgeClass: 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60',
+            chipClass: 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900/60',
+            notifTypeClass: 'amber',
+            categoryLabel: 'Comunicado',
+            isGlobal: true
+        };
+    }
+
+    if (type === 'system_event' || category === 'system_event') {
+        return {
+            iconHtml: `<i class="fa-solid fa-calendar-check text-sm"></i>`,
+            badgeClass: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60',
+            chipClass: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60',
+            notifTypeClass: 'emerald',
+            categoryLabel: 'Evento / Invitación',
+            isGlobal: true
+        };
+    }
 
     // 1. Likes en la Comunidad -> Icono de corazón
     if (meta.source === 'community' || text.includes('gustado') || text.includes('like') || text.includes('comunidad') || text.includes('corazón') || text.includes('corazon')) {
         return {
             iconHtml: `<i class="fa-solid fa-heart text-sm"></i>`,
             badgeClass: 'bg-pink-50 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-900/50',
+            chipClass: 'bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-900/60',
             notifTypeClass: 'pink',
-            categoryLabel: 'Comunidad'
+            categoryLabel: 'Comunidad',
+            isGlobal: false
         };
     }
 
@@ -168,8 +206,10 @@ function getAnnouncementIconConfig(announcement) {
         return {
             iconHtml: `<i class="fa-solid fa-headphones text-sm"></i>`,
             badgeClass: 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50',
+            chipClass: 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-900/60',
             notifTypeClass: 'purple',
-            categoryLabel: meta.band_name || 'Banda'
+            categoryLabel: meta.band_name || 'Banda',
+            isGlobal: false
         };
     }
 
@@ -178,8 +218,10 @@ function getAnnouncementIconConfig(announcement) {
         return {
             iconHtml: `<i class="fa-solid fa-music text-sm"></i>`,
             badgeClass: 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50',
+            chipClass: 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900/60',
             notifTypeClass: 'blue',
-            categoryLabel: meta.band_name || 'Banda'
+            categoryLabel: meta.band_name || 'Banda',
+            isGlobal: false
         };
     }
 
@@ -188,8 +230,10 @@ function getAnnouncementIconConfig(announcement) {
         return {
             iconHtml: `<i class="fa-solid fa-list-check text-sm"></i>`,
             badgeClass: 'bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-teal-900/50',
+            chipClass: 'bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-900/60',
             notifTypeClass: 'green',
-            categoryLabel: meta.band_name || 'Banda'
+            categoryLabel: meta.band_name || 'Banda',
+            isGlobal: false
         };
     }
 
@@ -198,8 +242,10 @@ function getAnnouncementIconConfig(announcement) {
         return {
             iconHtml: `<i class="fa-solid fa-calendar-days text-sm"></i>`,
             badgeClass: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50',
+            chipClass: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60',
             notifTypeClass: 'green',
-            categoryLabel: meta.band_name || 'Banda'
+            categoryLabel: meta.band_name || 'Banda',
+            isGlobal: false
         };
     }
 
@@ -208,32 +254,150 @@ function getAnnouncementIconConfig(announcement) {
         return {
             iconHtml: `<i class="fa-solid fa-heart text-sm"></i>`,
             badgeClass: 'bg-pink-50 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-900/50',
+            chipClass: 'bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-900/60',
             notifTypeClass: 'pink',
-            categoryLabel: 'Comunidad'
+            categoryLabel: 'Comunidad',
+            isGlobal: false
         };
     } else if (announcement.type === 'purple') {
         return {
             iconHtml: `<i class="fa-solid fa-headphones text-sm"></i>`,
             badgeClass: 'bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50',
+            chipClass: 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-900/60',
             notifTypeClass: 'purple',
-            categoryLabel: 'Banda'
+            categoryLabel: 'Banda',
+            isGlobal: false
         };
     } else if (announcement.type === 'green') {
         return {
             iconHtml: `<i class="fa-solid fa-calendar-days text-sm"></i>`,
             badgeClass: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50',
+            chipClass: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60',
             notifTypeClass: 'green',
-            categoryLabel: 'Banda'
+            categoryLabel: 'Banda',
+            isGlobal: false
         };
     }
 
     return {
         iconHtml: `<i class="fa-solid fa-music text-sm"></i>`,
         badgeClass: 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50',
+        chipClass: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700',
         notifTypeClass: 'blue',
-        categoryLabel: 'Banda'
+        categoryLabel: 'Banda',
+        isGlobal: false
     };
 }
+
+// Modal helper: Open Announcement Details Modal
+function openAnnouncementDetailModal(announcement) {
+    const modal = document.getElementById('modal-announcement-detail');
+    if (!modal) return;
+
+    const meta = announcement.meta || {};
+    const iconConfig = getAnnouncementIconConfig(announcement);
+
+    // Title
+    const titleElem = document.getElementById('announcement-detail-title');
+    const titleText = meta.title || announcement.text || 'Novedad';
+    if (titleElem) titleElem.textContent = titleText;
+
+    // Badge & Category
+    const badgeContainer = document.getElementById('announcement-detail-badge-container');
+    const categoryLabel = iconConfig.categoryLabel || 'Sistema';
+    if (badgeContainer) {
+        badgeContainer.innerHTML = `
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl ${iconConfig.badgeClass} flex items-center justify-center flex-shrink-0">
+                    ${iconConfig.iconHtml}
+                </div>
+                <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold border ${iconConfig.chipClass || 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700'} uppercase tracking-wider">
+                    ${categoryLabel}
+                </span>
+            </div>
+        `;
+    }
+
+    // Date & Time
+    const dateElem = document.getElementById('announcement-detail-date');
+    if (dateElem && announcement.created_at) {
+        const d = new Date(announcement.created_at);
+        const formattedDate = d.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const formattedTime = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + ' hs';
+        dateElem.textContent = `${formattedDate} • ${formattedTime}`;
+    } else if (dateElem) {
+        dateElem.textContent = '';
+    }
+
+    // Image container
+    const imgContainer = document.getElementById('announcement-detail-image-container');
+    const imgElem = document.getElementById('announcement-detail-image');
+    const imageUrl = meta.image_url;
+
+    if (imgContainer && imgElem) {
+        if (imageUrl) {
+            let fullImgUrl = imageUrl;
+            if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+                fullImgUrl = 'storage/' + imageUrl.replace(/^storage\//, '');
+            }
+            imgElem.src = fullImgUrl;
+            imgContainer.classList.remove('hidden');
+        } else {
+            imgElem.src = '';
+            imgContainer.classList.add('hidden');
+        }
+    }
+
+    // Content text
+    const contentElem = document.getElementById('announcement-detail-content');
+    const rawContent = meta.content || announcement.text || '';
+    if (contentElem) {
+        // Render paragraphs cleanly while escaping HTML
+        const safeText = document.createElement('div');
+        safeText.textContent = rawContent;
+        const paragraphs = safeText.innerHTML
+            .split('\n')
+            .filter(p => p.trim().length > 0)
+            .map(p => `<p class="leading-relaxed">${p}</p>`)
+            .join('');
+        contentElem.innerHTML = paragraphs || `<p class="leading-relaxed">${safeText.innerHTML}</p>`;
+    }
+
+    // Author
+    const authorElem = document.getElementById('announcement-detail-author');
+    if (authorElem) {
+        const authorName = meta.author_name || (iconConfig.isGlobal ? 'Eliú Salazar | Desarrollador' : (meta.band_name || 'Levare'));
+        authorElem.textContent = authorName;
+    }
+
+
+    modal.classList.remove('hidden');
+}
+
+function closeAnnouncementDetailModal() {
+    const modal = document.getElementById('modal-announcement-detail');
+    if (modal) modal.classList.add('hidden');
+}
+
+// Lightbox modal controls
+function openImageLightbox(src) {
+    if (!src) return;
+    const lightbox = document.getElementById('modal-image-lightbox');
+    const img = document.getElementById('lightbox-image-src');
+    if (lightbox && img) {
+        img.src = src;
+        lightbox.classList.remove('hidden');
+    }
+}
+
+function closeImageLightbox() {
+    const lightbox = document.getElementById('modal-image-lightbox');
+    if (lightbox) {
+        lightbox.classList.add('hidden');
+    }
+}
+
+
 
 
 

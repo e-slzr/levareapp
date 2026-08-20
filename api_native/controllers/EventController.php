@@ -134,40 +134,4 @@ class EventController {
     }
 }
 
-class AnnouncementController {
-
-    public static function index(): void {
-        $user = requireAuth();
-        $groupId = getGroupIdHeader();
-        $pdo = DB::getConnection();
-        $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 100) : 15;
-
-        if ($groupId) {
-            $stmt = $pdo->prepare("
-                SELECT * FROM announcements 
-                WHERE group_id = :group_id OR (user_id = :user_id AND group_id IS NULL) 
-                ORDER BY created_at DESC 
-                LIMIT {$limit}
-            ");
-            $stmt->execute(['group_id' => $groupId, 'user_id' => $user['id']]);
-        } else {
-            $stmt = $pdo->prepare("
-                SELECT * FROM announcements 
-                WHERE user_id = :user_id AND group_id IS NULL 
-                ORDER BY created_at DESC 
-                LIMIT {$limit}
-            ");
-            $stmt->execute(['user_id' => $user['id']]);
-        }
-
-        $rows = $stmt->fetchAll();
-        foreach ($rows as &$r) {
-            if (!empty($r['meta']) && is_string($r['meta'])) {
-                $r['meta'] = json_decode($r['meta'], true);
-            }
-        }
-
-        jsonResponse($rows);
-    }
-}
 

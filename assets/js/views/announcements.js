@@ -1,5 +1,5 @@
 /* ==========================================================================
-   WorshipApp — ANNOUNCEMENTS & ACTIVITY HISTORY CONTROLLER (API Connected)
+   Levare OS — ANNOUNCEMENTS & ACTIVITY HISTORY CONTROLLER (API Connected)
    ========================================================================== */
 
 let cachedAnnouncementsList = [];
@@ -8,17 +8,7 @@ let announcementsDateQuery = "";
 
 function initAnnouncementsView() {
     const currentUser = getData('currentUser');
-    const currentGroupId = getData('currentGroupId');
     if (!currentUser) return;
-
-    if (!currentGroupId) {
-        cachedAnnouncementsList = [];
-        const container = document.getElementById('announcements-full-list');
-        if (container) {
-            container.innerHTML = `<div class="p-8 text-center text-zinc-500 dark:text-zinc-400 text-xs">No perteneces a ninguna banda activa.</div>`;
-        }
-        return;
-    }
 
     // Reset filters
     announcementsSearchQuery = "";
@@ -93,7 +83,12 @@ function renderAnnouncementsFullList() {
     const dateQ = announcementsDateQuery.trim();
 
     const filtered = cachedAnnouncementsList.filter(a => {
-        const matchesText = !textQ || (a.text && a.text.toLowerCase().includes(textQ));
+        const meta = a.meta || {};
+        const titleStr = String(meta.title || '').toLowerCase();
+        const contentStr = String(meta.content || '').toLowerCase();
+        const textStr = String(a.text || '').toLowerCase();
+
+        const matchesText = !textQ || titleStr.includes(textQ) || contentStr.includes(textQ) || textStr.includes(textQ);
         let matchesDate = true;
         if (dateQ && a.created_at) {
             const itemDate = a.created_at.substring(0, 10);
@@ -119,16 +114,15 @@ function renderAnnouncementsFullList() {
 
     filtered.forEach(a => {
         const card = document.createElement('div');
-        card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-start gap-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition';
+        card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-start gap-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition cursor-pointer';
 
         const iconConfig = getAnnouncementIconConfig(a);
-        const categoryLabel = iconConfig.categoryLabel || 'Banda';
-        const isCommunity = categoryLabel.toLowerCase() === 'comunidad';
-        const categoryChipClass = isCommunity 
-            ? 'bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-900/60'
-            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700';
+        const meta = a.meta || {};
+        const categoryChipClass = iconConfig.chipClass || 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700';
+        const displayTitle = meta.title || a.text;
+        const hasImage = !!meta.image_url;
 
-        const iconContainer = `<div class="w-9 h-9 rounded-xl ${iconConfig.badgeClass} flex items-center justify-center flex-shrink-0">${iconConfig.iconHtml}</div>`;
+        const iconContainer = `<div class="w-9 h-9 rounded-xl ${iconConfig.badgeClass} flex items-center justify-center flex-shrink-0 mt-0.5">${iconConfig.iconHtml}</div>`;
 
         // Format created date & time
         let formattedDateStr = '';
@@ -139,21 +133,25 @@ function renderAnnouncementsFullList() {
             timeStr = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + ' hs';
         }
 
+        card.onclick = () => openAnnouncementDetailModal(a);
+
         card.innerHTML = `
             ${iconContainer}
             <div class="flex-1 min-w-0 space-y-1.5">
-                <p class="text-xs font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed">${a.text}</p>
-                <div class="flex items-center gap-2 text-[11px] text-zinc-400 dark:text-zinc-500">
-                    <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold border ${categoryChipClass} uppercase">${categoryLabel}</span>
+                <p class="text-xs font-semibold text-zinc-900 dark:text-zinc-100 leading-relaxed">${displayTitle}</p>
+                ${meta.content && meta.title ? `<p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">${meta.content}</p>` : ''}
+                <div class="flex items-center gap-2 text-[11px] text-zinc-400 dark:text-zinc-500 flex-wrap">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${categoryChipClass} uppercase">${iconConfig.categoryLabel}</span>
+                    ${hasImage ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700 flex items-center gap-1"><i class="fa-solid fa-image text-[9px]"></i> Foto</span>' : ''}
                     <span>•</span>
                     <span>${formattedDateStr}</span>
                     <span>•</span>
                     <span>${timeStr}</span>
                 </div>
             </div>
+            <i class="fa-solid fa-chevron-right text-[10px] text-zinc-400 self-center"></i>
         `;
 
         container.appendChild(card);
     });
-
 }

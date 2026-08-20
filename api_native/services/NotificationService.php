@@ -63,7 +63,7 @@ class NotificationService {
 
             if (!empty($subscriptions)) {
                 $pushPayload = [
-                    'title' => $data['title'] ?? 'Levare OS',
+                    'title' => $data['title'] ?? 'Levare',
                     'body'  => $data['body'] ?? $text,
                     'icon'  => './icon-levareapp.svg?v=2.0.1',
                     'badge' => './icon-levareapp.svg?v=2.0.1',
@@ -130,7 +130,7 @@ class NotificationService {
 
             if (!empty($subscriptions)) {
                 $pushPayload = [
-                    'title' => $data['title'] ?? 'Levare OS • Comunidad',
+                    'title' => $data['title'] ?? 'Levare • Comunidad',
                     'body'  => $data['body'] ?? $text,
                     'icon'  => './icon-levareapp.svg?v=2.0.1',
                     'badge' => './icon-levareapp.svg?v=2.0.1',
@@ -147,4 +147,69 @@ class NotificationService {
             error_log("Error sending user push notifications: " . $e->getMessage());
         }
     }
+
+    /**
+     * Notify all users of the platform (System / Global Announcement)
+     *
+     * @param array $data Notification details:
+     *   - 'type': 'system_update' | 'system_announcement' | 'system_event' | string
+     *   - 'text': string (Short summary or title)
+     *   - 'title': string (Push notification title)
+     *   - 'body': string (Push notification body text)
+     *   - 'url': string (Target SPA route/view, e.g. '#announcements')
+     *   - 'meta': array (Detailed payload: title, content, image_url, category, author_name, etc.)
+     *   - 'send_push': bool (whether to send Web Push notifications)
+     */
+    public static function notifyAll(array $data): ?int {
+        $pdo = DB::getConnection();
+
+        $type = $data['type'] ?? 'system_announcement';
+        $text = $data['text'] ?? ($data['title'] ?? 'Anuncio del Sistema');
+        $meta = isset($data['meta']) ? json_encode($data['meta'], JSON_UNESCAPED_UNICODE) : null;
+        $announcementId = null;
+
+        // 1. Insert global announcement into database (group_id = NULL, user_id = NULL)
+        try {
+            $stmtAnn = $pdo->prepare("
+                INSERT INTO announcements (group_id, user_id, text, type, meta, created_at, updated_at) 
+                VALUES (NULL, NULL, ?, ?, ?, NOW(), NOW())
+            ");
+            $stmtAnn->execute([$text, $type, $meta]);
+            $announcementId = (int)$pdo->lastInsertId();
+        } catch (\Throwable $e) {
+            error_log("Error saving global announcement: " . $e->getMessage());
+        }
+
+        // 2. Fetch all active push subscriptions across all users if send_push is true
+        $sendPush = !isset($data['send_push']) || (bool)$data['send_push'];
+        if ($sendPush) {
+            try {
+                $stmtSubs = $pdo->query("SELECT endpoint, p256dh, auth FROM push_subscriptions");
+                $subscriptions = $stmtSubs ? $stmtSubs->fetchAll() : [];
+
+                if (!empty($subscriptions)) {
+                    $pushPayload = [
+                        'title' => $data['title'] ?? 'Levare • Anuncio',
+                        'body'  => $data['body'] ?? $text,
+                        'icon'  => './icon-levareapp.svg?v=2.0.1',
+                        'badge' => './icon-levareapp.svg?v=2.0.1',
+                        'data'  => [
+                            'url'      => $data['url'] ?? '#announcements',
+                            'category' => 'system',
+                            'announcement_id' => $announcementId,
+                            'meta'     => $data['meta'] ?? []
+                        ]
+                    ];
+
+                    PushService::sendMultiple($subscriptions, $pushPayload);
+                }
+            } catch (\Throwable $e) {
+                error_log("Error sending global push notifications: " . $e->getMessage());
+            }
+        }
+
+        return $announcementId;
+    }
+
 }
+

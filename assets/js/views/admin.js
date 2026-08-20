@@ -1,347 +1,420 @@
 /* ==========================================================================
-   WorshipApp — SUPER ADMIN PANEL CONTROLLER
+   Levare — SUPER ADMIN PANEL CONTROLLER (API Connected & Role-Aware)
    ========================================================================== */
 
 let adminCurrentTab = 'all';
-let allLeaderRequests = []; // Stores all users (leaders & members)
-let pendingActionId = null;
+let allAdminUsers = [];
+let adminSearchQuery = '';
+let pendingActionUser = null;
 
-function initAdminView() {
+function initAdminView(forceRefresh = false) {
     const currentUser = getData('currentUser');
+    const container = document.getElementById('admin-requests-list');
+
     if (!currentUser || currentUser.account_type !== 'superadmin') {
-        document.getElementById('admin-requests-list').innerHTML = `
-            <div style="text-align:center; padding: 60px; color: var(--danger);">
-                Acceso restringido. Se requieren privilegios de Super Admin.
-            </div>`;
+        if (container) {
+            container.innerHTML = `
+                <div class="p-8 text-center text-xs text-rose-500 font-semibold">
+                    Acceso restringido. Se requieren privilegios de Super Administrador.
+                </div>`;
+        }
         return;
     }
 
     // Tab switching
     const tabAll = document.getElementById('tab-all-users');
+    const tabActive = document.getElementById('tab-active-users');
     const tabBlocked = document.getElementById('tab-blocked-users');
 
-    if (tabAll) {
-        tabAll.onclick = () => switchAdminTab('all');
-    }
-    if (tabBlocked) {
-        tabBlocked.onclick = () => switchAdminTab('blocked');
+    if (tabAll) tabAll.onclick = () => switchAdminTab('all');
+    if (tabActive) tabActive.onclick = () => switchAdminTab('active');
+    if (tabBlocked) tabBlocked.onclick = () => switchAdminTab('blocked');
+
+    // Search Input
+    const searchInput = document.getElementById('admin-users-search-input');
+    if (searchInput) {
+        searchInput.value = adminSearchQuery;
+        searchInput.oninput = (e) => {
+            adminSearchQuery = e.target.value;
+            renderAdminRequests();
+        };
     }
 
     // Refresh button
-    document.getElementById('btn-refresh-requests').onclick = () => loadAdminRequests(true);
+    const refreshBtn = document.getElementById('btn-refresh-requests');
+    if (refreshBtn) {
+        refreshBtn.onclick = () => loadAdminRequests(true);
+    }
 
-    // Block modal controls
-    document.getElementById('btn-close-block-modal-x').onclick = closeBlockModal;
-    document.getElementById('btn-cancel-block').onclick = closeBlockModal;
-    document.getElementById('btn-confirm-block').onclick = confirmBlock;
+    // Modal Confirmation Handlers
+    const confirmBlockBtn = document.getElementById('btn-confirm-block');
+    if (confirmBlockBtn) confirmBlockBtn.onclick = handleBlockConfirm;
 
-    // Unblock modal controls
-    document.getElementById('btn-close-unblock-modal-x').onclick = closeUnblockModal;
-    document.getElementById('btn-cancel-unblock').onclick = closeUnblockModal;
-    document.getElementById('btn-confirm-unblock').onclick = confirmUnblock;
+    const confirmUnblockBtn = document.getElementById('btn-confirm-unblock');
+    if (confirmUnblockBtn) confirmUnblockBtn.onclick = handleUnblockConfirm;
 
-    // Reset password modal controls
-    document.getElementById('btn-close-reset-leader-modal-x').onclick = closeResetLeaderPasswordModal;
-    document.getElementById('btn-cancel-reset-leader').onclick = closeResetLeaderPasswordModal;
-    document.getElementById('btn-confirm-reset-leader-password').onclick = confirmResetLeaderPassword;
-    document.getElementById('btn-copy-generated-password').onclick = copyGeneratedPassword;
-    document.querySelectorAll('#modal-confirm-reset-leader-password .btn-close-modal').forEach(btn => {
-        btn.onclick = closeResetLeaderPasswordModal;
-    });
+    const confirmResetBtn = document.getElementById('btn-confirm-reset-leader-password');
+    if (confirmResetBtn) confirmResetBtn.onclick = handleResetPasswordConfirm;
 
-    // Close modals on backdrop click
-    document.getElementById('modal-confirm-block').onclick = (e) => {
-        if (e.target === document.getElementById('modal-confirm-block')) closeBlockModal();
-    };
-    document.getElementById('modal-confirm-unblock').onclick = (e) => {
-        if (e.target === document.getElementById('modal-confirm-unblock')) closeUnblockModal();
-    };
-    document.getElementById('modal-confirm-reset-leader-password').onclick = (e) => {
-        if (e.target === document.getElementById('modal-confirm-reset-leader-password')) closeResetLeaderPasswordModal();
-    };
+    const copyPassBtn = document.getElementById('btn-copy-generated-password');
+    if (copyPassBtn) copyPassBtn.onclick = copyGeneratedAdminPassword;
 
-    loadAdminRequests();
+    loadAdminRequests(forceRefresh);
 }
 
 function switchAdminTab(tab) {
     adminCurrentTab = tab;
-    
-    const tabAll = document.getElementById('tab-all-users');
-    const tabBlocked = document.getElementById('tab-blocked-users');
 
-    if (tabAll) {
-        const isActive = tab === 'all';
-        tabAll.style.borderBottomColor = isActive ? 'var(--accent-color, #7c3aed)' : 'transparent';
-        tabAll.style.color = isActive ? 'var(--accent-color, #7c3aed)' : 'var(--text-muted)';
-        tabAll.classList.toggle('active', isActive);
-    }
-    if (tabBlocked) {
-        const isActive = tab === 'blocked';
-        tabBlocked.style.borderBottomColor = isActive ? 'var(--accent-color, #7c3aed)' : 'transparent';
-        tabBlocked.style.color = isActive ? 'var(--accent-color, #7c3aed)' : 'var(--text-muted)';
-        tabBlocked.classList.toggle('active', isActive);
-    }
+    const tabs = {
+        'all': document.getElementById('tab-all-users'),
+        'active': document.getElementById('tab-active-users'),
+        'blocked': document.getElementById('tab-blocked-users')
+    };
+
+    Object.keys(tabs).forEach(k => {
+        const btn = tabs[k];
+        if (!btn) return;
+        const isActive = (k === tab);
+        if (isActive) {
+            btn.className = 'admin-tab-btn active px-4 py-2 text-xs font-bold border-b-2 border-zinc-900 dark:border-white text-zinc-900 dark:text-white transition cursor-pointer';
+        } else {
+            btn.className = 'admin-tab-btn px-4 py-2 text-xs font-bold border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition cursor-pointer';
+        }
+    });
+
     renderAdminRequests();
 }
 
 async function loadAdminRequests(forceRefresh = false) {
     const list = document.getElementById('admin-requests-list');
-    list.innerHTML = `<div style="text-align:center; padding: 40px; color:var(--text-muted);">Cargando usuarios...</div>`;
+    if (!list) return;
 
-    try {
-        allLeaderRequests = await apiFetch('/superadmin/requests') || [];
-        renderAdminRequests();
-    } catch (e) {
-        list.innerHTML = `<div style="text-align:center; padding: 60px; color:var(--danger);">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 12px;display:block;opacity:0.5;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Fallo al cargar usuarios. Revisa la conexión con la API.
-        </div>`;
+    if (forceRefresh || allAdminUsers.length === 0) {
+        list.innerHTML = `
+            <div class="text-center py-12 text-xs text-zinc-400 dark:text-zinc-500">
+                <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2 block"></i>
+                Cargando directorio de usuarios...
+            </div>`;
+
+        try {
+            allAdminUsers = await apiFetch('/admin/users') || [];
+        } catch (e) {
+            console.error("Error loading admin users:", e);
+            list.innerHTML = `
+                <div class="p-8 text-center text-xs text-rose-500 space-y-2">
+                    <i class="fa-solid fa-triangle-exclamation text-base block"></i>
+                    <p>Fallo al cargar usuarios. Revisa la conexión con el servidor.</p>
+                </div>`;
+            return;
+        }
     }
+
+    renderAdminRequests();
 }
 
 function renderAdminRequests() {
     const list = document.getElementById('admin-requests-list');
+    if (!list) return;
 
-    // Filter by tab
-    const filtered = adminCurrentTab === 'blocked'
-        ? allLeaderRequests.filter(r => r.status === 'blocked')
-        : allLeaderRequests;
+    const currentUser = getData('currentUser');
+    const q = (adminSearchQuery || '').toLowerCase().trim();
 
-    // Update stats
-    const totalUsers = allLeaderRequests.length;
-    const blockedUsers = allLeaderRequests.filter(r => r.status === 'blocked').length;
-    
-    document.getElementById('admin-stat-total').textContent = totalUsers;
-    document.getElementById('admin-stat-blocked').textContent = blockedUsers;
+    // 1. Filter by search query
+    let filtered = allAdminUsers.filter(u => {
+        if (!q) return true;
+        const nameMatch = `${u.name} ${u.lastname || ''}`.toLowerCase().includes(q);
+        const userMatch = (u.username || '').toLowerCase().includes(q);
+        const emailMatch = (u.email || '').toLowerCase().includes(q);
+        return nameMatch || userMatch || emailMatch;
+    });
+
+    // 2. Filter by tab
+    if (adminCurrentTab === 'active') {
+        filtered = filtered.filter(u => (u.status || 'active') === 'active');
+    } else if (adminCurrentTab === 'blocked') {
+        filtered = filtered.filter(u => u.status === 'blocked');
+    }
+
+    // 3. Update stats counters
+    const totalCount = allAdminUsers.length;
+    const activeCount = allAdminUsers.filter(u => (u.status || 'active') === 'active').length;
+    const blockedCount = allAdminUsers.filter(u => u.status === 'blocked').length;
+
+    const statTotal = document.getElementById('admin-stat-total');
+    const statActive = document.getElementById('admin-stat-active');
+    const statBlocked = document.getElementById('admin-stat-blocked');
+
+    if (statTotal) statTotal.textContent = totalCount;
+    if (statActive) statActive.textContent = activeCount;
+    if (statBlocked) statBlocked.textContent = blockedCount;
+
+    // 4. Render list
+    list.innerHTML = '';
 
     if (filtered.length === 0) {
-        const emptyMsg = adminCurrentTab === 'blocked'
-            ? 'No hay usuarios bloqueados actualmente.'
-            : 'No hay usuarios registrados en la plataforma.';
         list.innerHTML = `
-            <div style="text-align:center; padding: 60px 20px; color:var(--text-muted);">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block;opacity:0.3;">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-                <p style="font-size:1rem; font-weight:600;">${emptyMsg}</p>
+            <div class="p-12 text-center text-xs text-zinc-400 dark:text-zinc-500 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                No se encontraron usuarios en este filtro.
             </div>`;
         return;
     }
 
-    list.innerHTML = '';
-    filtered.forEach(user => {
+    filtered.forEach(u => {
         const card = document.createElement('div');
-        card.style.cssText = `
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 18px 20px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            transition: border-color 0.2s;
-        `;
+        card.className = 'p-4 sm:p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition hover:border-zinc-300 dark:hover:border-zinc-700';
 
-        const nameStr = `${user.name} ${user.lastname || ''}`.trim();
-        const initials = getInitials(nameStr);
-        const avatarBg = getAvatarBgColor(nameStr);
-        
-        let avatarStyle = `background: ${avatarBg};`;
-        const hasAvatar = user.avatar && user.avatar !== '0' && user.avatar !== 'null';
-        if (hasAvatar) {
-            avatarStyle = `background-image: url('${getAvatarUrl(user.avatar)}'); background-size: cover; background-position: center;`;
+        const isSelf = currentUser && (currentUser.id === u.id);
+        const isBlocked = u.status === 'blocked';
+        const fullName = `${u.name} ${u.lastname || ''}`.trim();
+        const initials = getInitials(fullName);
+        const avatarBg = getAvatarBgColor(fullName);
+
+        // System role badge
+        let roleBadge = '';
+        if (u.account_type === 'superadmin') {
+            roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-400 border border-purple-300 dark:border-purple-800/60 uppercase">Superadmin</span>';
+        } else if (u.account_type === 'leader') {
+            roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/60 uppercase">Líder</span>';
+        } else {
+            roleBadge = '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 uppercase">Miembro</span>';
         }
 
-        const createdAt = user.created_at ? new Date(user.created_at).toLocaleDateString('es-MX', {
-            year: 'numeric', month: 'long', day: 'numeric'
-        }) : '—';
+        // Avatar with status indicator dot in corner
+        let avatarInner = '';
+        if (u.avatar) {
+            avatarInner = `<div class="w-11 h-11 rounded-2xl bg-cover bg-center border border-zinc-200 dark:border-zinc-800 shadow-sm" style="background-image: url('${getAvatarUrl(u.avatar)}')"></div>`;
+        } else {
+            avatarInner = `<div class="w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-sm text-white shadow-sm" style="background-color: ${avatarBg}">${initials}</div>`;
+        }
 
-        const statusBadge = getStatusBadge(user.status);
-        const roleLabel = user.account_type === 'leader' 
-            ? `<span style="font-size:0.7rem; font-weight:600; padding:2px 8px; border-radius:12px; background:rgba(124,58,237,0.12); color:var(--accent-color, #7c3aed); border:1px solid rgba(124,58,237,0.22); margin-left: 6px;">Líder</span>`
-            : `<span style="font-size:0.7rem; font-weight:600; padding:2px 8px; border-radius:12px; background:rgba(59,130,246,0.12); color:#3b82f6; border:1px solid rgba(59,130,246,0.22); margin-left: 6px;">Miembro</span>`;
+        const statusDot = isBlocked
+            ? '<span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-zinc-900 bg-rose-500 shadow-sm" title="Usuario Bloqueado"></span>'
+            : '<span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-zinc-900 bg-emerald-500 shadow-sm" title="Usuario Activo"></span>';
 
-        card.innerHTML = `
-            <div style="width:48px; height:48px; border-radius:50%; ${avatarStyle}
-                display:flex; align-items:center; justify-content:center;
-                font-size:1.1rem; font-weight:700; color:#fff; flex-shrink:0;">
-                ${hasAvatar ? '' : initials}
-            </div>
-            <div style="flex:1; min-width:200px;">
-                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                    <p style="font-size:1rem; font-weight:700; color:var(--text-primary);">${nameStr}</p>
-                    ${roleLabel}
-                    ${statusBadge}
-                </div>
-                <p style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">
-                    Username: @${user.username || '—'} | Correo: ${user.email || '—'}
-                </p>
-                ${user.groups && user.groups.length > 0 ? `
-                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; align-items:center;">
-                        <span style="font-size:0.75rem; color:var(--text-muted);">Grupos:</span>
-                        ${user.groups.map(g => `
-                            <span style="font-size:0.7rem; font-weight:500; padding:1px 6px; border-radius:4px; background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-secondary);">
-                                ${g.name} (${g.pivot.role || 'Miembro'})
-                            </span>
-                        `).join('')}
-                    </div>
-                ` : `
-                    <p style="font-size:0.75rem; color:var(--text-muted); font-style:italic; margin-top:6px;">Sin grupos musicales asociados</p>
-                `}
-                <p style="font-size:0.78rem; color:var(--text-muted); margin-top:6px;">
-                    Registrado el ${createdAt}
-                </p>
-            </div>
-            <div style="display:flex; gap:8px; flex-shrink:0; align-items:center; flex-wrap:wrap;" id="actions-${user.id}">
-                <button class="btn btn-outline" data-id="${user.id}" data-name="${nameStr}" data-email="${user.email || user.username}" onclick="openResetLeaderPasswordModal(this)" style="font-size:0.82rem; padding: 8px 14px; color:var(--text-primary); border-color:var(--border-color);">
-                    Resetear Contraseña
-                </button>
-                ${user.status === 'blocked' ? `
-                    <button class="btn btn-primary" data-id="${user.id}" data-name="${nameStr}" data-email="${user.email || user.username}" onclick="openUnblockModal(this)" style="font-size:0.82rem; padding: 8px 14px; background:#10b981; border-color:#10b981;">
-                        Activar
-                    </button>
-                ` : `
-                    <button class="btn btn-danger" data-id="${user.id}" data-name="${nameStr}" data-email="${user.email || user.username}" onclick="openBlockModal(this)" style="font-size:0.82rem; padding: 8px 14px; background:#ef4444; border-color:#ef4444;">
-                        Bloquear
-                    </button>
-                `}
+        const avatarHtml = `
+            <div class="relative flex-shrink-0">
+                ${avatarInner}
+                ${statusDot}
             </div>
         `;
+
+        // Bands list
+        const groups = u.groups || [];
+        let groupsHtml = '';
+        if (groups.length > 0) {
+            groupsHtml = groups.map(g => `
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-medium bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800">
+                    <i class="fa-solid fa-people-group text-[9px] mr-1 text-zinc-400"></i>${g.group_name} (${g.role || 'Miembro'})
+                </span>
+            `).join('');
+        } else {
+            groupsHtml = '<span class="text-[11px] text-zinc-400 dark:text-zinc-500 italic">Sin bandas asociadas</span>';
+        }
+
+        // Action buttons (Circular icon-only matching members.php style)
+        let actionsHtml = '';
+        if (!isSelf) {
+            const blockActionBtn = isBlocked
+                ? `<button type="button" class="btn-unblock-user w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 text-emerald-500 transition flex items-center justify-center cursor-pointer shadow-sm" title="Desbloquear usuario">
+                    <i class="fa-solid fa-lock-open text-xs"></i>
+                   </button>`
+                : `<button type="button" class="btn-block-user w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-rose-500 transition flex items-center justify-center cursor-pointer shadow-sm" title="Bloquear usuario">
+                    <i class="fa-solid fa-lock text-xs"></i>
+                   </button>`;
+
+            const resetPwBtn = `
+                <button type="button" class="btn-reset-user-pw w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 transition flex items-center justify-center cursor-pointer shadow-sm" title="Restablecer contraseña">
+                    <i class="fa-solid fa-key text-xs"></i>
+                </button>
+            `;
+
+
+            actionsHtml = `
+                <div class="flex items-center gap-1.5 self-end sm:self-center flex-shrink-0">
+                    ${resetPwBtn}
+                    ${blockActionBtn}
+                </div>
+            `;
+        } else {
+            actionsHtml = `
+                <span class="px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold text-zinc-500 uppercase self-end sm:self-center">Tú</span>
+            `;
+        }
+
+
+        card.innerHTML = `
+            <div class="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                ${avatarHtml}
+                <div class="min-w-0 flex-1 space-y-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">${fullName}</h3>
+                        ${roleBadge}
+                    </div>
+                    <p class="text-xs text-zinc-400 dark:text-zinc-500 font-mono truncate">@${u.username} • ${u.email}</p>
+                    <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+                        ${groupsHtml}
+                    </div>
+                </div>
+            </div>
+            ${actionsHtml}
+        `;
+
+        // Event listeners for actions
+
+        const blockBtn = card.querySelector('.btn-block-user');
+        if (blockBtn) {
+            blockBtn.onclick = () => openBlockModal(u);
+        }
+
+        const unblockBtn = card.querySelector('.btn-unblock-user');
+        if (unblockBtn) {
+            unblockBtn.onclick = () => openUnblockModal(u);
+        }
+
+        const resetBtn = card.querySelector('.btn-reset-user-pw');
+        if (resetBtn) {
+            resetBtn.onclick = () => openResetLeaderPasswordModal(u);
+        }
+
         list.appendChild(card);
     });
 }
 
-function getStatusBadge(status) {
-    const badges = {
-        'active':   `<span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:3px 10px; border-radius:20px; background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);">Activo</span>`,
-        'blocked':  `<span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:3px 10px; border-radius:20px; background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3);">Bloqueado</span>`,
-        'pending':  `<span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:3px 10px; border-radius:20px; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">Pendiente</span>`,
-        'rejected': `<span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; padding:3px 10px; border-radius:20px; background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3);">Rechazado</span>`,
-    };
-    return badges[status] || badges['active'];
-}
+/* ==========================================================================
+   MODAL CONTROLS & API ACTIONS
+   ========================================================================== */
 
-// --- Block Flow ---
-function openBlockModal(btn) {
-    pendingActionId = btn.dataset.id;
-    document.getElementById('block-leader-name').textContent = btn.dataset.name;
-    document.getElementById('block-leader-email').textContent = btn.dataset.email;
-    document.getElementById('modal-confirm-block').classList.remove('hidden');
+function openBlockModal(user) {
+    pendingActionUser = user;
+    const nameEl = document.getElementById('block-leader-name');
+    const emailEl = document.getElementById('block-leader-email');
+    if (nameEl) nameEl.textContent = `${user.name} ${user.lastname || ''}`.trim();
+    if (emailEl) emailEl.textContent = `@${user.username} • ${user.email}`;
+
+    const modal = document.getElementById('modal-confirm-block');
+    if (modal) modal.classList.remove('hidden');
 }
 
 function closeBlockModal() {
-    document.getElementById('modal-confirm-block').classList.add('hidden');
-    pendingActionId = null;
+    pendingActionUser = null;
+    const modal = document.getElementById('modal-confirm-block');
+    if (modal) modal.classList.add('hidden');
 }
 
-async function confirmBlock() {
-    if (!pendingActionId) return;
-    const btn = document.getElementById('btn-confirm-block');
-    btn.disabled = true;
-    btn.textContent = 'Procesando...';
+async function handleBlockConfirm() {
+    if (!pendingActionUser) return;
+    const userId = pendingActionUser.id;
 
     try {
-        const res = await apiFetch(`/superadmin/requests/${pendingActionId}/block`, { method: 'POST' });
-        showToast(res.message || 'Usuario bloqueado.', 'warning');
+        const res = await apiFetch(`/admin/users/${userId}/block`, { method: 'POST' });
+        showToast(res.message || "Usuario bloqueado exitosamente.", "success");
         closeBlockModal();
-        await loadAdminRequests();
+        loadAdminRequests(true);
     } catch (e) {
-        showToast(e.message || 'Error al bloquear al usuario.', 'danger');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Confirmar Bloqueo';
+        showToast(e.message || "Fallo al bloquear usuario.", "danger");
     }
 }
 
-// --- Unblock Flow ---
-function openUnblockModal(btn) {
-    pendingActionId = btn.dataset.id;
-    document.getElementById('unblock-leader-name').textContent = btn.dataset.name;
-    document.getElementById('unblock-leader-email').textContent = btn.dataset.email;
-    document.getElementById('modal-confirm-unblock').classList.remove('hidden');
+function openUnblockModal(user) {
+    pendingActionUser = user;
+    const nameEl = document.getElementById('unblock-leader-name');
+    const emailEl = document.getElementById('unblock-leader-email');
+    if (nameEl) nameEl.textContent = `${user.name} ${user.lastname || ''}`.trim();
+    if (emailEl) emailEl.textContent = `@${user.username} • ${user.email}`;
+
+    const modal = document.getElementById('modal-confirm-unblock');
+    if (modal) modal.classList.remove('hidden');
 }
 
 function closeUnblockModal() {
-    document.getElementById('modal-confirm-unblock').classList.add('hidden');
-    pendingActionId = null;
+    pendingActionUser = null;
+    const modal = document.getElementById('modal-confirm-unblock');
+    if (modal) modal.classList.add('hidden');
 }
 
-async function confirmUnblock() {
-    if (!pendingActionId) return;
-    const btn = document.getElementById('btn-confirm-unblock');
-    btn.disabled = true;
-    btn.textContent = 'Procesando...';
+async function handleUnblockConfirm() {
+    if (!pendingActionUser) return;
+    const userId = pendingActionUser.id;
 
     try {
-        const res = await apiFetch(`/superadmin/requests/${pendingActionId}/unblock`, { method: 'POST' });
-        showToast(res.message || 'Usuario desbloqueado.', 'success');
+        const res = await apiFetch(`/admin/users/${userId}/unblock`, { method: 'POST' });
+        showToast(res.message || "Usuario desbloqueado exitosamente.", "success");
         closeUnblockModal();
-        await loadAdminRequests();
+        loadAdminRequests(true);
     } catch (e) {
-        showToast(e.message || 'Error al desbloquear al usuario.', 'danger');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Confirmar Desbloqueo';
+        showToast(e.message || "Fallo al desbloquear usuario.", "danger");
     }
 }
 
-// --- Password Reset Flow ---
-function openResetLeaderPasswordModal(btn) {
-    pendingActionId = btn.dataset.id;
-    document.getElementById('reset-leader-name').textContent = btn.dataset.name;
-    document.getElementById('reset-leader-email').textContent = btn.dataset.email;
-    
-    // Set view to step 1 (confirmation) and hide step 2
-    document.getElementById('reset-leader-password-confirm-step').classList.remove('hidden');
-    document.getElementById('reset-leader-password-success-step').classList.add('hidden');
-    document.getElementById('generated-temporary-password').value = '';
-    
-    document.getElementById('modal-confirm-reset-leader-password').classList.remove('hidden');
+function openResetLeaderPasswordModal(user) {
+    pendingActionUser = user;
+
+    const step1 = document.getElementById('reset-leader-password-confirm-step');
+    const step2 = document.getElementById('reset-leader-password-success-step');
+    if (step1) step1.classList.remove('hidden');
+    if (step2) step2.classList.add('hidden');
+
+    const nameEl = document.getElementById('reset-leader-name');
+    const emailEl = document.getElementById('reset-leader-email');
+    if (nameEl) nameEl.textContent = `${user.name} ${user.lastname || ''}`.trim();
+    if (emailEl) emailEl.textContent = `@${user.username} • ${user.email}`;
+
+    const passInput = document.getElementById('generated-temporary-password');
+    if (passInput) passInput.value = '';
+
+    const modal = document.getElementById('modal-confirm-reset-leader-password');
+    if (modal) modal.classList.remove('hidden');
 }
 
 function closeResetLeaderPasswordModal() {
-    document.getElementById('modal-confirm-reset-leader-password').classList.add('hidden');
-    pendingActionId = null;
+    pendingActionUser = null;
+    const modal = document.getElementById('modal-confirm-reset-leader-password');
+    if (modal) modal.classList.add('hidden');
 }
 
-async function confirmResetLeaderPassword() {
-    if (!pendingActionId) return;
-    const btn = document.getElementById('btn-confirm-reset-leader-password');
-    btn.disabled = true;
-    btn.textContent = 'Procesando...';
+async function handleResetPasswordConfirm() {
+    if (!pendingActionUser) return;
+    const userId = pendingActionUser.id;
+    const confirmBtn = document.getElementById('btn-confirm-reset-leader-password');
+
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Generando...';
+    }
 
     try {
-        const res = await apiFetch(`/superadmin/requests/${pendingActionId}/reset-password`, { method: 'POST' });
-        
-        // Populate the success step with the generated password
-        document.getElementById('generated-temporary-password').value = res.temporary_password;
-        
-        // Hide step 1 (confirmation), Show step 2 (success key display)
-        document.getElementById('reset-leader-password-confirm-step').classList.add('hidden');
-        document.getElementById('reset-leader-password-success-step').classList.remove('hidden');
-        
-        showToast(res.message || 'Contraseña restablecida con éxito.', 'success');
+        const res = await apiFetch(`/admin/users/${userId}/reset-password`, { method: 'POST' });
+
+        const step1 = document.getElementById('reset-leader-password-confirm-step');
+        const step2 = document.getElementById('reset-leader-password-success-step');
+        if (step1) step1.classList.add('hidden');
+        if (step2) step2.classList.remove('hidden');
+
+        const passInput = document.getElementById('generated-temporary-password');
+        if (passInput && res.temporaryPassword) {
+            passInput.value = res.temporaryPassword;
+        }
+
+        showToast("Contraseña restablecida correctamente.", "success");
     } catch (e) {
-        showToast(e.message || 'Error al restablecer contraseña.', 'danger');
+        showToast(e.message || "Fallo al restablecer contraseña.", "danger");
     } finally {
-        btn.disabled = false;
-        btn.textContent = 'Confirmar Restablecimiento';
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Generar Contraseña Temporal';
+        }
     }
 }
 
-async function copyGeneratedPassword() {
-    const input = document.getElementById('generated-temporary-password');
-    if (!input || !input.value) return;
+function copyGeneratedAdminPassword() {
+    const passInput = document.getElementById('generated-temporary-password');
+    if (!passInput || !passInput.value) return;
 
-    try {
-        await navigator.clipboard.writeText(input.value);
-        showToast('¡Contraseña temporal copiada al portapapeles!', 'success');
-    } catch {
-        // Fallback
-        input.select();
+    navigator.clipboard.writeText(passInput.value).then(() => {
+        showToast("Contraseña copiada al portapapeles.", "success");
+    }).catch(() => {
+        passInput.select();
         document.execCommand('copy');
-        showToast('¡Contraseña copiada!', 'success');
-    }
+        showToast("Contraseña copiada.", "success");
+    });
 }

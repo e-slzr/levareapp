@@ -69,7 +69,11 @@ require_once __DIR__ . '/views/includes/header.php';
             <div id="panel-announcements" class="content-view hidden">
                 <?php include __DIR__ . '/views/announcements.php'; ?>
             </div>
+            <div id="panel-admin" class="content-view hidden">
+                <?php include __DIR__ . '/views/admin.php'; ?>
+            </div>
         </main>
+
 
         <!-- Shared Responsive Navbar Component -->
         <?php require_once __DIR__ . '/views/includes/navbar.php'; ?>

@@ -75,6 +75,13 @@ Este archivo establece las reglas, arquitectura y estándares de diseño y desar
    * **Seguridad**: Prohibido commitear archivos de entorno (`.env`), claves secretas o volcados temporales de base de datos.
    * **Sincronización**: Al concluir una fase o requerimiento aprobado, verificar que el árbol de trabajo esté limpio (`git status`) y subir la rama a `origin`.
 
+4. **Formato de Respuesta tras Publicar Cambios (`git push`):**
+   * Tras subir exitosamente los cambios a GitHub, el asistente debe responder obligatoriamente con una estructura limpia y directa que incluya:
+     * **Rama creada/utilizada**: `<nombre-de-la-rama>`
+     * **Mensaje de Commit**: `<mensaje-del-commit>`
+     * **Enlace directo a Pull Request**: Enlace clickable en Markdown en formato `https://github.com/e-slzr/levareapp/pull/new/<nombre-de-la-rama>`
+     * **Estado del árbol local**: Confirmar que quedó limpio (`git status`).
+
 ---
 
 ## 🗣️ Idioma y Comunicación
@@ -100,8 +107,12 @@ Cuando el usuario solicite explícitamente **`sync test`**, el asistente debe ej
      * Inspeccionar los archivos en `database/migrations/`.
      * Validar en la base de datos de testing (`levareapp`) mediante Tabularis MCP si las tablas o columnas de las migraciones ya existen.
      * Si existen migraciones pendientes, ejecutarlas en `levareapp`.
-   * **Paso 3: Respuesta Concisa**:
-     * Responder con un mensaje corto y directo:
-       > **¡Entorno de TESTING sincronizado!**
-       > *(Mencionando puntualmente los commits descargados y migraciones aplicadas, si las hubo).*
+   * **Paso 3: Formato de Respuesta Estructurada**:
+     * Responder obligatoriamente con la siguiente estructura limpia y directa:
+       ```markdown
+       **¡Entorno de TESTING sincronizado!**
 
+       * **Ubicación:** `<ruta-del-entorno>` (<OS>)
+       * **Descarga Git:** `<resumen-del-commit-o-cambios-descargados>`
+       * **Migraciones de BD:** `<migraciones-aplicadas-o-confirmacion-al-dia>`
+       ```

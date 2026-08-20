@@ -305,18 +305,18 @@
     font-size: 0.88rem;
     font-weight: 700;
     font-family: var(--font-secondary, monospace);
-    color: #e11d48; /* Coral elegante en Modo Claro */
+    color: var(--primary, #e11d48);
     height: 1.3em;
     user-select: none;
     display: inline-block;
     padding: 0;
     margin-bottom: 1px;
     letter-spacing: 0.02em;
-    transition: color 0.15s ease;
+    transition: color 0.2s ease;
 }
 
 .dark .chord-el {
-    color: #fb7185; /* Coral suave brillante en Modo Oscuro */
+    color: var(--primary, #fb7185);
 }
 
 .chord-el.empty-chord {
@@ -329,6 +329,7 @@
     font-size: 1rem;
     color: var(--text-main);
     white-space: pre;
+    user-select: text;
 }
 
 /* Instrumental-only lines (Intro, Solo, etc.) */
@@ -353,17 +354,18 @@
     font-size: 0.95rem;
     font-weight: 800;
     font-family: var(--font-secondary, monospace);
-    background-color: rgba(244, 63, 94, 0.08);
-    color: #e11d48;
-    border: 1px solid rgba(244, 63, 94, 0.25);
+    background-color: var(--primary-soft, rgba(244, 63, 94, 0.08));
+    color: var(--primary, #e11d48);
+    border: 1px solid var(--primary-soft, rgba(244, 63, 94, 0.25));
     user-select: none;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
 }
 
 .dark .instrumental-viewer-badge {
-    background-color: rgba(244, 63, 94, 0.15);
-    color: #fb7185;
-    border-color: rgba(244, 63, 94, 0.35);
+    background-color: var(--primary-soft, rgba(244, 63, 94, 0.15));
+    color: var(--primary, #fb7185);
+    border-color: var(--primary-soft, rgba(244, 63, 94, 0.35));
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
