@@ -6,10 +6,11 @@ async function initDashboardView() {
     const currentUser = getData('currentUser');
     const currentGroupId = getData('currentGroupId');
     
-    if (!currentUser || !currentGroupId) return;
+    if (!currentUser) return;
 
     // Welcome title & role
-    document.getElementById('welcome-message').textContent = `¡Hola, ${currentUser.name}!`;
+    const welcomeElem = document.getElementById('welcome-message');
+    if (welcomeElem) welcomeElem.textContent = `¡Hola, ${currentUser.name}!`;
     
     // Render avatar photo / initials in hero card
     const avatarContainer = document.getElementById('dashboard-user-avatar');
@@ -30,8 +31,19 @@ async function initDashboardView() {
     
     // Set role badge
     const roleBadge = document.getElementById('dashboard-user-role-badge');
-    const userRole = getUserRoleInGroup(currentUser.id, currentGroupId);
-    if (roleBadge) roleBadge.textContent = userRole;
+    if (roleBadge) {
+        if (currentUser.account_type === 'superadmin') {
+            roleBadge.textContent = 'SUPER ADMIN';
+            roleBadge.className = 'px-3 py-1 rounded-full text-[11px] font-semibold bg-amber-950 text-amber-400 border border-amber-800/60 uppercase';
+        } else if (currentGroupId) {
+            const userRole = getUserRoleInGroup(currentUser.id, currentGroupId);
+            roleBadge.textContent = (userRole || 'MIEMBRO').toUpperCase();
+            roleBadge.className = 'px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800/60 uppercase';
+        } else {
+            roleBadge.textContent = 'SIN BANDA';
+            roleBadge.className = 'px-3 py-1 rounded-full text-[11px] font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700 uppercase';
+        }
+    }
     
     // Set current date formatted
     const dateElem = document.getElementById('dashboard-date');
@@ -41,6 +53,27 @@ async function initDashboardView() {
     if (typeof renderWorkspaceGroupSelector === 'function') {
         const userGroups = getData('userGroups') || [];
         renderWorkspaceGroupSelector(userGroups);
+    }
+
+    if (!currentGroupId) {
+        const listContainer = document.getElementById('announcements-list');
+        if (listContainer) {
+            listContainer.innerHTML = `<div style="text-align:center; padding: 20px; color:var(--text-muted); font-size: 0.9rem;">Únete a una banda o crea una para comenzar a colaborar.</div>`;
+        }
+        const viewAllBtnContainer = document.getElementById('announcements-view-all-container');
+        if (viewAllBtnContainer) viewAllBtnContainer.classList.add('hidden');
+
+        const nameElem = document.getElementById('next-event-name');
+        if (nameElem) nameElem.textContent = 'No hay eventos programados';
+        const dateElemEv = document.getElementById('next-event-date');
+        if (dateElemEv) dateElemEv.textContent = 'Sin fecha';
+        const timeElem = document.getElementById('next-event-time');
+        if (timeElem) timeElem.textContent = '--:--';
+        const setlistNameElem = document.getElementById('next-event-setlist-name');
+        if (setlistNameElem) setlistNameElem.textContent = 'Sin repertorio';
+        const badgeEv = document.getElementById('next-event-badge');
+        if (badgeEv) badgeEv.textContent = '--';
+        return;
     }
 
 

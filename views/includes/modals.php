@@ -86,3 +86,28 @@
     </div>
 </div>
 
+<!-- 5. Global No Group Alert Modal -->
+<div id="modal-no-group-alert" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden px-4">
+    <div class="w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden screen-fade p-6 space-y-4 text-center">
+        <div class="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center mx-auto shadow-sm border border-zinc-200 dark:border-zinc-700">
+            <i class="fa-solid fa-users-slash text-lg"></i>
+        </div>
+        <div class="space-y-1.5">
+            <h3 class="font-serif text-lg font-bold text-zinc-900 dark:text-zinc-100">Se requiere una Banda</h3>
+            <p class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                No perteneces a una banda actualmente. Únete o crea una banda nueva desde tu perfil para acceder a esta sección.
+            </p>
+        </div>
+        <div class="pt-2 flex flex-col gap-2">
+            <button type="button" onclick="goToProfileFromNoGroupModal()" class="w-full py-2.5 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-user-gear text-xs"></i>
+                <span>Ir a Mi Perfil</span>
+            </button>
+            <button type="button" onclick="closeNoGroupAlertModal()" class="w-full py-2 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-xs font-semibold text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer">
+                Entendido
+            </button>
+        </div>
+    </div>
+</div>
+
+

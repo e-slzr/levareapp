@@ -9,18 +9,18 @@ class MemberController {
         $groupId = getGroupIdHeader();
         $pdo = DB::getConnection();
 
-        if ($groupId) {
-            $stmt = $pdo->prepare("
-                SELECT u.id, u.name, u.lastname, u.email, u.username, u.avatar, u.status, u.account_type, gu.role 
-                FROM users u
-                JOIN group_user gu ON gu.user_id = u.id
-                WHERE gu.group_id = ?
-                ORDER BY u.name ASC
-            ");
-            $stmt->execute([$groupId]);
-        } else {
-            $stmt = $pdo->query("SELECT id, name, lastname, email, username, avatar, status, account_type FROM users ORDER BY name ASC");
+        if (!$groupId) {
+            jsonResponse([]);
         }
+
+        $stmt = $pdo->prepare("
+            SELECT u.id, u.name, u.lastname, u.email, u.username, u.avatar, u.status, u.account_type, gu.role 
+            FROM users u
+            JOIN group_user gu ON gu.user_id = u.id
+            WHERE gu.group_id = ?
+            ORDER BY u.name ASC
+        ");
+        $stmt->execute([$groupId]);
 
         jsonResponse($stmt->fetchAll());
     }

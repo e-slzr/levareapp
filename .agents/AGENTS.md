@@ -27,22 +27,23 @@ Este archivo establece las reglas, arquitectura y estándares de diseño y desar
 ## 🛠️ Arquitectura Técnica y Backend
 
 1. **Backend PHP Nativo con PDO (`api_native/`):**
-   * El backend de la aplicación utiliza **PHP Nativo (PDO)** ubicado en la carpeta `api_native/`. Se eliminó completamente la dependencia de Laravel y ejecuciones en background con Artisan.
-   * La base de datos es MySQL / MariaDB (`levareapp_dev`).
-   * El enrutador central `api_native/index.php` gestiona los endpoints RESTful (`/auth`, `/songs`, `/events`, `/setlists`, `/members`, `/groups`).
+   * El backend de la aplicación está construido en **PHP Nativo puro con PDO** ubicado en la carpeta `api_native/`, sin frameworks externos ni dependencias pesadas.
+   * La base de datos oficial es MySQL / MariaDB (`levareapp_dev` en desarrollo y `levareapp` en testing/producción).
+   * El enrutador central `api_native/index.php` gestiona los endpoints RESTful (`/auth`, `/songs`, `/events`, `/setlists`, `/members`, `/groups`, `/announcements`, `/suggestions`, `/push`).
 
-2. **Autenticación y Tokens de Acceso:**
-   * La tabla `personal_access_tokens` administra las sesiones con tokens Bearer generados.
-   * Para asegurar compatibilidad con proxies web (Apache / TrueNAS), el frontend envía el token mediante las cabeceras `Authorization: Bearer <token>` y `X-Token: <token>`.
+2. **Autenticación y Sesiones:**
+   * La tabla `personal_access_tokens` administra los tokens de sesión Bearer generados de forma segura con `random_bytes(32)`.
+   * Para asegurar compatibilidad con proxies web y servidores (Apache / TrueNAS / Cloudflare), el frontend envía el token mediante las cabeceras `Authorization: Bearer <token>` y `X-Token: <token>`.
    * El ayudante `getBearerToken()` en `api_native/helpers/response.php` procesa ambas cabeceras y parámetros fallback.
 
 3. **Multi-tenancy y Aislamiento por Banda/Grupo:**
-   * Cada solicitud del frontend que consulta o modifica canciones, repertorios o eventos debe enviar la cabecera `X-Group-Id` con el ID del grupo activo.
+   * Toda solicitud del frontend que consulte o modifique recursos privados (canciones, repertorios, eventos, sugerencias, miembros) debe enviar la cabecera `X-Group-Id` con el ID del grupo activo.
+   * Si no se envía un grupo o el usuario no pertenece a dicho grupo, los endpoints retornan inmediatamente colecciones vacías (`[]`) o código de estado `403`.
 
-4. **Frontend SPA Modular (`views/`):**
-   * Las vistas de la interfaz están estructuradas en componentes modulares PHP en la carpeta `views/` (`dashboard.php`, `songs.php`, `setlists.php`, `events.php`, `profile.php`, `members.php`, `suggestions.php`, `onboarding.php`).
+4. **Frontend SPA Modular (`views/` y `assets/js/`):**
+   * Las vistas están estructuradas en componentes modulares PHP en la carpeta `views/` (`dashboard.php`, `songs.php`, `setlists.php`, `events.php`, `profile.php`, `members.php`, `suggestions.php`, `announcements.php`, `onboarding.php`).
    * El router central `index.php` ensambla el header, las vistas modulares hidratadas y el menú inferior de navegación (`views/includes/navbar.php`).
-   * La navegación entre pestañas se realiza mediante la función global `navigateTo(viewId)` en `assets/js/app.js`.
+   * La navegación entre pestañas se realiza mediante la función global `navigateTo(viewId)` en `assets/js/app.js`, manteniendo sincronización de datos y validación de membresía en tiempo real.
 
 ---
 
@@ -79,3 +80,28 @@ Este archivo establece las reglas, arquitectura y estándares de diseño y desar
 ## 🗣️ Idioma y Comunicación
 
 * Toda la interacción en chat, documentación, comentarios de código y mensajes de confirmación o tostadas (`showToast`) deben estar estrictamente redactados en **español**.
+
+---
+
+## 🔄 Protocolo de Sincronización de Testing (`sync test`)
+
+Cuando el usuario solicite explícitamente **`sync test`**, el asistente debe ejecutar automáticamente el siguiente flujo de sincronización sin realizar preguntas previas si la ruta del sistema operativo actual está identificada:
+
+1. **Identificación Automática de Entorno y Rutas:**
+   * **Linux (Manjaro / Arch)**: `/mnt/myhome/WebProjects/levareapp/`
+   * **macOS**: *(Ruta pendiente por definir)*
+   * **Windows**: *(Ruta pendiente por definir)*
+   * Si el sistema operativo detectado tiene su ruta configurada y la carpeta existe, operar directamente en esa ubicación. Solo en caso de que la ruta no esté configurada o no sea accesible, solicitar la confirmación de la ruta al usuario.
+
+2. **Flujo de Ejecución:**
+   * **Paso 1: Descarga de Cambios (Git)**:
+     * Ir a la ubicación del entorno de testing y ejecutar `git pull origin main` (o `git pull`) para traer la versión más reciente fusionada en `main`.
+   * **Paso 2: Detección y Ejecución de Migraciones BD (Tabularis MCP)**:
+     * Inspeccionar los archivos en `database/migrations/`.
+     * Validar en la base de datos de testing (`levareapp`) mediante Tabularis MCP si las tablas o columnas de las migraciones ya existen.
+     * Si existen migraciones pendientes, ejecutarlas en `levareapp`.
+   * **Paso 3: Respuesta Concisa**:
+     * Responder con un mensaje corto y directo:
+       > **¡Entorno de TESTING sincronizado!**
+       > *(Mencionando puntualmente los commits descargados y migraciones aplicadas, si las hubo).*
+

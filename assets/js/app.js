@@ -256,6 +256,15 @@ function initApp() {
         };
     }
 
+    const modalNoGroup = document.getElementById('modal-no-group-alert');
+    if (modalNoGroup) {
+        modalNoGroup.onclick = (e) => {
+            if (e.target === modalNoGroup) {
+                modalNoGroup.classList.add('hidden');
+            }
+        };
+    }
+
     const createGroupForm = document.getElementById('create-group-form');
     if (createGroupForm) createGroupForm.onsubmit = handleCreateGroupSubmit;
 
@@ -264,13 +273,32 @@ function initApp() {
         link.onclick = (e) => {
             e.preventDefault();
             const viewId = link.getAttribute('data-view');
-            window.location.hash = `#${viewId}`;
+            navigateTo(viewId);
             if (mobileMoreMenu) mobileMoreMenu.classList.add('hidden'); // Close menu on click mobile
         };
     });
 
     // Hash listener router
     window.onhashchange = handleHashRouting;
+
+    // Auto-sync when returning to the PWA / tab focus
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && currentUser) {
+            syncUserGroupsAndValidateMembership().then(() => {
+                const currentView = window.location.hash.replace('#', '') || 'dashboard';
+                triggerViewInitializer(currentView, true);
+            });
+        }
+    });
+
+    window.addEventListener('focus', () => {
+        if (currentUser) {
+            syncUserGroupsAndValidateMembership().then(() => {
+                const currentView = window.location.hash.replace('#', '') || 'dashboard';
+                triggerViewInitializer(currentView, true);
+            });
+        }
+    });
 
     updateShellVisibility();
 }
@@ -367,18 +395,14 @@ async function updateShellVisibility() {
         }
 
         if (!Array.isArray(userGroups) || userGroups.length === 0) {
-            // Authenticated user with no active groups. Open Onboarding Setup.
-            if (authContainer) authContainer.classList.remove('hidden');
-            if (authFormsWrapper) authFormsWrapper.classList.add('hidden');
-            if (authOnboardingPanel) authOnboardingPanel.classList.remove('hidden');
-            loadOnboardingLayout();
-            return;
-        }
-
-        // Ensure currentGroupId exists and belongs to user
-        if (!currentGroupId || !userGroups.some(g => g.id == currentGroupId)) {
-            currentGroupId = userGroups[0].id;
-            setData('currentGroupId', currentGroupId);
+            currentGroupId = null;
+            setData('currentGroupId', null);
+        } else {
+            // Ensure currentGroupId exists and belongs to user
+            if (!currentGroupId || !userGroups.some(g => g.id == currentGroupId)) {
+                currentGroupId = userGroups[0].id;
+                setData('currentGroupId', currentGroupId);
+            }
         }
     }
 
@@ -455,15 +479,24 @@ async function updateShellVisibility() {
 }
 
 function renderWorkspaceGroupSelector(userGroups) {
-    if (!Array.isArray(userGroups) || userGroups.length === 0) {
+    if (!Array.isArray(userGroups)) {
         userGroups = getData('userGroups') || [];
     }
     const selects = document.querySelectorAll('#group-active-select, #group-active-select-mobile, #group-active-select-profile');
+    const container = document.getElementById('group-selector-sidebar-container');
     const isSuperAdmin = currentUser && currentUser.account_type === 'superadmin';
+    const hasNoGroups = !Array.isArray(userGroups) || userGroups.length === 0;
 
+    if (container) {
+        if (isSuperAdmin || hasNoGroups) {
+            container.classList.add('hidden');
+        } else {
+            container.classList.remove('hidden');
+        }
+    }
 
     selects.forEach(select => {
-        if (isSuperAdmin) {
+        if (isSuperAdmin || hasNoGroups) {
             select.style.display = 'none';
             return;
         }
@@ -484,9 +517,13 @@ function renderWorkspaceGroupSelector(userGroups) {
 
     // Update active group name text on dashboard footer
     const activeGroupDisplay = document.getElementById('active-group-display-name');
-    if (activeGroupDisplay && Array.isArray(userGroups)) {
-        const activeGroup = userGroups.find(g => g.id == currentGroupId);
-        if (activeGroup) activeGroupDisplay.textContent = activeGroup.name;
+    if (activeGroupDisplay) {
+        if (hasNoGroups) {
+            activeGroupDisplay.textContent = 'Sin Banda';
+        } else {
+            const activeGroup = userGroups.find(g => g.id == currentGroupId);
+            if (activeGroup) activeGroupDisplay.textContent = activeGroup.name;
+        }
     }
 }
 
@@ -507,9 +544,80 @@ function handleActiveGroupChangeSelect(e) {
     setTimeout(() => window.location.reload(), 100);
 }
 
+function openNoGroupAlertModal() {
+    const modal = document.getElementById('modal-no-group-alert');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeNoGroupAlertModal() {
+    const modal = document.getElementById('modal-no-group-alert');
+    if (modal) modal.classList.add('hidden');
+}
+
+function goToProfileFromNoGroupModal() {
+    closeNoGroupAlertModal();
+    navigateTo('profile');
+}
+
 function navigateTo(viewId) {
     if (!viewId) return;
+
+    // Check if user has no groups and tries to access restricted modules
+    const isSuperAdmin = currentUser && currentUser.account_type === 'superadmin';
+    const userGroups = getData('userGroups') || [];
+    const hasNoGroups = !isSuperAdmin && (!Array.isArray(userGroups) || userGroups.length === 0);
+    const restrictedViews = ['songs', 'setlists', 'events', 'suggestions', 'members', 'announcements'];
+
+    if (hasNoGroups && restrictedViews.includes(viewId)) {
+        openNoGroupAlertModal();
+        return;
+    }
+
     window.location.hash = `#${viewId}`;
+}
+
+async function syncUserGroupsAndValidateMembership() {
+    if (!currentUser || currentUser.account_type === 'superadmin') {
+        return { hasNoGroups: false, userGroups: [] };
+    }
+
+    try {
+        const res = await apiFetch('/groups');
+        const userGroups = Array.isArray(res) ? res : [];
+        setData('userGroups', userGroups);
+
+        const isCurrentGroupValid = currentGroupId && userGroups.some(g => g.id == currentGroupId);
+
+        if (!isCurrentGroupValid) {
+            if (userGroups.length > 0) {
+                const prevGroupId = currentGroupId;
+                currentGroupId = userGroups[0].id;
+                setData('currentGroupId', currentGroupId);
+                renderWorkspaceGroupSelector(userGroups);
+                if (prevGroupId) {
+                    showToast(`Tu banda activa ha cambiado a: ${userGroups[0].name}`);
+                }
+            } else {
+                currentGroupId = null;
+                setData('currentGroupId', null);
+                renderWorkspaceGroupSelector([]);
+            }
+        } else {
+            renderWorkspaceGroupSelector(userGroups);
+        }
+
+        return {
+            hasNoGroups: userGroups.length === 0,
+            userGroups
+        };
+    } catch (e) {
+        console.error("Error sincronizando grupos del usuario:", e);
+        const userGroups = getData('userGroups') || [];
+        return {
+            hasNoGroups: !Array.isArray(userGroups) || userGroups.length === 0,
+            userGroups
+        };
+    }
 }
 
 async function handleHashRouting() {
@@ -554,6 +662,17 @@ async function handleHashRouting() {
             window.location.hash = `#${viewId}`;
             return;
         }
+
+        // Background synchronization of groups and real-time membership guard
+        const syncResult = await syncUserGroupsAndValidateMembership();
+        const restrictedViews = ['songs', 'setlists', 'events', 'suggestions', 'members', 'announcements'];
+
+        if (syncResult.hasNoGroups && restrictedViews.includes(viewId)) {
+            viewId = 'dashboard';
+            window.location.hash = '#dashboard';
+            openNoGroupAlertModal();
+            return;
+        }
     }
 
     // Hide all views
@@ -576,8 +695,8 @@ async function handleHashRouting() {
         
         container.classList.remove('hidden');
         
-        // Trigger specific view controllers
-        triggerViewInitializer(viewId);
+        // Trigger specific view controllers with fresh data sync
+        triggerViewInitializer(viewId, true);
     }
 
     // Update active nav links lists classes
@@ -611,16 +730,16 @@ async function handleHashRouting() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function triggerViewInitializer(viewId) {
-    if (viewId === 'dashboard' && typeof initDashboardView === 'function') initDashboardView();
-    if (viewId === 'songs' && typeof initSongsView === 'function') initSongsView();
-    if (viewId === 'setlists' && typeof initSetlistsView === 'function') initSetlistsView();
-    if (viewId === 'events' && typeof initEventsView === 'function') initEventsView();
-    if (viewId === 'suggestions' && typeof initSuggestionsView === 'function') initSuggestionsView();
-    if (viewId === 'members' && typeof initMembersView === 'function') initMembersView();
-    if (viewId === 'profile' && typeof initProfileView === 'function') initProfileView();
-    if (viewId === 'announcements' && typeof initAnnouncementsView === 'function') initAnnouncementsView();
-    if (viewId === 'admin' && typeof initAdminView === 'function') initAdminView();
+function triggerViewInitializer(viewId, forceRefresh = true) {
+    if (viewId === 'dashboard' && typeof initDashboardView === 'function') initDashboardView(forceRefresh);
+    if (viewId === 'songs' && typeof initSongsView === 'function') initSongsView(forceRefresh);
+    if (viewId === 'setlists' && typeof initSetlistsView === 'function') initSetlistsView(forceRefresh);
+    if (viewId === 'events' && typeof initEventsView === 'function') initEventsView(forceRefresh);
+    if (viewId === 'suggestions' && typeof initSuggestionsView === 'function') initSuggestionsView(forceRefresh);
+    if (viewId === 'members' && typeof initMembersView === 'function') initMembersView(forceRefresh);
+    if (viewId === 'profile' && typeof initProfileView === 'function') initProfileView(forceRefresh);
+    if (viewId === 'announcements' && typeof initAnnouncementsView === 'function') initAnnouncementsView(forceRefresh);
+    if (viewId === 'admin' && typeof initAdminView === 'function') initAdminView(forceRefresh);
 }
 
 // DYNAMIC ONBOARDING FETCHER AND LOADERS

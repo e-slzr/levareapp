@@ -32,36 +32,36 @@
     <!-- Welcome Hero Card (Always Dark for Rich Contrast) -->
     <div class="p-6 rounded-2xl bg-zinc-900 text-zinc-100 border border-zinc-800 space-y-4 shadow-md">
         <div class="flex items-center justify-between">
-            <span id="dashboard-date" class="text-xs font-semibold tracking-wider text-zinc-400 uppercase">MARTES, 11 DE AGOSTO</span>
-            <span id="dashboard-user-role-badge" class="px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800/60 uppercase">
-                LÍDER DE BANDA
+            <span id="dashboard-date" class="text-xs font-semibold tracking-wider text-zinc-400 uppercase">--</span>
+            <span id="dashboard-user-role-badge" class="px-3 py-1 rounded-full text-[11px] font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700/60 uppercase">
+                MIEMBRO
             </span>
         </div>
         <div class="flex items-center gap-4">
             <div id="dashboard-user-avatar" class="w-14 h-14 rounded-full bg-zinc-800 text-zinc-100 flex items-center justify-center font-bold text-xl uppercase shadow-md border border-zinc-700 cursor-pointer" onclick="navigateTo('profile')" title="Ver mi perfil">
-                E
+                
             </div>
             <div>
-                <h2 id="welcome-message" class="font-serif text-2xl md:text-3xl font-bold text-zinc-100">¡Hola, Eliu!</h2>
+                <h2 id="welcome-message" class="font-serif text-2xl md:text-3xl font-bold text-zinc-100">¡Hola!</h2>
                 <p id="dashboard-user-subtitle" class="text-xs text-zinc-400">Te damos la bienvenida a tu panel musical</p>
             </div>
         </div>
     </div>
 
     <!-- Next Event Section (Full Width Card) -->
-    <div class="p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 space-y-4 shadow-sm">
+    <div id="dashboard-next-event-card" class="p-5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 space-y-4 shadow-sm">
         <div class="flex items-center justify-between">
             <span class="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase">PRÓXIMO EVENTO</span>
-            <span id="next-event-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 uppercase">ENSAYO</span>
+            <span id="next-event-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 uppercase">--</span>
         </div>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-                <h3 id="next-event-name" class="text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100">Ensayo Dominical</h3>
+                <h3 id="next-event-name" class="text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100">No hay eventos programados</h3>
                 <div class="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 mt-1">
                     <i class="fa-regular fa-calendar text-xs"></i>
-                    <span id="next-event-date">Sábado, 15 de agosto</span>
+                    <span id="next-event-date">Sin fecha</span>
                     <span>•</span>
-                    <span id="next-event-time">18:00 hs</span>
+                    <span id="next-event-time">--:--</span>
                 </div>
             </div>
         </div>
