@@ -416,14 +416,27 @@ async function updateShellVisibility() {
     
     // Handle nav items visibility in #app-bottom-nav based on role
     document.querySelectorAll('#app-bottom-nav button').forEach(item => {
-        const view = item.getAttribute('data-view');
-        if (isSuperAdmin && view) {
-            if (view !== 'dashboard' && view !== 'admin' && view !== 'profile') {
+        const isSuperadminBtn = item.classList.contains('superadmin-only-nav');
+        const isUserBtn = item.classList.contains('user-only-nav');
+
+        if (isSuperAdmin) {
+            if (isUserBtn) {
                 item.classList.add('hidden');
                 item.classList.remove('md:flex');
             }
+            if (isSuperadminBtn) {
+                item.classList.remove('hidden');
+            }
+        } else {
+            if (isSuperadminBtn) {
+                item.classList.add('hidden');
+            }
+            if (isUserBtn) {
+                item.classList.remove('hidden');
+            }
         }
     });
+
 
     // Load pending badge count for superadmin
     if (isSuperAdmin) {
@@ -649,9 +662,9 @@ async function handleHashRouting() {
 
     // Role-based view guards
     if (currentUser?.account_type === 'superadmin') {
-        // Super Admin can only access dashboard, admin and profile
-        if (!['dashboard', 'admin', 'profile'].includes(viewId)) {
-            viewId = 'admin';
+        // Super Admin can access dashboard, admin, announcements and profile
+        if (!['dashboard', 'admin', 'profile', 'announcements'].includes(viewId)) {
+            viewId = 'dashboard';
             window.location.hash = `#${viewId}`;
             return;
         }
@@ -665,7 +678,7 @@ async function handleHashRouting() {
 
         // Background synchronization of groups and real-time membership guard
         const syncResult = await syncUserGroupsAndValidateMembership();
-        const restrictedViews = ['songs', 'setlists', 'events', 'suggestions', 'members', 'announcements'];
+        const restrictedViews = ['songs', 'setlists', 'events', 'suggestions', 'members'];
 
         if (syncResult.hasNoGroups && restrictedViews.includes(viewId)) {
             viewId = 'dashboard';
@@ -723,8 +736,9 @@ async function handleHashRouting() {
         'members': 'Directorio de Miembros',
         'profile': 'Editar Mi Perfil',
         'announcements': 'Novedades y Anuncios',
-        'admin': '🛡️ Panel de Administración'
+        'admin': 'Panel de Administración'
     };
+
     const pageTitleElem = document.getElementById('current-page-title');
     if (pageTitleElem) pageTitleElem.textContent = titles[viewId] || 'Levare';
     window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -159,13 +159,14 @@ async function triggerTestPushNotification() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.ready.then(reg => {
                 if (reg && reg.showNotification) {
-                    reg.showNotification("Levare OS • Notificaciones Activas", {
+                    reg.showNotification("Levare • Notificaciones Activas", {
                         body: "¡Las notificaciones en este dispositivo están funcionando correctamente!",
                         icon: "icon-levareapp.png",
                         badge: "icon-levareapp.png",
                         data: { url: "./" }
                     });
                 }
+
             });
         }
     } catch (e) {

@@ -113,12 +113,13 @@ class PushController {
         
         NotificationService::notifyUser((int)$user['id'], null, [
             'type'     => 'purple',
-            'title'    => 'Levare OS • Notificaciones Activas',
+            'title'    => 'Levare • Notificaciones Activas',
             'body'     => "¡Hola, {$user['name']}! Las notificaciones en tu dispositivo están configuradas correctamente.",
             'text'     => "Prueba de notificación push ejecutada con éxito.",
             'category' => 'system',
             'url'      => './'
         ]);
+
 
         jsonResponse([
             'message' => 'Notificación de prueba enviada a tus dispositivos registrados.'

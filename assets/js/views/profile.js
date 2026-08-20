@@ -53,7 +53,20 @@ function initProfileView() {
     const activeGroup = userGroups.find(g => g.id == currentGroupId);
     const activeGroupName = activeGroup ? activeGroup.name : 'Sin Banda';
     const activeRole = activeGroup && activeGroup.role ? activeGroup.role : 'Sin rol musical';
-    if (profileDetailsElem) profileDetailsElem.textContent = `Banda ${activeGroupName} • Rol: ${activeRole}`;
+
+    // Role-specific sections visibility
+    const bandSection = document.getElementById('profile-band-management-section');
+    const bandMembersRow = document.getElementById('profile-band-members-row');
+
+    if (currentUser.account_type === 'superadmin') {
+        if (bandSection) bandSection.classList.add('hidden');
+        if (bandMembersRow) bandMembersRow.classList.add('hidden');
+        if (profileDetailsElem) profileDetailsElem.textContent = 'Super Administrador • Plataforma Levare';
+    } else {
+        if (bandSection) bandSection.classList.remove('hidden');
+        if (bandMembersRow) bandMembersRow.classList.remove('hidden');
+        if (profileDetailsElem) profileDetailsElem.textContent = `Banda ${activeGroupName} • Rol: ${activeRole}`;
+    }
 
     // Render avatar photo / initials
     const profileAvatarBox = document.getElementById('profile-avatar-container') || document.getElementById('profile-avatar-box');
@@ -73,9 +86,14 @@ function initProfileView() {
     }
 
     // Refresh group selector dropdowns
-    if (typeof renderWorkspaceGroupSelector === 'function') {
+    if (currentUser.account_type !== 'superadmin' && typeof renderWorkspaceGroupSelector === 'function') {
         renderWorkspaceGroupSelector(userGroups);
     }
+
+    // Initialize Accent Color Selectors
+    const activeAccent = currentUser.accentColor || currentUser.accent_color || 'purple';
+    initAccentColorSelectors(activeAccent);
+
 
 
     // Form Submits
@@ -213,48 +231,58 @@ function initProfileView() {
 
 function initAccentColorSelectors(activeAccent) {
     const buttons = document.querySelectorAll('.accent-dot-btn');
+    if (!buttons || buttons.length === 0) return;
+
     buttons.forEach(btn => {
         const accent = btn.getAttribute('data-accent');
+        const isWhite = accent === 'white';
+        const checkColor = isWhite ? 'text-zinc-900' : 'text-white';
         
-        // Render checkmark if active
+        // Render checkmark and ring if active
         if (accent === activeAccent) {
-            btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-            btn.style.boxShadow = '0 0 0 3px var(--text-main)';
+            btn.innerHTML = `<svg class="w-3.5 h-3.5 ${checkColor} pointer-events-none drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+            btn.className = `accent-dot-btn w-6 h-6 rounded-full flex items-center justify-center transition scale-110 cursor-pointer ring-2 ring-offset-2 ring-zinc-900 dark:ring-white ring-offset-white dark:ring-offset-zinc-900 shadow-md ${isWhite ? 'bg-zinc-200 dark:bg-zinc-100 border border-zinc-400 dark:border-zinc-300' : btn.className.split(' ').filter(c => c.startsWith('bg-')).join(' ')}`;
         } else {
             btn.innerHTML = '';
-            btn.style.boxShadow = 'none';
+            btn.className = `accent-dot-btn w-6 h-6 rounded-full flex items-center justify-center transition hover:scale-110 cursor-pointer shadow-sm ${isWhite ? 'bg-zinc-200 dark:bg-zinc-100 border border-zinc-400 dark:border-zinc-300' : btn.className.split(' ').filter(c => c.startsWith('bg-')).join(' ')}`;
         }
 
         // Click handler
         btn.onclick = async () => {
+            const user = getData('currentUser');
+            if (!user) return;
+
             try {
-                // Apply dynamic stylesheet override
+                // Apply dynamic theme immediately
                 applyAccentColor(accent);
                 
-                // Save selection to Laravel database
-                const data = await apiFetch('/user/profile', {
+                // Save selection to backend
+                await apiFetch('/user/profile', {
                     method: 'POST',
                     body: {
-                        name: currentUser.name,
-                        lastname: currentUser.lastname,
-                        username: currentUser.username,
-                        email: currentUser.email,
+                        name: user.name,
+                        lastname: user.lastname || '',
+                        username: user.username,
+                        email: user.email || '',
                         accentColor: accent
                     }
                 });
 
-                currentUser.accentColor = accent;
-                setData('currentUser', currentUser);
+                user.accentColor = accent;
+                user.accent_color = accent;
+                setData('currentUser', user);
                 
                 // Re-render checks
                 initAccentColorSelectors(accent);
-                showToast(`Tema de color cambiado a: ${btn.getAttribute('title')}`);
+                showToast(`Color de énfasis: ${btn.getAttribute('title') || accent}`, "success");
             } catch (err) {
-                showToast("Fallo al guardar preferencia de color en el servidor.", "danger");
+                console.error("Error saving accent color:", err);
+                showToast("Fallo al guardar preferencia de color.", "danger");
             }
         };
     });
 }
+
 
 function showProfileTab(tabName) {
     const btnInfo = document.getElementById('btn-profile-tab-info');

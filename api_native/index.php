@@ -22,6 +22,9 @@ require_once __DIR__ . '/controllers/MemberController.php';
 require_once __DIR__ . '/controllers/GroupController.php';
 require_once __DIR__ . '/controllers/SuggestionController.php';
 require_once __DIR__ . '/controllers/PushController.php';
+require_once __DIR__ . '/controllers/AnnouncementController.php';
+require_once __DIR__ . '/controllers/AdminController.php';
+
 
 
 // Request parsing
@@ -142,9 +145,25 @@ switch ($path) {
     // Announcements
     case '/announcements':
         if ($method === 'GET') AnnouncementController::index();
+        if ($method === 'POST') AnnouncementController::storeGlobal();
+        break;
+
+    case '/admin/announcements':
+        if ($method === 'GET') AnnouncementController::index();
+        if ($method === 'POST') AnnouncementController::storeGlobal();
+        break;
+
+    case '/admin/stats':
+        if ($method === 'GET') AnnouncementController::stats();
+        break;
+
+    case '/admin/users':
+    case '/superadmin/requests':
+        if ($method === 'GET') AdminController::users();
         break;
 
     // Web Push Notifications
+
     case '/push/vapid-public-key':
         if ($method === 'GET') PushController::getVapidPublicKey();
         break;
@@ -255,8 +274,37 @@ switch ($path) {
             break;
         }
 
+        // Check for parameterized /(admin/)?announcements/{id}
+        if (preg_match('#^/(?:admin/)?announcements/(\d+)$#', $path, $matches)) {
+            $announcementId = (int)$matches[1];
+            if ($method === 'DELETE') AnnouncementController::destroy($announcementId);
+            break;
+        }
+
+        // Check for parameterized /superadmin/users/{id}/block or /admin/users/{id}/block
+        if (preg_match('#^/(?:superadmin|admin)/users/(\d+)/block$#', $path, $matches)) {
+            $id = (int)$matches[1];
+            if ($method === 'POST') AdminController::block($id);
+            break;
+        }
+
+        // Check for parameterized /superadmin/users/{id}/unblock or /admin/users/{id}/unblock
+        if (preg_match('#^/(?:superadmin|admin)/users/(\d+)/unblock$#', $path, $matches)) {
+            $id = (int)$matches[1];
+            if ($method === 'POST') AdminController::unblock($id);
+            break;
+        }
+
+        // Check for parameterized /superadmin/users/{id}/reset-password or /admin/users/{id}/reset-password
+        if (preg_match('#^/(?:superadmin|admin)/users/(\d+)/reset-password$#', $path, $matches)) {
+            $id = (int)$matches[1];
+            if ($method === 'POST') AdminController::resetPassword($id);
+            break;
+        }
+
         jsonResponse(['message' => 'Endpoint no encontrado en API nativa.', 'path' => $path], 404);
 }
+
 
 
 

@@ -1,44 +1,56 @@
 <!-- App Reusable Navbar / Navigation Bar (Always Dark Bar with Identical Active Pill) -->
 <nav id="app-bottom-nav" class="backdrop-blur px-3 py-2 flex justify-around items-center z-30 fixed bottom-0 left-0 right-0 max-w-4xl mx-auto md:rounded-t-2xl md:border-x shadow-2xl">
 
-    <!-- Inicio -->
+    <!-- Inicio (Todos) -->
     <button type="button" data-view="dashboard" onclick="navigateTo('dashboard')" class="app-nav-btn active cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-solid fa-house text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Inicio</span>
     </button>
 
-    <!-- Canciones -->
-    <button type="button" data-view="songs" onclick="navigateTo('songs')" class="app-nav-btn cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
+    <!-- Usuarios / Admin (Super Admin Only) -->
+    <button type="button" data-view="admin" onclick="navigateTo('admin')" class="app-nav-btn superadmin-only-nav hidden cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
+        <i class="fa-solid fa-users-gear text-base pointer-events-none"></i>
+        <span class="pointer-events-none truncate">Usuarios</span>
+    </button>
+
+    <!-- Novedades (Super Admin Only en barra) -->
+    <button type="button" data-view="announcements" onclick="navigateTo('announcements')" class="app-nav-btn superadmin-only-nav hidden cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
+        <i class="fa-solid fa-bullhorn text-base pointer-events-none"></i>
+        <span class="pointer-events-none truncate">Novedades</span>
+    </button>
+
+    <!-- Canciones (Miembros/Líderes) -->
+    <button type="button" data-view="songs" onclick="navigateTo('songs')" class="app-nav-btn user-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-solid fa-music text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Canciones</span>
     </button>
 
-    <!-- Repertorios -->
-    <button type="button" data-view="setlists" onclick="navigateTo('setlists')" class="app-nav-btn cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
+    <!-- Repertorios (Miembros/Líderes) -->
+    <button type="button" data-view="setlists" onclick="navigateTo('setlists')" class="app-nav-btn user-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-solid fa-list-check text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Repertorios</span>
     </button>
 
-    <!-- Eventos -->
-    <button type="button" data-view="events" onclick="navigateTo('events')" class="app-nav-btn cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
+    <!-- Eventos (Miembros/Líderes) -->
+    <button type="button" data-view="events" onclick="navigateTo('events')" class="app-nav-btn user-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-regular fa-calendar-days text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Eventos</span>
     </button>
 
-    <!-- Sugerencias — Desktop / Tablet -->
-    <button type="button" data-view="suggestions" onclick="navigateTo('suggestions')" class="app-nav-btn desktop-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
+    <!-- Sugerencias (Miembros/Líderes — Desktop / Tablet) -->
+    <button type="button" data-view="suggestions" onclick="navigateTo('suggestions')" class="app-nav-btn user-only-nav desktop-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-regular fa-lightbulb text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Sugerencias</span>
     </button>
 
-    <!-- Perfil — Desktop / Tablet -->
+    <!-- Perfil (Todos) -->
     <button type="button" data-view="profile" onclick="navigateTo('profile')" class="app-nav-btn desktop-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-solid fa-sliders text-base pointer-events-none"></i>
         <span class="pointer-events-none truncate">Perfil</span>
     </button>
 
-    <!-- Botón "Más" — Mobile only -->
-    <button type="button" id="btn-nav-more" onclick="openMoreMenu()" class="app-nav-btn mobile-only-nav cursor-pointer flex flex-col items-center gap-1 text-xs min-w-0">
+    <!-- Botón "Más" (Miembros/Líderes — Mobile only) -->
+    <button type="button" id="btn-nav-more" onclick="openMoreMenu()" class="app-nav-btn user-only-nav mobile-only-nav cursor-pointer flex flex-col items-center gap-1 text-xs min-w-0">
         <i class="fa-solid fa-ellipsis text-base pointer-events-none"></i>
         <span class="pointer-events-none">Más</span>
     </button>

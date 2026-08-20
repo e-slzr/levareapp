@@ -110,4 +110,146 @@
     </div>
 </div>
 
+<!-- 6. Announcement Details Modal (Popup interactivo para ver detalles) -->
+<div id="modal-announcement-detail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden px-4" onclick="if(event.target === this) closeAnnouncementDetailModal()">
+    <div class="w-full max-w-lg max-h-[90vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden screen-fade flex flex-col">
+        <!-- Header -->
+        <div class="p-5 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between gap-3 bg-zinc-50/50 dark:bg-zinc-950/50">
+            <div id="announcement-detail-badge-container">
+                <!-- Icon and category loaded dynamically -->
+            </div>
+            <button type="button" onclick="closeAnnouncementDetailModal()" class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">&times;</button>
+        </div>
+
+        <!-- Scrollable Body -->
+        <div class="p-6 overflow-y-auto space-y-4">
+            <!-- Date & Time -->
+            <p id="announcement-detail-date" class="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500"></p>
+
+            <!-- Title -->
+            <h2 id="announcement-detail-title" class="font-serif text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-snug"></h2>
+
+            <!-- Attached Image Container -->
+            <div id="announcement-detail-image-container" class="hidden relative group rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 shadow-sm cursor-zoom-in" onclick="openImageLightbox(document.getElementById('announcement-detail-image').src)">
+                <img id="announcement-detail-image" src="" alt="Imagen del anuncio" class="w-full max-h-72 object-cover transition duration-300 group-hover:scale-[1.02]" />
+                <div class="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition shadow pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass-plus text-[10px]"></i>
+                    <span>Ampliar</span>
+                </div>
+            </div>
+
+
+            <!-- Content -->
+            <div id="announcement-detail-content" class="text-sm text-zinc-700 dark:text-zinc-300 space-y-3 leading-relaxed">
+                <!-- Content paragraphs loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-3.5 border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-950/50 flex items-center justify-center sm:justify-start text-xs">
+            <span class="text-zinc-500 dark:text-zinc-400">Publicado por: <strong id="announcement-detail-author" class="text-zinc-800 dark:text-zinc-200 font-semibold">Eliú Salazar | Desarrollador</strong></span>
+        </div>
+    </div>
+</div>
+
+
+<!-- 7. Create Global Announcement Modal (Superadmin Only) -->
+<div id="modal-create-global-announcement" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden px-4" onclick="if(event.target === this) closeCreateGlobalAnnouncementModal()">
+    <div class="w-full max-w-lg max-h-[90vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden screen-fade flex flex-col">
+        <!-- Header -->
+        <div class="p-5 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between gap-3 bg-zinc-50/50 dark:bg-zinc-950/50">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60 flex items-center justify-center">
+                    <i class="fa-solid fa-bullhorn text-sm"></i>
+                </div>
+                <div>
+                    <h3 class="font-serif text-lg font-bold text-zinc-900 dark:text-zinc-100">Emitir Anuncio Global</h3>
+                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Publicación oficial y notificación a todos los usuarios</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeCreateGlobalAnnouncementModal()" class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">&times;</button>
+        </div>
+
+        <!-- Form Form Content -->
+        <form id="form-create-global-announcement" onsubmit="handleCreateGlobalAnnouncementSubmit(event)" class="p-6 overflow-y-auto space-y-4">
+            <!-- Título -->
+            <div class="space-y-1.5">
+                <label for="global-announcement-title" class="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1">
+                    <span>Título del Anuncio</span>
+                    <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="global-announcement-title" required placeholder="Ej. ¡Llegó la versión 2.1 con nuevas funciones!" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+            </div>
+
+            <!-- Tipo / Categoría -->
+            <div class="space-y-1.5">
+                <label for="global-announcement-type" class="text-xs font-bold text-zinc-700 dark:text-zinc-300">Tipo de Anuncio</label>
+                <select id="global-announcement-type" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition cursor-pointer">
+                    <option value="system_announcement">Comunicado General / Aviso</option>
+                    <option value="system_update">Actualización / Nueva Versión / Bugs</option>
+                    <option value="system_event">Evento Comunitario / Invitación</option>
+                </select>
+            </div>
+
+            <!-- Contenido -->
+            <div class="space-y-1.5">
+                <label for="global-announcement-content" class="text-xs font-bold text-zinc-700 dark:text-zinc-300">Contenido / Detalles</label>
+                <textarea id="global-announcement-content" rows="4" placeholder="Describe los detalles de la novedad, enlaces o instrucciones para la comunidad..." class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition resize-none"></textarea>
+            </div>
+
+            <!-- Adjuntar Imagen -->
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center justify-between">
+                    <span>Adjuntar Imagen (Opcional)</span>
+                    <span class="text-[11px] font-normal text-zinc-400">JPG, PNG, WEBP (Máx. 5MB)</span>
+                </label>
+                <div class="flex items-center gap-3">
+                    <label class="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer flex items-center gap-2">
+                        <i class="fa-solid fa-image text-zinc-500"></i>
+                        <span id="global-announcement-image-label">Seleccionar imagen</span>
+                        <input type="file" id="global-announcement-image" accept="image/*" onchange="handleAnnouncementImageSelect(event)" class="hidden" />
+                    </label>
+                    <button type="button" id="btn-remove-announcement-image" onclick="clearAnnouncementImageSelection()" class="text-xs text-red-500 hover:underline hidden">Quitar</button>
+                </div>
+                <!-- Image Preview -->
+                <div id="global-announcement-preview-container" class="hidden mt-2 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 max-h-48 bg-zinc-100 dark:bg-zinc-950">
+                    <img id="global-announcement-preview" src="" alt="Previsualización" class="w-full h-48 object-cover" />
+                </div>
+            </div>
+
+            <!-- Checkbox Web Push -->
+            <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
+                <label class="flex items-start gap-3 cursor-pointer select-none">
+                    <input type="checkbox" id="global-announcement-send-push" checked class="mt-0.5 w-4 h-4 rounded text-zinc-900 dark:text-zinc-100 focus:ring-zinc-400 border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 transition" />
+                    <div>
+                        <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">Enviar Notificación Push a todos los dispositivos</span>
+                        <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Los usuarios con notificaciones activadas recibirán un aviso instantáneo en su pantalla.</p>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="pt-4 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeCreateGlobalAnnouncementModal()" class="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer">
+                    Cancelar
+                </button>
+                <button type="submit" id="btn-submit-global-announcement" class="px-5 py-2.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                    <span>Publicar y Notificar</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 8. Image Lightbox Modal (Fullscreen Viewer) -->
+<div id="modal-image-lightbox" class="fixed inset-0 z-[120] flex items-center justify-center bg-black/90 backdrop-blur-md hidden p-4 sm:p-8" onclick="closeImageLightbox()">
+    <button type="button" onclick="closeImageLightbox()" class="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 rounded-full bg-zinc-900/80 text-white hover:bg-zinc-800 flex items-center justify-center text-lg font-bold transition cursor-pointer z-10 shadow-lg border border-zinc-700/50" title="Cerrar imagen">&times;</button>
+    <div class="relative max-w-5xl max-h-[90vh] flex items-center justify-center" onclick="event.stopPropagation()">
+        <img id="lightbox-image-src" src="" alt="Vista a detalle" class="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl screen-fade" />
+    </div>
+</div>
+
+
+
 

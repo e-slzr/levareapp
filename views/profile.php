@@ -39,7 +39,7 @@
     </div>
 
     <!-- Active Band / Group Management Section -->
-    <div class="space-y-3">
+    <div id="profile-band-management-section" class="space-y-3">
         <h3 class="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase">GESTIÓN DE BANDAS</h3>
         
         <div class="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3.5 shadow-sm">
@@ -56,11 +56,11 @@
             </div>
 
             <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 grid grid-cols-2 gap-2">
-                <button type="button" onclick="openCreateGroupModal()" class="w-full py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2">
+                <button type="button" onclick="openCreateGroupModal()" class="w-full py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-plus text-xs"></i>
                     <span>Crear Banda</span>
                 </button>
-                <button type="button" onclick="openJoinGroupModal()" class="w-full py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2">
+                <button type="button" onclick="openJoinGroupModal()" class="w-full py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-user-plus text-xs"></i>
                     <span>Unirme a Banda</span>
                 </button>
@@ -74,7 +74,7 @@
         
         <div class="divide-y divide-zinc-100 dark:divide-zinc-800/80 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
             <!-- Edit Profile Trigger -->
-            <button type="button" onclick="openEditProfileModal()" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left">
+            <button type="button" onclick="openEditProfileModal()" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left cursor-pointer">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-user-pen text-zinc-500 dark:text-zinc-400 text-sm"></i>
                     <div>
@@ -86,7 +86,7 @@
             </button>
 
             <!-- Change Password Trigger -->
-            <button type="button" onclick="openChangePasswordModal()" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left">
+            <button type="button" onclick="openChangePasswordModal()" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left cursor-pointer">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-lock text-zinc-500 dark:text-zinc-400 text-sm"></i>
                     <div>
@@ -111,6 +111,25 @@
                 </button>
             </div>
 
+            <!-- Accent Color Selector -->
+            <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-zinc-100 dark:border-zinc-800/60">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-palette text-zinc-500 dark:text-zinc-400 text-sm"></i>
+                    <div>
+                        <h4 class="text-sm font-semibold text-zinc-900 dark:text-zinc-200">Color de Énfasis</h4>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Personaliza acordes y elementos destacados</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2.5 self-end sm:self-auto" id="accent-colors-selector">
+                    <button type="button" data-accent="purple" class="accent-dot-btn w-6 h-6 rounded-full bg-violet-500 flex items-center justify-center text-white transition hover:scale-110 cursor-pointer shadow-sm" title="Violeta"></button>
+                    <button type="button" data-accent="green" class="accent-dot-btn w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white transition hover:scale-110 cursor-pointer shadow-sm" title="Esmeralda"></button>
+                    <button type="button" data-accent="yellow" class="accent-dot-btn w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-white transition hover:scale-110 cursor-pointer shadow-sm" title="Ámbar"></button>
+                    <button type="button" data-accent="aqua" class="accent-dot-btn w-6 h-6 rounded-full bg-cyan-500 flex items-center justify-center text-white transition hover:scale-110 cursor-pointer shadow-sm" title="Cyan"></button>
+                    <button type="button" data-accent="red" class="accent-dot-btn w-6 h-6 rounded-full bg-rose-500 flex items-center justify-center text-white transition hover:scale-110 cursor-pointer shadow-sm" title="Coral"></button>
+                    <button type="button" data-accent="white" class="accent-dot-btn w-6 h-6 rounded-full bg-zinc-200 dark:bg-zinc-100 border border-zinc-400 dark:border-zinc-300 flex items-center justify-center text-zinc-900 transition hover:scale-110 cursor-pointer shadow-sm" title="Neutral"></button>
+                </div>
+            </div>
+
             <!-- Push Notifications Switcher -->
             <div class="p-4 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/60">
                 <div class="flex items-center gap-3">
@@ -121,7 +140,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" id="btn-test-push-notif" onclick="triggerTestPushNotification()" class="hidden px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition" title="Enviar notificación de prueba">
+                    <button type="button" id="btn-test-push-notif" onclick="triggerTestPushNotification()" class="hidden px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer" title="Enviar notificación de prueba">
                         <i class="fa-solid fa-paper-plane text-[10px]"></i>
                         <span class="hidden sm:inline ml-1">Probar</span>
                     </button>
@@ -131,9 +150,8 @@
                 </div>
             </div>
 
-
             <!-- Band Members Link -->
-            <button type="button" onclick="navigateTo('members')" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left border-t border-zinc-100 dark:border-zinc-800/60">
+            <button type="button" id="profile-band-members-row" onclick="navigateTo('members')" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left border-t border-zinc-100 dark:border-zinc-800/60 cursor-pointer">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-users text-zinc-500 dark:text-zinc-400 text-sm"></i>
                     <span class="text-sm font-medium text-zinc-900 dark:text-zinc-200">Miembros de la Banda</span>
@@ -142,7 +160,7 @@
             </button>
 
             <!-- Logout -->
-            <button type="button" onclick="confirmLogout()" class="w-full p-4 flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-950/30 transition text-left text-red-600 dark:text-red-400">
+            <button type="button" onclick="confirmLogout()" class="w-full p-4 flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-950/30 transition text-left text-red-600 dark:text-red-400 cursor-pointer">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
                     <span class="text-sm font-semibold">Cerrar Sesión</span>
@@ -150,6 +168,7 @@
             </button>
         </div>
     </div>
+
 </div>
 
 <!-- MODAL 1: Editar Perfil -->
