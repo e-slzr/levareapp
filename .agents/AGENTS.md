@@ -49,37 +49,32 @@ Este archivo establece las reglas, arquitectura y estándares de diseño y desar
 
 ## 🐙 Estándares y Flujo de Trabajo en Git
 
-1. **Nomenclatura de Ramas con Correlativo:**
-   * Toda rama de trabajo debe incluir obligatoriamente un **número correlativo incremental de 3 dígitos (`001`, `002`, `003`...) al inicio** para identificar cronológicamente la versión más actual y mantener un ordenamiento natural en Git y GitHub.
-   * **Estructura oficial**: `<correlativo>-<tipo>/<descripcion-kebab-case>`
-   * **Tipos permitidos**:
-     * `feature`: Nuevas funcionalidades o módulos (ej. `001-feature/song-wizard-and-chord-builder`).
-     * `fix`: Corrección de errores o bugs (ej. `002-fix/touch-drag-reorder`).
-     * `refactor`: Mejoras o reestructuración de código sin alterar funcionalidad (ej. `003-refactor/auth-tokens-handler`).
-     * `style`: Ajustes puramente visuales, CSS o alineaciones (ej. `004-style/dark-mode-contrast`).
-     * `docs`: Actualización de documentación, guías o reglas (ej. `005-docs/agents-git-guidelines`).
-     * `chore`: Tareas de mantenimiento, dependencias o tooling (ej. `006-chore/cleanup-assets`).
+1. **Flujo Directo en `main` (Trunk-Based para Desarrollador Único):**
+   * Todo el desarrollo activo y despliegue del proyecto se realiza de forma centralizada directamente sobre la rama **`main`**.
+   * Esto garantiza que al alternar entre estaciones de trabajo (MacBook, Linux, Windows) no existan desfases de versión ni ramas huérfanas.
+   * Al iniciar sesión en cualquier equipo, siempre sincronizar con `git pull origin main` (o `git pull`).
+   * No se requiere la creación de ramas temporales ni la apertura de Pull Requests en GitHub para el trabajo habitual.
 
 2. **Formato de Mensajes de Commit (Conventional Commits en Español):**
    * Los commits deben ser atómicos, concisos y redactados en **español**.
    * **Estructura**: `<tipo>(<alcance/módulo>): <descripción directa en presente/imperativo>`
-   * **Ejemplos**:
-     * `feat(songs): constructor modular de acordes con soporte táctil`
-     * `fix(setlists): sincronización de tono en vista de presentación`
-     * `refactor(db): optimizar consultas PDO con índices en canciones`
-     * `style(dashboard): ajustar padding y bordes en tarjetas de eventos`
-     * `docs(readme): actualizar instrucciones de despliegue y variables de entorno`
+   * **Tipos permitidos**:
+     * `feat`: Nuevas funcionalidades o módulos (ej. `feat(songs): constructor modular de acordes con soporte táctil`).
+     * `fix`: Corrección de errores o bugs (ej. `fix(setlists): sincronización de tono en vista de presentación`).
+     * `refactor`: Mejoras o reestructuración de código sin alterar funcionalidad (ej. `refactor(db): optimizar consultas PDO con índices`).
+     * `style`: Ajustes puramente visuales, CSS o alineaciones (ej. `style(dashboard): ajustar padding y bordes`).
+     * `docs`: Actualización de documentación, guías o reglas (ej. `docs(agents): actualizar flujo git a main directo`).
+     * `chore`: Mantenimiento, migraciones, semillas o dependencias (ej. `chore(db): actualizar master_schema con seeder superadmin`).
 
 3. **Buenas Prácticas de Versionado:**
    * **Commits Atómicos**: No agrupar cambios de múltiples módulos no relacionados en un solo commit.
    * **Seguridad**: Prohibido commitear archivos de entorno (`.env`), claves secretas o volcados temporales de base de datos.
-   * **Sincronización**: Al concluir una fase o requerimiento aprobado, verificar que el árbol de trabajo esté limpio (`git status`) y subir la rama a `origin`.
+   * **Sincronización Continua**: Al concluir una tarea o fase aprobada, verificar que el árbol de trabajo esté limpio (`git status`) y subir los cambios a `origin main`.
 
 4. **Formato de Respuesta tras Publicar Cambios (`git push`):**
-   * Tras subir exitosamente los cambios a GitHub, el asistente debe responder obligatoriamente con una estructura limpia y directa que incluya:
-     * **Rama creada/utilizada**: `<nombre-de-la-rama>`
+   * Tras subir exitosamente los cambios a GitHub, el asistente debe responder obligatoriamente con la siguiente estructura limpia y directa:
+     * **Rama utilizada**: `main`
      * **Mensaje de Commit**: `<mensaje-del-commit>`
-     * **Enlace directo a Pull Request**: Enlace clickable en Markdown en formato `https://github.com/e-slzr/levareapp/pull/new/<nombre-de-la-rama>`
      * **Estado del árbol local**: Confirmar que quedó limpio (`git status`).
 
 ---
@@ -96,7 +91,7 @@ Cuando el usuario solicite explícitamente **`sync test`**, el asistente debe ej
 
 1. **Identificación Automática de Entorno y Rutas:**
    * **Linux (Manjaro / Arch)**: `/mnt/myhome/WebProjects/levareapp/`
-   * **macOS**: *(Ruta pendiente por definir)*
+   * **macOS**: `/Volumes/myhome/WebProjects/levareapp/` (Montado vía SMB desde `smb://truenas._smb._tcp.local/myhome/WebProjects/levareapp/`)
    * **Windows**: *(Ruta pendiente por definir)*
    * Si el sistema operativo detectado tiene su ruta configurada y la carpeta existe, operar directamente en esa ubicación. Solo en caso de que la ruta no esté configurada o no sea accesible, solicitar la confirmación de la ruta al usuario.
 
@@ -105,8 +100,13 @@ Cuando el usuario solicite explícitamente **`sync test`**, el asistente debe ej
      * Ir a la ubicación del entorno de testing y ejecutar `git pull origin main` (o `git pull`) para traer la versión más reciente fusionada en `main`.
    * **Paso 2: Detección y Ejecución de Migraciones BD (Tabularis MCP)**:
      * Inspeccionar los archivos en `database/migrations/`.
-     * Validar en la base de datos de testing (`levareapp`) mediante Tabularis MCP si las tablas o columnas de las migraciones ya existen.
-     * Si existen migraciones pendientes, ejecutarlas en `levareapp`.
+     * Validar en la base de datos de testing (`levareapp`) mediante Tabularis MCP consultando la tabla `migrations` (o la existencia de las columnas/tablas correspondientes) para identificar migraciones pendientes.
+     * Si existen migraciones pendientes:
+       * Ejecutar las sentencias SQL de la migración en `levareapp`.
+       * Registrar obligatoriamente la migración en la tabla `migrations`:
+         ```sql
+         INSERT INTO migrations (migration, batch) VALUES ('<nombre_archivo_sin_extension>', <siguiente_batch>);
+         ```
    * **Paso 3: Formato de Respuesta Estructurada**:
      * Responder obligatoriamente con la siguiente estructura limpia y directa:
        ```markdown
