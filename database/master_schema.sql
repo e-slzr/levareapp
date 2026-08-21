@@ -256,4 +256,29 @@ CREATE TABLE IF NOT EXISTS `push_subscriptions` (
     CONSTRAINT `fk_push_subscriptions_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ------------------------------------------------------------------------------
+-- 9. Migrations Tracking
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `migrations` (
+    `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `migration` VARCHAR(255) NOT NULL,
+    `batch` INT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------------------------
+-- 10. Initial Seed Data (Superadmin / Developer Profile)
+-- ------------------------------------------------------------------------------
+INSERT INTO `users` (
+    `id`, `name`, `lastname`, `email`, `username`, `password`, 
+    `account_type`, `status`, `must_change_password`, `accent_color`, 
+    `community_points`, `created_at`, `updated_at`
+) VALUES (
+    1, 'Admin', 'Desarrollador', 'admin@worshipapp.com', 'admin', 
+    '$2y$12$gqT5NUm29lvB0Z0s9pERKuXZZ4riIFqq625k1mPjtO.2pbQw2M1K6', 
+    'superadmin', 'active', 0, 'yellow', 0.00, NOW(), NOW()
+) ON DUPLICATE KEY UPDATE 
+    `username` = VALUES(`username`), 
+    `account_type` = VALUES(`account_type`), 
+    `status` = VALUES(`status`);
+
 SET FOREIGN_KEY_CHECKS = 1;
