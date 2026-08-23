@@ -55,22 +55,44 @@ function formatSingleChord(chord) {
 
 /**
  * Normaliza nombres de secciones a MAYÚSCULAS estándar.
- * Ej: "intro" -> "INTRO", "verso 2" -> "VERSO 2", "puente" -> "PUENTE"
+ * Ej: "intro" -> "INTRO", "verso 2" -> "VERSO 2", "estrofa 1" -> "VERSO 1", "interlude" -> "INTERLUDIO"
  */
 function formatSectionHeader(name) {
     if (!name) return '';
-    let clean = name.replace(/[\[\]:]/g, '').trim().toUpperCase();
+    let clean = name.replace(/[\[\]:\.]/g, '').trim().toUpperCase();
     
-    if (clean.startsWith('PRECORO') || clean.startsWith('PRE CORO') || clean.startsWith('PRE-CORO')) {
+    if (clean.startsWith('PRECORO') || clean.startsWith('PRE CORO') || clean.startsWith('PRE-CORO') || clean.startsWith('PRE-CHORUS') || clean.startsWith('PRECHORUS')) {
         clean = 'PRE-CORO';
-    } else if (clean.startsWith('CHORUS')) {
-        clean = clean.replace('CHORUS', 'CORO');
-    } else if (clean.startsWith('VERSE')) {
-        clean = clean.replace('VERSE', 'VERSO');
-    } else if (clean.startsWith('BRIDGE')) {
-        clean = clean.replace('BRIDGE', 'PUENTE');
-    } else if (clean.startsWith('ENDING') || clean.startsWith('FINAL')) {
+    } else if (clean.startsWith('ESTROFA')) {
+        const num = clean.replace(/^[^\d]*/, '').trim();
+        clean = num ? `VERSO ${num}` : 'VERSO';
+    } else if (clean.startsWith('PRIMERA PARTE') || clean.startsWith('PRIMEIRA PARTE') || clean === 'PARTE 1') {
+        clean = 'VERSO 1';
+    } else if (clean.startsWith('SEGUNDA PARTE') || clean === 'PARTE 2') {
+        clean = 'VERSO 2';
+    } else if (clean.startsWith('TERCERA PARTE') || clean.startsWith('TERCEIRA PARTE') || clean === 'PARTE 3') {
+        clean = 'VERSO 3';
+    } else if (clean.startsWith('CUARTA PARTE') || clean.startsWith('QUARTA PARTE') || clean === 'PARTE 4') {
+        clean = 'VERSO 4';
+    } else if (clean.startsWith('CHORUS') || clean.startsWith('CORO') || clean.startsWith('REFRÃO') || clean.startsWith('REFRAO') || clean.startsWith('ESTRIBILLO')) {
+        const num = clean.replace(/^[^\d]*/, '').trim();
+        clean = num ? `CORO ${num}` : 'CORO';
+    } else if (clean.startsWith('VERSE') || clean.startsWith('VERSO')) {
+        const num = clean.replace(/^[^\d]*/, '').trim();
+        clean = num ? `VERSO ${num}` : 'VERSO';
+    } else if (clean.startsWith('BRIDGE') || clean.startsWith('PUENTE') || clean.startsWith('PONTE')) {
+        const num = clean.replace(/^[^\d]*/, '').trim();
+        clean = num ? `PUENTE ${num}` : 'PUENTE';
+    } else if (clean.startsWith('INTER')) {
+        clean = 'INTERLUDIO';
+    } else if (clean.startsWith('INTRO')) {
+        clean = 'INTRO';
+    } else if (clean.startsWith('ENDING') || clean.startsWith('FINAL') || clean.startsWith('CODA') || clean.startsWith('OUTRO')) {
         clean = 'OUTRO';
+    } else if (clean.startsWith('SOLO')) {
+        clean = 'SOLO';
+    } else if (clean.startsWith('INSTRUMENTAL')) {
+        clean = 'INSTRUMENTAL';
     }
 
     return clean;
@@ -84,8 +106,8 @@ function isChordLine(line) {
     const trimmed = line.trim();
     if (!trimmed) return false;
 
-    // Tokens sin símbolos comunes de repetición
-    const tokens = trimmed.split(/\s+/).filter(t => !/^(x\d+|\/\/?|\(|\)|\||:)$/i.test(t));
+    // Tokens sin símbolos comunes de repetición o guiones de separación
+    const tokens = trimmed.split(/[\s\-\—\/\|]+/).filter(t => !/^(x\d+|\/\/?|\(|\)|\||:|\.|\*)$/i.test(t));
     if (tokens.length === 0) return false;
 
     let chordCount = 0;
@@ -96,30 +118,32 @@ function isChordLine(line) {
         }
     });
 
-    return (chordCount / tokens.length) >= 0.65;
+    return (chordCount / tokens.length) >= 0.60;
 }
 
 /**
- * Detecta si una línea define un encabezado de sección (ej. "Intro:", "[Coro]", "Puente:", "Solo: G A Bm")
+ * Detecta si una línea define un encabezado de sección (ej. "Intro:", "[Coro]", "Estrofa:", "Interlude:", "Coro 2:", "Primera Parte:")
  */
 function detectSectionHeader(line) {
     if (!line) return null;
     const trimmed = line.trim();
     
     const sectionKeywords = [
-        'INTRO', 'VERSO', 'CORO', 'PRE-CORO', 'PRECORO', 'PUENTE', 'BRIDGE', 
-        'SOLO', 'OUTRO', 'INTERLUDIO', 'INSTRUMENTAL', 'CHORUS', 'VERSE', 'FINAL', 'CODA'
+        'INTRO', 'INTRODUCCION', 'INTRODUCCIÓN', 'VERSO', 'ESTROFA', 'ESTROFAS', 'CORO', 'PRE-CORO', 'PRECORO', 
+        'PRE-CHORUS', 'PRECHORUS', 'PUENTE', 'BRIDGE', 'PONTE', 'REFRÃO', 'REFRAO', 'ESTRIBILLO', 'PRIMERA PARTE', 'SEGUNDA PARTE',
+        'TERCERA PARTE', 'PRIMEIRA PARTE', 'TERCEIRA PARTE', 'SOLO', 'OUTRO', 'INTERLUDIO', 'INTERLUDE', 'INTER',
+        'INSTRUMENTAL', 'CHORUS', 'VERSE', 'FINAL', 'CODA'
     ];
 
-    // Caso 1: Entre corchetes [INTRO], [VERSO 1]
+    // Caso 1: Entre corchetes [INTRO], [VERSO 1], [ESTROFA], [Primera Parte]
     const bracketMatch = trimmed.match(/^\[([^\]]+)\](.*)$/);
     if (bracketMatch) {
         const header = formatSectionHeader(bracketMatch[1]);
         return { header, inlineContent: bracketMatch[2].trim() };
     }
 
-    // Caso 2: Palabra clave al inicio, seguida de ":" o acordes (ej. "Intro:", "Solo: G A Bm", "Puente:")
-    const regex = new RegExp(`^(\\/\\/\\s*)?(${sectionKeywords.join('|')})(\\s*\\d*)?\\s*(:|-)?(.*)$`, 'i');
+    // Caso 2: Palabra clave al inicio, seguida de número opcional, ":" o "." o acordes
+    const regex = new RegExp(`^(\\/\\/\\s*)?(${sectionKeywords.join('|')})(\\s*\\d*)?\\s*([:\\.-])?\\s*(.*)$`, 'i');
     const match = trimmed.match(regex);
     if (match) {
         let sectionName = match[2].toUpperCase();
@@ -142,6 +166,7 @@ function parseInternetLyricsToChordPro(rawText) {
     const lines = rawText.split(/\r?\n/);
     const outputLines = [];
     let verseCounter = 1;
+    let currentSectionType = null;
 
     for (let i = 0; i < lines.length; i++) {
         const rawLine = lines[i];
@@ -160,13 +185,12 @@ function parseInternetLyricsToChordPro(rawText) {
             if (secHeader === 'VERSO') {
                 secHeader = `VERSO ${verseCounter++}`;
             }
-
+            currentSectionType = secHeader;
             outputLines.push(`[${secHeader}]`);
 
-            // Si trae acordes o contenido en la misma línea (ej. "Intro Bm A F#m G x2")
+            // Si trae acordes o contenido en la misma línea (ej. "Intro: F - Am - C - G" o "Solo: G A Bm")
             if (section.inlineContent) {
                 if (isChordLine(section.inlineContent)) {
-                    // Extraer los acordes y formatearlos con corchetes
                     const formattedChords = extractAndFormatChords(section.inlineContent);
                     outputLines.push(`#${formattedChords}`);
                 } else {
@@ -191,6 +215,12 @@ function parseInternetLyricsToChordPro(rawText) {
 
             // Si la siguiente línea es letra real (no vacía, no es sección, no es otra línea de acordes)
             if (nextLine !== null && nextTrimmed !== '' && !nextIsSection && !nextIsChords) {
+                // Asegurar que exista un encabezado de sección si no hay o si la previa era instrumental
+                if (!currentSectionType || isInstrumentalSectionType(currentSectionType)) {
+                    currentSectionType = `VERSO ${verseCounter++}`;
+                    outputLines.push(`[${currentSectionType}]`);
+                }
+
                 // Fusión de Acordes en la Letra por posición de columna horizontal
                 const mergedLine = mergeChordsIntoLyrics(rawLine, nextLine);
                 outputLines.push(mergedLine);
@@ -204,6 +234,10 @@ function parseInternetLyricsToChordPro(rawText) {
         }
 
         // 5. Línea de letra normal (sin línea de acordes encima)
+        if (!currentSectionType || isInstrumentalSectionType(currentSectionType)) {
+            currentSectionType = `VERSO ${verseCounter++}`;
+            outputLines.push(`[${currentSectionType}]`);
+        }
         outputLines.push(rawLine);
     }
 
@@ -248,11 +282,17 @@ function mergeChordsIntoLyrics(chordLine, lyricLine) {
 }
 
 /**
- * Formatea una línea de acordes planos a formato de corchetes con '#' (ej. "Bm A F#m" -> "[Bm] [A] [F#m]")
+ * Formatea una línea de acordes planos a formato de corchetes con '#' (ej. "C - Am - G - F" -> "[C] [Am] [G] [F]")
  */
 function extractAndFormatChords(text) {
     if (!text) return '';
-    return text.replace(CHORD_TOKEN_REGEX, (m, chord) => `[${formatMusicalChord(chord)}]`);
+    const chords = [];
+    let match;
+    const regex = new RegExp(CHORD_TOKEN_REGEX);
+    while ((match = regex.exec(text)) !== null) {
+        chords.push(`[${formatMusicalChord(match[1])}]`);
+    }
+    return chords.join(' ');
 }
 
 /**
@@ -513,36 +553,54 @@ function chordProToSections(chordProText) {
     const lines = chordProText.split(/\r?\n/);
     const sections = [];
     let currentSection = null;
+    let verseCount = 1;
 
     const finalizeSection = () => {
         if (!currentSection) return;
 
-        // Determinar si es instrumental:
-        // 1. Si todas las líneas no vacías son instrumentales (#) o no tiene líneas de texto y su tipo es instrumental
+        // Determinar si es instrumental
         const nonEmptyLines = currentSection.lines.filter(l => l.trim() !== '');
         const allInstrumentalLines = nonEmptyLines.length > 0 && nonEmptyLines.every(l => l.trim().startsWith('#'));
 
         if (allInstrumentalLines || (nonEmptyLines.length === 0 && isInstrumentalSectionType(currentSection.type))) {
             currentSection.isInstrumental = true;
-            // Extraer acordes de las líneas instrumentales
-            const chords = [];
+            // Extraer acordes preservando cada línea como una fila instrumental independiente
+            const instrumentalLines = [];
+            const allChords = [];
             currentSection.lines.forEach(line => {
                 const matches = line.match(/\[([^\]]+)\]/g);
-                if (matches) {
+                if (matches && matches.length > 0) {
+                    const lineChords = [];
                     matches.forEach(m => {
                         const c = formatMusicalChord(m.slice(1, -1));
-                        if (c) chords.push(c);
+                        if (c) {
+                            lineChords.push(c);
+                            allChords.push(c);
+                        }
                     });
+                    if (lineChords.length > 0) {
+                        instrumentalLines.push(lineChords);
+                    }
                 }
             });
-            currentSection.chords = chords;
+            currentSection.instrumentalLines = instrumentalLines.length > 0 ? instrumentalLines : (allChords.length > 0 ? [allChords] : [[]]);
+            currentSection.chords = allChords;
             currentSection.lines = [];
         } else {
             currentSection.isInstrumental = false;
             currentSection.chords = [];
+            currentSection.instrumentalLines = [];
+            // Eliminar líneas vacías iniciales y finales
+            let trimmedLines = [...currentSection.lines];
+            while (trimmedLines.length > 0 && trimmedLines[0].trim() === '') trimmedLines.shift();
+            while (trimmedLines.length > 0 && trimmedLines[trimmedLines.length - 1].trim() === '') trimmedLines.pop();
+            currentSection.lines = trimmedLines.length > 0 ? trimmedLines : [''];
         }
 
-        sections.push(currentSection);
+        // Solo agregar si es instrumental con acordes o tiene líneas no vacías
+        if (currentSection.isInstrumental || currentSection.lines.some(l => l.trim() !== '')) {
+            sections.push(currentSection);
+        }
     };
 
     lines.forEach(line => {
@@ -561,20 +619,35 @@ function chordProToSections(chordProText) {
                     type: secName,
                     isInstrumental: isInstrumentalSectionType(secName),
                     chords: [],
+                    instrumentalLines: [[]],
                     lines: []
                 };
                 return;
             }
         }
 
+        // Auto-split: si la sección actual es instrumental y llega una línea vocal no vacía
+        if (currentSection && isInstrumentalSectionType(currentSection.type) && trimmed !== '' && !trimmed.startsWith('#')) {
+            finalizeSection();
+            currentSection = {
+                id: 'sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                type: `VERSO ${verseCount++}`,
+                isInstrumental: false,
+                chords: [],
+                instrumentalLines: [],
+                lines: []
+            };
+        }
+
         // Si no hay sección activa, crear una por defecto
         if (!currentSection) {
-            const defaultType = line.startsWith('#') ? 'INTRO' : 'VERSO 1';
+            const defaultType = line.startsWith('#') ? 'INTRO' : `VERSO ${verseCount++}`;
             currentSection = {
                 id: 'sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
                 type: defaultType,
                 isInstrumental: isInstrumentalSectionType(defaultType),
                 chords: [],
+                instrumentalLines: isInstrumentalSectionType(defaultType) ? [[]] : [],
                 lines: []
             };
         }
@@ -591,6 +664,7 @@ function chordProToSections(chordProText) {
             type: 'VERSO 1',
             isInstrumental: false,
             chords: [],
+            instrumentalLines: [],
             lines: ['']
         });
     }
@@ -610,7 +684,14 @@ function sectionsToChordPro(sections) {
         result.push(`[${type}]`);
 
         if (sec.isInstrumental) {
-            if (Array.isArray(sec.chords) && sec.chords.length > 0) {
+            if (Array.isArray(sec.instrumentalLines) && sec.instrumentalLines.length > 0) {
+                sec.instrumentalLines.forEach(lineChords => {
+                    if (Array.isArray(lineChords) && lineChords.length > 0) {
+                        const formatted = lineChords.map(c => `[${formatMusicalChord(c)}]`).join(' ');
+                        result.push(`#${formatted}`);
+                    }
+                });
+            } else if (Array.isArray(sec.chords) && sec.chords.length > 0) {
                 const formattedChords = sec.chords.map(c => `[${formatMusicalChord(c)}]`).join(' ');
                 result.push(`#${formattedChords}`);
             }

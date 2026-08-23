@@ -544,7 +544,6 @@ window.openEditProfileModal = openEditProfileModal;
 window.closeEditProfileModal = closeEditProfileModal;
 window.openChangePasswordModal = openChangePasswordModal;
 window.closeChangePasswordModal = closeChangePasswordModal;
-window.togglePasswordVisibility = togglePasswordVisibility;
 
 
 // --- Remove Avatar Modal Flow ---

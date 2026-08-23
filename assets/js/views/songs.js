@@ -230,19 +230,76 @@ function handleMedleyToggle(isMedley) {
 }
 
 /**
+ * Configura las pestañas de Vista Previa vs Editor de Texto Plano en el Paso 2
+ */
+function setupStep2Tabs() {
+    const tabPreview = document.getElementById('tab-step2-preview');
+    const tabRaw = document.getElementById('tab-step2-raw');
+    const boxPreview = document.getElementById('wizard-live-preview-box');
+    const boxRaw = document.getElementById('wizard-raw-editor-box');
+    const rawEditor = document.getElementById('song-form-raw-editor');
+    const hiddenContent = document.getElementById('song-form-content');
+
+    if (!tabPreview || !tabRaw || !boxPreview || !boxRaw || !rawEditor || !hiddenContent) return;
+
+    tabPreview.onclick = () => {
+        // Estilos activos en Vista Previa
+        tabPreview.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 cursor-pointer";
+        tabRaw.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 cursor-pointer";
+
+        boxPreview.classList.remove('hidden');
+        boxRaw.classList.add('hidden');
+
+        // Renderizar vista previa actualizada
+        renderWizardLivePreview();
+    };
+
+    tabRaw.onclick = () => {
+        // Estilos activos en Texto Plano
+        tabRaw.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 cursor-pointer";
+        tabPreview.className = "px-3 py-1.5 rounded-lg text-xs font-semibold transition text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 cursor-pointer";
+
+        boxRaw.classList.remove('hidden');
+        boxPreview.classList.add('hidden');
+
+        // Sincronizar contenido actual al textarea
+        rawEditor.value = hiddenContent.value;
+        rawEditor.focus();
+    };
+
+    // Al escribir en el editor de texto plano, sincronizar en vivo
+    rawEditor.oninput = () => {
+        hiddenContent.value = rawEditor.value;
+        const countEl = document.getElementById('preview-sections-count');
+        const sectionMatches = rawEditor.value.match(/\[(INTRO|VERSO|PRE-CORO|CORO|PUENTE|SOLO|OUTRO)[^\]]*\]/gi) || [];
+        if (countEl) {
+            countEl.textContent = `${sectionMatches.length} ${sectionMatches.length === 1 ? 'sección' : 'secciones'}`;
+        }
+    };
+}
+
+/**
  * Renderiza la vista previa de la letra con los acordes alineados arriba en tiempo real
  */
 function renderWizardLivePreview() {
-    const content = document.getElementById('song-form-content').value.trim();
+    const hiddenInput = document.getElementById('song-form-content');
+    const content = hiddenInput ? hiddenInput.value.trim() : '';
     const previewContent = document.getElementById('wizard-preview-content');
     const countEl = document.getElementById('preview-sections-count');
+    const rawEditor = document.getElementById('song-form-raw-editor');
+
+    // Sincronizar textarea de texto plano si no está siendo editado activamente
+    if (rawEditor && document.activeElement !== rawEditor) {
+        rawEditor.value = hiddenInput ? hiddenInput.value : '';
+    }
+
     if (!previewContent) return;
 
     if (!content) {
         previewContent.innerHTML = `
             <div class="text-center py-10 text-zinc-400 dark:text-zinc-500 text-xs font-sans">
                 Aún no has agregado la letra con acordes.<br>
-                Haz clic en <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Editor de Letra y Acordes"</strong> o <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Pegar desde Internet"</strong> para comenzar.
+                Haz clic en <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Editor Interactivo"</strong> o <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Pegar desde Internet"</strong> para comenzar.
             </div>
         `;
         if (countEl) countEl.textContent = "0 secciones";
@@ -441,6 +498,7 @@ function initSongsView() {
     setupChordPickerEvents();
     setupSectionPickerEvents();
     setupImportChordsEvents();
+    setupStep2Tabs();
 
     // Renderizar catálogo
     renderSongsCatalog(true);
@@ -1189,6 +1247,7 @@ function openChordBuilderModal() {
 }
 
 let isReorderModeActive = false;
+let activeInstLineIdx = 0;
 
 function setupChordBuilderEvents() {
     const btnApply = document.getElementById('btn-apply-chord-builder');
@@ -1303,21 +1362,88 @@ function renderSectionCards() {
         body.className = 'section-card-body';
 
         if (sec.isInstrumental) {
-            // MODO INSTRUMENTAL: Badges grandes cuadrados
+            // MODO INSTRUMENTAL MULTILÍNEA: Filas de acordes con soporte para múltiples compases
             const instContainer = document.createElement('div');
-            instContainer.className = 'section-instrumental-container';
+            instContainer.className = 'section-instrumental-container space-y-2.5';
 
-            if (Array.isArray(sec.chords) && sec.chords.length > 0) {
-                sec.chords.forEach((chordName, chordIdx) => {
-                    const badge = createInstrumentalChordBadge(chordName, sec.id, chordIdx);
-                    instContainer.appendChild(badge);
-                });
-            } else {
-                const emptyNotice = document.createElement('span');
-                emptyNotice.className = 'text-xs text-zinc-400 italic pointer-events-none select-none';
-                emptyNotice.textContent = 'Sin acordes aún. Usa el botón + para agregar acordes a este instrumental.';
-                instContainer.appendChild(emptyNotice);
+            if (!Array.isArray(sec.instrumentalLines) || sec.instrumentalLines.length === 0) {
+                sec.instrumentalLines = (Array.isArray(sec.chords) && sec.chords.length > 0) ? [[...sec.chords]] : [[]];
             }
+
+            sec.instrumentalLines.forEach((instLine, instLineIdx) => {
+                const lineRow = document.createElement('div');
+                lineRow.className = 'instrumental-line-row w-full flex items-center flex-wrap gap-2 p-2.5 rounded-xl bg-zinc-100/70 dark:bg-zinc-950/60 border border-zinc-200/70 dark:border-zinc-800/70 transition';
+
+                // Indicador de Línea si hay más de 1
+                if (sec.instrumentalLines.length > 1) {
+                    const lineLabel = document.createElement('span');
+                    lineLabel.className = 'text-[10px] font-mono font-bold text-zinc-400 dark:text-zinc-500 uppercase px-1.5 py-0.5 rounded bg-zinc-200/60 dark:bg-zinc-800/60 select-none';
+                    lineLabel.textContent = `L${instLineIdx + 1}`;
+                    lineRow.appendChild(lineLabel);
+                }
+
+                // Badges de acordes de esta línea
+                const badgesBox = document.createElement('div');
+                badgesBox.className = 'flex items-center flex-wrap gap-1.5 flex-1 min-w-0';
+
+                if (Array.isArray(instLine) && instLine.length > 0) {
+                    instLine.forEach((chordName, chordIdx) => {
+                        const badge = createInstrumentalChordBadge(chordName, sec.id, instLineIdx, chordIdx);
+                        badgesBox.appendChild(badge);
+                    });
+                } else {
+                    const emptyNotice = document.createElement('span');
+                    emptyNotice.className = 'text-xs text-zinc-400 italic pointer-events-none select-none py-1';
+                    emptyNotice.textContent = 'Sin acordes en esta línea.';
+                    badgesBox.appendChild(emptyNotice);
+                }
+                lineRow.appendChild(badgesBox);
+
+                // Botón '+' para agregar acorde directamente a esta línea
+                const btnAddChordToLine = document.createElement('button');
+                btnAddChordToLine.type = 'button';
+                btnAddChordToLine.className = 'w-7 h-7 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-white dark:hover:bg-zinc-800 flex items-center justify-center text-xs transition cursor-pointer flex-shrink-0';
+                btnAddChordToLine.title = 'Agregar acorde a esta línea';
+                btnAddChordToLine.innerHTML = '<i class="fa-solid fa-plus text-[10px]"></i>';
+                btnAddChordToLine.onclick = (e) => {
+                    e.stopPropagation();
+                    activeSectionId = sec.id;
+                    activeInstLineIdx = instLineIdx;
+                    chordPickerMode = 'editor';
+                    editingBadgeTarget = null;
+                    openChordPickerModal();
+                };
+                lineRow.appendChild(btnAddChordToLine);
+
+                // Botón para eliminar esta línea si hay más de 1
+                if (sec.instrumentalLines.length > 1) {
+                    const btnDelLine = document.createElement('button');
+                    btnDelLine.type = 'button';
+                    btnDelLine.className = 'p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 transition cursor-pointer text-xs flex-shrink-0';
+                    btnDelLine.title = 'Eliminar esta línea de acordes';
+                    btnDelLine.innerHTML = '<i class="fa-solid fa-trash-can text-[10px]"></i>';
+                    btnDelLine.onclick = (e) => {
+                        e.stopPropagation();
+                        sec.instrumentalLines.splice(instLineIdx, 1);
+                        renderSectionCards();
+                    };
+                    lineRow.appendChild(btnDelLine);
+                }
+
+                instContainer.appendChild(lineRow);
+            });
+
+            // Botón para agregar una nueva línea de acordes
+            const btnAddNewInstLine = document.createElement('button');
+            btnAddNewInstLine.type = 'button';
+            btnAddNewInstLine.className = 'w-full py-1.5 px-3 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 transition flex items-center justify-center gap-1.5 cursor-pointer mt-1';
+            btnAddNewInstLine.innerHTML = '<i class="fa-solid fa-plus text-[10px]"></i> <span>Agregar otra línea de acordes</span>';
+            btnAddNewInstLine.onclick = (e) => {
+                e.stopPropagation();
+                sec.instrumentalLines.push([]);
+                renderSectionCards();
+            };
+            instContainer.appendChild(btnAddNewInstLine);
 
             body.appendChild(instContainer);
         } else {
@@ -1889,12 +2015,13 @@ function setupSectionCardDragAndDrop(card, secId) {
     dragZone.addEventListener('touchcancel', handleTouchEnd);
 }
 
-function createInstrumentalChordBadge(chordName, secId, chordIdx) {
+function createInstrumentalChordBadge(chordName, secId, instLineIdx, chordIdx) {
     const badge = document.createElement('span');
     badge.className = 'instrumental-chord-badge';
     badge.setAttribute('draggable', 'true');
     badge.setAttribute('data-chord', chordName);
     badge.setAttribute('data-sec-id', secId);
+    badge.setAttribute('data-inst-line-idx', instLineIdx);
     badge.setAttribute('data-chord-idx', chordIdx);
     badge.textContent = chordName;
     return badge;
@@ -1976,13 +2103,19 @@ function setupPopoverChordActions() {
             if (activeSelectedBadge) {
                 const secId = activeSelectedBadge.getAttribute('data-sec-id');
                 const chordIdx = activeSelectedBadge.getAttribute('data-chord-idx');
+                const instLineIdx = activeSelectedBadge.getAttribute('data-inst-line-idx');
                 const lineIdx = activeSelectedBadge.getAttribute('data-line-idx');
 
                 if (secId !== null && chordIdx !== null) {
                     const sec = currentEditorSections.find(s => s.id === secId);
                     if (sec) {
-                        if (sec.isInstrumental && Array.isArray(sec.chords)) {
-                            sec.chords.splice(parseInt(chordIdx), 1);
+                        if (sec.isInstrumental) {
+                            const lIdx = (instLineIdx !== null && instLineIdx !== undefined) ? parseInt(instLineIdx) : 0;
+                            if (Array.isArray(sec.instrumentalLines) && sec.instrumentalLines[lIdx]) {
+                                sec.instrumentalLines[lIdx].splice(parseInt(chordIdx), 1);
+                            } else if (Array.isArray(sec.chords)) {
+                                sec.chords.splice(parseInt(chordIdx), 1);
+                            }
                         } else if (lineIdx !== null && sec.lines && sec.lines[parseInt(lineIdx)]) {
                             const { text, chords } = parseLineChordPro(sec.lines[parseInt(lineIdx)]);
                             chords.splice(parseInt(chordIdx), 1);
@@ -2213,13 +2346,19 @@ function selectChordFromPicker(chordName) {
     if (editingBadgeTarget) {
         const secId = editingBadgeTarget.getAttribute('data-sec-id');
         const chordIdx = parseInt(editingBadgeTarget.getAttribute('data-chord-idx'));
+        const instLineIdx = editingBadgeTarget.getAttribute('data-inst-line-idx');
         const lineIdx = editingBadgeTarget.getAttribute('data-line-idx');
 
         if (secId !== null && !isNaN(chordIdx)) {
             const sec = currentEditorSections.find(s => s.id === secId);
             if (sec) {
-                if (sec.isInstrumental && Array.isArray(sec.chords)) {
-                    sec.chords[chordIdx] = formatted;
+                if (sec.isInstrumental) {
+                    const lIdx = (instLineIdx !== null && instLineIdx !== undefined) ? parseInt(instLineIdx) : 0;
+                    if (Array.isArray(sec.instrumentalLines) && sec.instrumentalLines[lIdx]) {
+                        sec.instrumentalLines[lIdx][chordIdx] = formatted;
+                    } else if (Array.isArray(sec.chords)) {
+                        sec.chords[chordIdx] = formatted;
+                    }
                 } else if (lineIdx !== null && sec.lines && sec.lines[parseInt(lineIdx)]) {
                     const lIdx = parseInt(lineIdx);
                     const { text, chords } = parseLineChordPro(sec.lines[lIdx]);
@@ -2243,8 +2382,11 @@ function selectChordFromPicker(chordName) {
         const sec = currentEditorSections.find(s => s.id === activeSectionId);
         if (sec) {
             if (sec.isInstrumental) {
-                if (!Array.isArray(sec.chords)) sec.chords = [];
-                sec.chords.push(formatted);
+                if (!Array.isArray(sec.instrumentalLines) || sec.instrumentalLines.length === 0) {
+                    sec.instrumentalLines = (Array.isArray(sec.chords) && sec.chords.length > 0) ? [[...sec.chords]] : [[]];
+                }
+                const targetIdx = (activeInstLineIdx !== null && activeInstLineIdx < sec.instrumentalLines.length) ? activeInstLineIdx : (sec.instrumentalLines.length - 1);
+                sec.instrumentalLines[targetIdx].push(formatted);
                 renderSectionCards();
             } else {
                 if (!Array.isArray(sec.lines) || sec.lines.length === 0) {
@@ -2373,12 +2515,14 @@ function syncCurrentEditorDOMToSections() {
 }
 
 /* ==========================================================================
-   IMPORTADOR INTELIGENTE DESDE INTERNET (CONVERSOR 2-LINE)
+   IMPORTADOR INTELIGENTE DESDE INTERNET (CONVERSOR 2-LINE & SCRAPER DE URL)
    ========================================================================== */
 
 function openImportChordsModal() {
     const rawInput = document.getElementById('import-chords-raw-input');
     if (rawInput) rawInput.value = '';
+    const urlInput = document.getElementById('import-chords-url-input');
+    if (urlInput) urlInput.value = '';
     document.getElementById('modal-import-chords').classList.remove('hidden');
 }
 
@@ -2387,12 +2531,76 @@ function setupImportChordsEvents() {
         btn.onclick = () => document.getElementById('modal-import-chords').classList.add('hidden');
     });
 
+    // Botón: Extraer desde Enlace Web
+    const btnFetchUrl = document.getElementById('btn-fetch-url-chords');
+    const urlInput = document.getElementById('import-chords-url-input');
+
+    if (btnFetchUrl && urlInput) {
+        const handleFetch = async () => {
+            const url = urlInput.value.trim();
+            if (!url) {
+                showToast("Por favor ingresa o pega el enlace de la canción", "danger");
+                urlInput.focus();
+                return;
+            }
+
+            const originalBtnHtml = btnFetchUrl.innerHTML;
+            btnFetchUrl.disabled = true;
+            btnFetchUrl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-xs"></i> <span>Obteniendo...</span>';
+
+            try {
+                const res = await apiFetch('/songs/import-url', {
+                    method: 'POST',
+                    body: JSON.stringify({ url })
+                });
+
+                if (res && res.raw_text) {
+                    const rawInput = document.getElementById('import-chords-raw-input');
+                    if (rawInput) rawInput.value = res.raw_text;
+
+                    // Autocompletar metadatos del Paso 1
+                    const autoFillMeta = document.getElementById('import-chords-auto-fill-meta');
+                    if (autoFillMeta && autoFillMeta.checked) {
+                        const titleInput = document.getElementById('song-form-title');
+                        if (titleInput && res.title) titleInput.value = res.title;
+
+                        const artistInput = document.getElementById('song-form-artist');
+                        if (artistInput && res.artist) artistInput.value = res.artist;
+
+                        const keySelect = document.getElementById('song-form-key');
+                        if (keySelect && res.key) keySelect.value = res.key;
+
+                        const formUrl = document.getElementById('song-form-url');
+                        if (formUrl && res.url) formUrl.value = res.url;
+                    }
+
+                    showToast(`Letra de "${res.title || 'Canción'}" obtenida con éxito`, "success");
+                }
+            } catch (err) {
+                console.error("Error fetching song from URL:", err);
+                showToast(err.message || "No se pudo extraer la letra desde el enlace proporcionado.", "danger");
+            } finally {
+                btnFetchUrl.disabled = false;
+                btnFetchUrl.innerHTML = originalBtnHtml;
+            }
+        };
+
+        btnFetchUrl.onclick = handleFetch;
+        urlInput.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleFetch();
+            }
+        };
+    }
+
+    // Botón: Convertir e Insertar a ChordPro
     const btnConvert = document.getElementById('btn-convert-imported-chords');
     if (btnConvert) {
         btnConvert.onclick = () => {
             const raw = document.getElementById('import-chords-raw-input').value;
             if (!raw.trim()) {
-                showToast("Por favor pega la letra con acordes a convertir", "danger");
+                showToast("Por favor pega o importa la letra con acordes a convertir", "danger");
                 return;
             }
 
@@ -2401,9 +2609,7 @@ function setupImportChordsEvents() {
             renderWizardLivePreview();
 
             document.getElementById('modal-import-chords').classList.add('hidden');
-            showToast("Letra y acordes convertidos con éxito");
-
-            openChordBuilderModal();
+            showToast("Letra y acordes convertidos con éxito", "success");
         };
     }
 }

@@ -3,6 +3,7 @@
  * Songs & Setlists Controller (Native PDO)
  */
 require_once __DIR__ . '/../services/NotificationService.php';
+require_once __DIR__ . '/../services/SongScraperService.php';
 
 class SongController {
 
@@ -550,6 +551,29 @@ class SongController {
             'community_likes_given' => $likesGiven,
             'community_points' => $totalPoints
         ]);
+    }
+
+    /**
+     * Scrape and parse song & chords from URL (e.g. LaCuerda.net)
+     * Endpoint: POST /songs/import-url
+     */
+    public static function importFromUrl(): void {
+        $user = requireAuth();
+        $input = getJsonInput();
+        $url = trim($input['url'] ?? $_POST['url'] ?? '');
+
+        if (empty($url)) {
+            jsonResponse(['message' => 'Debes proporcionar un enlace (URL) válido.'], 422);
+        }
+
+        try {
+            $data = SongScraperService::scrape($url);
+            jsonResponse($data);
+        } catch (Exception $e) {
+            jsonResponse([
+                'message' => $e->getMessage() ?: 'No se pudo obtener la letra desde la URL proporcionada.'
+            ], 422);
+        }
     }
 }
 

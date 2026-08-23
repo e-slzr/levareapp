@@ -110,7 +110,7 @@
         <div class="flex items-center gap-2 w-full md:w-auto flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-zinc-200/60 dark:border-zinc-800/60">
             <span id="step-indicator-1" class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
                 <span class="w-4 h-4 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 inline-flex items-center justify-center text-[9px] font-bold">1</span>
-                Identidad
+                Información
             </span>
             <i class="fa-solid fa-chevron-right text-[10px] text-zinc-400"></i>
             <span id="step-indicator-2" class="text-xs font-medium text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-transparent">
@@ -121,8 +121,8 @@
     </div>
 
     <!-- Formulario en Tarjeta Principal -->
-    <div class="p-5 md:p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-        <form id="song-wizard-form" class="space-y-5 max-w-2xl mx-auto">
+    <div class="p-3.5 sm:p-5 md:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <form id="song-wizard-form" class="space-y-4 w-full max-w-3xl md:max-w-4xl mx-auto">
             <input type="hidden" id="song-form-id">
             <input type="hidden" id="song-form-suggestion-id">
             <input type="hidden" id="song-form-content">
@@ -180,8 +180,8 @@
                         <label class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">Arreglo Musical</label>
                         <div class="flex items-center justify-between p-2.5 px-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 h-[54px]">
                             <div>
-                                <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 block">Es un Popurrí / Medley</span>
-                                <span class="text-[10px] text-zinc-500 dark:text-zinc-400">Varias canciones en una sola</span>
+                                <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100 block">Popurrí / Medley</span>
+                                <span class="text-[10px] text-zinc-500 dark:text-zinc-400">Ensamble de canciones</span>
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="song-form-is-medley" class="sr-only peer">
@@ -231,7 +231,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button type="button" id="btn-open-chord-builder" class="w-full py-3 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center justify-center gap-2 shadow-sm cursor-pointer">
                         <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                        <span>Editor de Letra y Acordes</span>
+                        <span>Editor Interactivo</span>
                     </button>
                     <button type="button" id="btn-open-import-chords" class="w-full py-3 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200 text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-paste text-xs"></i>
@@ -239,32 +239,48 @@
                     </button>
                 </div>
 
-                <!-- Vista Previa de Letra con Acordes Arriba -->
-                <div class="space-y-2">
+                <!-- Pestañas de Modo: Vista Previa vs Editor de Texto Plano -->
+                <div class="space-y-2.5">
                     <div class="flex items-center justify-between">
-                        <label class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">Vista Previa de Letra y Acordes</label>
+                        <div class="flex items-center gap-1 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                            <button type="button" id="tab-step2-preview" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-eye text-[11px]"></i>
+                                <span>Vista Previa</span>
+                            </button>
+                            <button type="button" id="tab-step2-raw" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-font text-[11px]"></i>
+                                <span>Texto Plano</span>
+                            </button>
+                        </div>
                         <span id="preview-sections-count" class="text-[10px] text-zinc-400 font-semibold">0 secciones</span>
                     </div>
 
-                    <div id="wizard-live-preview-box" class="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/80 min-h-[220px] max-h-[380px] overflow-y-auto font-mono text-xs leading-relaxed">
+                    <!-- Contenedor 1: Vista Previa Renderizada -->
+                    <div id="wizard-live-preview-box" class="p-4 sm:p-5 md:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/80 h-[42vh] sm:h-[48vh] md:h-[52vh] min-h-[300px] md:min-h-[380px] max-h-[58vh] overflow-y-auto font-mono text-xs leading-relaxed">
                         <div id="wizard-preview-content" class="text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap">
-                            <div class="text-center py-10 text-zinc-400 dark:text-zinc-500 text-xs font-sans">
+                            <div class="text-center py-12 text-zinc-400 dark:text-zinc-500 text-xs font-sans">
                                 Aún no has agregado la letra con acordes.<br>
-                                Haz clic en <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Editor de Letra y Acordes"</strong> o <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Pegar desde Internet"</strong> para comenzar.
+                                Haz clic en <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Editor Interactivo"</strong> o <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Pegar desde Internet"</strong> para comenzar.
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Contenedor 2: Editor en Texto Plano (ChordPro) -->
+                    <div id="wizard-raw-editor-box" class="hidden space-y-1.5">
+                        <textarea id="song-form-raw-editor" rows="15" placeholder="[INTRO]&#10;#[G] [D] [Em] [C]&#10;&#10;[VERSO 1]&#10;[G]Espíritu [D]Santo bienvenido a [Em]este lugar&#10;[C]Jesucristo..." class="w-full p-4 sm:p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-mono text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 leading-relaxed h-[42vh] sm:h-[48vh] md:h-[52vh] min-h-[300px] md:min-h-[380px] max-h-[58vh] resize-y"></textarea>
+                        <p class="text-[11px] text-zinc-400 dark:text-zinc-500">Edita directamente la letra con acordes entre corchetes <code>[G]</code> o secciones como <code>[VERSO 1]</code>, <code>[CORO]</code>, <code>[INTRO]</code>.</p>
                     </div>
                 </div>
 
                 <!-- Botones de Navegación Paso 2 -->
-                <div class="flex items-center justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                <div class="flex items-center justify-between pt-3 pb-2 border-t border-zinc-100 dark:border-zinc-800">
                     <button type="button" id="btn-delete-song" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline hidden">Eliminar Canción</button>
                     <div class="flex items-center gap-2.5 ml-auto">
-                        <button type="button" id="btn-wizard-prev" class="px-5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition flex items-center gap-1.5">
+                        <button type="button" id="btn-wizard-prev" class="px-5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition flex items-center gap-1.5 cursor-pointer">
                             <i class="fa-solid fa-arrow-left text-[10px]"></i>
                             <span>Atrás</span>
                         </button>
-                        <button type="submit" id="btn-save-song-wizard" class="px-6 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition">
+                        <button type="submit" id="btn-save-song-wizard" class="px-6 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition cursor-pointer shadow-sm">
                             Guardar Canción
                         </button>
                     </div>
@@ -440,7 +456,7 @@
         <!-- Header del Constructor -->
         <div class="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-2.5 md:pb-3 flex-shrink-0">
             <div>
-                <h3 class="font-serif text-base sm:text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100">Editor de Letra y Acordes</h3>
+                <h3 class="font-serif text-base sm:text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100">Editor Interactivo</h3>
                 <p class="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400">Ubica el cursor e inserta acordes en la posición exacta.</p>
             </div>
             <div class="flex items-center gap-2">
@@ -609,29 +625,61 @@
     </div>
 </div>
 
-<!-- 6. MODAL IMPORTAR DESDE INTERNET (CONVERSOR INTELIGENTE) -->
+<!-- 6. MODAL IMPORTAR DESDE INTERNET (CONVERSOR INTELIGENTE Y URL) -->
 <div id="modal-import-chords" class="fixed inset-0 bg-zinc-950/70 backdrop-blur-sm flex items-center justify-center p-3 md:p-4 z-50 hidden screen-fade">
     <div class="w-full max-w-xl p-5 md:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
         
         <div class="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
             <div>
-                <h3 class="font-serif text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100">Pegar Letra desde Internet</h3>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">Pega texto con acordes sobre la letra (formato LaCuerda / Ultimate Guitar)</p>
+                <h3 class="font-serif text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100">Importar Letra y Acordes</h3>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">Importa desde un enlace web o pega el texto con acordes sobre la letra</p>
             </div>
             <button type="button" class="btn-close-import-modal text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xl font-bold">&times;</button>
         </div>
 
+        <!-- Opción 1: Extraer desde Enlace Web (LaCuerda.net / Cifra Club) -->
+        <div class="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-950/60 space-y-2.5">
+            <div class="flex items-center justify-between">
+                <label for="import-chords-url-input" class="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+                    <i class="fa-solid fa-link text-xs text-zinc-500"></i>
+                    <span>Pegar Enlace Web (LaCuerda.net / Cifra Club)</span>
+                </label>
+                <span class="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">Automático</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <input type="url" id="import-chords-url-input" placeholder="https://www.cifraclub.com/... o https://acordes.lacuerda.net/..." class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                <button type="button" id="btn-fetch-url-chords" class="px-4 py-2.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center gap-1.5 flex-shrink-0 cursor-pointer shadow-sm">
+                    <i class="fa-solid fa-cloud-arrow-down text-xs"></i>
+                    <span>Obtener</span>
+                </button>
+            </div>
+            <p class="text-[10px] text-zinc-400">Pega el link de la canción en <strong>LaCuerda.net</strong> o <strong>Cifra Club</strong> para extraer título, artista, tono y acordes al instante.</p>
+        </div>
+
+        <!-- Divisor -->
+        <div class="relative flex py-0.5 items-center">
+            <div class="flex-grow border-t border-zinc-200 dark:border-zinc-800"></div>
+            <span class="flex-shrink mx-3 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">O pega el texto con acordes</span>
+            <div class="flex-grow border-t border-zinc-200 dark:border-zinc-800"></div>
+        </div>
+
         <div class="space-y-2">
-            <textarea id="import-chords-raw-input" rows="10" placeholder="Pega aquí la letra y acordes copiados de internet, por ejemplo:&#10;&#10;INTRO D A Bm F#m G D G A&#10;&#10;D         A         Bm        F#m&#10;Escucha hermano la canción de la alegría&#10;G         D         G         A&#10;el canto alegre del que espera un nuevo día&#10;&#10;CORO&#10;D     A       Bm        F#m&#10;Ven, canta, sueña cantando&#10;G     D       A         D&#10;vive libre soñando un nuevo sol" class="w-full p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-mono text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 leading-relaxed"></textarea>
+            <textarea id="import-chords-raw-input" rows="8" placeholder="Pega aquí la letra y acordes copiados de internet, por ejemplo:&#10;&#10;INTRO D A Bm F#m G D G A&#10;&#10;D         A         Bm        F#m&#10;Escucha hermano la canción de la alegría&#10;G         D         G         A&#10;el canto alegre del que espera un nuevo día&#10;&#10;CORO&#10;D     A       Bm        F#m&#10;Ven, canta, sueña cantando&#10;G     D       A         D&#10;vive libre soñando un nuevo sol" class="w-full p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-mono text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 leading-relaxed"></textarea>
             <p class="text-[11px] text-zinc-400">El conversor detectará automáticamente las secciones en [MAYÚSCULAS], las líneas instrumentales y fusionará los acordes en su posición exacta sobre la letra.</p>
         </div>
 
-        <div class="flex items-center justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-            <button type="button" class="btn-close-import-modal px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition">Cancelar</button>
-            <button type="button" id="btn-convert-imported-chords" class="px-5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center gap-1.5">
-                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                <span>Convertir e Insertar</span>
-            </button>
+        <div class="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <label class="inline-flex items-center gap-2 cursor-pointer text-xs text-zinc-600 dark:text-zinc-400">
+                <input type="checkbox" id="import-chords-auto-fill-meta" checked class="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 focus:ring-zinc-400">
+                <span>Rellenar Título, Artista y Tono</span>
+            </label>
+            <div class="flex items-center gap-2">
+                <button type="button" class="btn-close-import-modal px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition cursor-pointer">Cancelar</button>
+                <button type="button" id="btn-convert-imported-chords" class="px-5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center gap-1.5 cursor-pointer shadow-sm">
+                    <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                    <span>Convertir e Insertar</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>

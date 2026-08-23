@@ -104,6 +104,10 @@ switch ($path) {
         if ($method === 'GET') SongController::userCommunityStats();
         break;
 
+    case '/songs/import-url':
+        if ($method === 'POST') SongController::importFromUrl();
+        break;
+
     // Setlists
     case '/setlists':
         if ($method === 'GET') SetlistController::index();
