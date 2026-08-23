@@ -146,7 +146,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="px-6 py-3.5 border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-950/50 flex items-center justify-center sm:justify-start text-xs">
+        <div id="announcement-detail-footer" class="px-6 py-3.5 border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-950/50 flex items-center justify-center sm:justify-start text-xs">
             <span class="text-zinc-500 dark:text-zinc-400">Publicado por: <strong id="announcement-detail-author" class="text-zinc-800 dark:text-zinc-200 font-semibold">Eliú Salazar | Desarrollador</strong></span>
         </div>
     </div>

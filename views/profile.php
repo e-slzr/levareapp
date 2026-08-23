@@ -159,6 +159,18 @@
                 <i class="fa-solid fa-chevron-right text-zinc-400 dark:text-zinc-500 text-xs"></i>
             </button>
 
+            <!-- Feedback & Bug Report -->
+            <button type="button" id="profile-feedback-row" onclick="navigateTo('feedback')" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left border-t border-zinc-100 dark:border-zinc-800/60 cursor-pointer">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-bug text-zinc-500 dark:text-zinc-400 text-sm"></i>
+                    <div>
+                        <h4 class="text-sm font-semibold text-zinc-900 dark:text-zinc-200">Feedback & Reportar Error</h4>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Comentarios, sugerencias y reporte de fallos en Levare</p>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-zinc-400 dark:text-zinc-500 text-xs"></i>
+            </button>
+
             <!-- Logout -->
             <button type="button" onclick="confirmLogout()" class="w-full p-4 flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-950/30 transition text-left text-red-600 dark:text-red-400 cursor-pointer">
                 <div class="flex items-center gap-3">

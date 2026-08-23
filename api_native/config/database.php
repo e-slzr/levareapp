@@ -7,13 +7,13 @@ class DB {
 
     public static function getConnection(): PDO {
         if (self::$instance === null) {
-            //$host = '192.168.1.100';
-            $host = 'localhost';
+            $host = '192.168.1.100';
+            //$host = 'localhost';
             $port = '3306';
             $db   = 'levareapp_dev';
             $user = 'root';
-            //$pass = '9050';
-            $pass = '';
+            $pass = '9050';
+            //$pass = '';
             $charset = 'utf8mb4';
 
             $dsn = "mysql:host={$host};port={$port};dbname={$db};charset={$charset}";

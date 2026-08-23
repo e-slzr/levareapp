@@ -363,11 +363,22 @@ function openAnnouncementDetailModal(announcement) {
         contentElem.innerHTML = paragraphs || `<p class="leading-relaxed">${safeText.innerHTML}</p>`;
     }
 
-    // Author
+    // Author Footer visibility
+    const footerElem = document.getElementById('announcement-detail-footer');
     const authorElem = document.getElementById('announcement-detail-author');
-    if (authorElem) {
-        const authorName = meta.author_name || (iconConfig.isGlobal ? 'Eliú Salazar | Desarrollador' : (meta.band_name || 'Levare'));
-        authorElem.textContent = authorName;
+
+    const isPushTest = (announcement.type === 'push_test' || meta.type === 'push_test' || (typeof titleText === 'string' && titleText.toLowerCase().includes('notificación push')));
+    const isGlobal = iconConfig.isGlobal || Boolean(meta.author_name) || meta.is_global || announcement.is_global;
+
+    if (footerElem) {
+        if (isGlobal || isPushTest) {
+            const authorName = meta.author_name || (isPushTest ? 'Levare' : 'Eliú Salazar | Desarrollador');
+            if (authorElem) authorElem.textContent = authorName;
+            footerElem.classList.remove('hidden');
+        } else {
+            // Hide footer completely for automatic band activity notifications (added songs, setlists, events, etc.)
+            footerElem.classList.add('hidden');
+        }
     }
 
 

@@ -66,13 +66,13 @@ Este archivo establece las reglas, arquitectura y estándares de diseño y desar
      * `docs`: Actualización de documentación, guías o reglas (ej. `docs(agents): actualizar flujo git a main directo`).
      * `chore`: Mantenimiento, migraciones, semillas o dependencias (ej. `chore(db): actualizar master_schema con seeder superadmin`).
 
-3. **Buenas Prácticas de Versionado:**
+3. **Buenas Prácticas de Versionado & Control de Publicación:**
    * **Commits Atómicos**: No agrupar cambios de múltiples módulos no relacionados en un solo commit.
    * **Seguridad**: Prohibido commitear archivos de entorno (`.env`), claves secretas o volcados temporales de base de datos.
-   * **Sincronización Continua**: Al concluir una tarea o fase aprobada, verificar que el árbol de trabajo esté limpio (`git status`) y subir los cambios a `origin main`.
+   * **Prohibido Commit o Push Automático**: Queda **estrictamente prohibido** ejecutar `git commit` o `git push` automáticamente al concluir una tarea o fase. **Solo** se deben commitear o subir cambios cuando el usuario lo solicite de manera **explícita** en el chat (ej. "haz commit", "sube los cambios a git", "guarda en git", etc.).
 
-4. **Formato de Respuesta tras Publicar Cambios (`git push`):**
-   * Tras subir exitosamente los cambios a GitHub, el asistente debe responder obligatoriamente con la siguiente estructura limpia y directa:
+4. **Formato de Respuesta tras Publicar Cambios (`git push`)**:
+   * Cuando el usuario haya ordenado y se haya ejecutado exitosamente un `git push` a GitHub, el asistente debe responder obligatoriamente con la siguiente estructura limpia y directa:
      * **Rama utilizada**: `main`
      * **Mensaje de Commit**: `<mensaje-del-commit>`
      * **Estado del árbol local**: Confirmar que quedó limpio (`git status`).

@@ -57,14 +57,17 @@ function initProfileView() {
     // Role-specific sections visibility
     const bandSection = document.getElementById('profile-band-management-section');
     const bandMembersRow = document.getElementById('profile-band-members-row');
+    const feedbackRow = document.getElementById('profile-feedback-row');
 
     if (currentUser.account_type === 'superadmin') {
         if (bandSection) bandSection.classList.add('hidden');
         if (bandMembersRow) bandMembersRow.classList.add('hidden');
+        if (feedbackRow) feedbackRow.classList.add('hidden');
         if (profileDetailsElem) profileDetailsElem.textContent = 'Super Administrador • Plataforma Levare';
     } else {
         if (bandSection) bandSection.classList.remove('hidden');
         if (bandMembersRow) bandMembersRow.classList.remove('hidden');
+        if (feedbackRow) feedbackRow.classList.remove('hidden');
         if (profileDetailsElem) profileDetailsElem.textContent = `Banda ${activeGroupName} • Rol: ${activeRole}`;
     }
 

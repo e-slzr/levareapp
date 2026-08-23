@@ -60,6 +60,9 @@ require_once __DIR__ . '/views/includes/header.php';
             <div id="panel-profile" class="content-view hidden">
                 <?php include __DIR__ . '/views/profile.php'; ?>
             </div>
+            <div id="panel-feedback" class="content-view hidden">
+                <?php include __DIR__ . '/views/feedback.php'; ?>
+            </div>
             <div id="panel-members" class="content-view hidden">
                 <?php include __DIR__ . '/views/members.php'; ?>
             </div>

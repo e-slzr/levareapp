@@ -24,6 +24,8 @@ require_once __DIR__ . '/controllers/SuggestionController.php';
 require_once __DIR__ . '/controllers/PushController.php';
 require_once __DIR__ . '/controllers/AnnouncementController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
+require_once __DIR__ . '/controllers/FeedbackController.php';
+
 
 
 
@@ -160,6 +162,20 @@ switch ($path) {
     case '/admin/users':
     case '/superadmin/requests':
         if ($method === 'GET') AdminController::users();
+        break;
+
+    // Feedback & Bug Reports (Levare v1.0 Beta)
+    case '/feedback':
+        if ($method === 'POST') FeedbackController::store();
+        break;
+
+    case '/admin/feedback':
+        if ($method === 'GET') FeedbackController::adminIndex();
+        if ($method === 'POST' || $method === 'PUT') FeedbackController::updateStatus();
+        break;
+
+    case '/admin/feedback/status':
+        if ($method === 'POST' || $method === 'PUT') FeedbackController::updateStatus();
         break;
 
     // Web Push Notifications
@@ -299,6 +315,20 @@ switch ($path) {
         if (preg_match('#^/(?:superadmin|admin)/users/(\d+)/reset-password$#', $path, $matches)) {
             $id = (int)$matches[1];
             if ($method === 'POST') AdminController::resetPassword($id);
+            break;
+        }
+
+        // Check for parameterized /admin/feedback/{id}/status
+        if (preg_match('#^/admin/feedback/(\d+)/status$#', $path, $matches)) {
+            $id = (int)$matches[1];
+            if ($method === 'POST' || $method === 'PUT') FeedbackController::updateStatus($id);
+            break;
+        }
+
+        // Check for parameterized /admin/feedback/{id}
+        if (preg_match('#^/admin/feedback/(\d+)$#', $path, $matches)) {
+            $id = (int)$matches[1];
+            if ($method === 'DELETE') FeedbackController::destroy($id);
             break;
         }
 

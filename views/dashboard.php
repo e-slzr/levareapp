@@ -5,7 +5,10 @@
         <div class="flex items-center gap-3">
             <img src="icon-levareapp.svg" alt="Levare Logo" class="w-10 h-10 rounded-2xl shadow-sm object-cover border border-zinc-200 dark:border-zinc-800" />
             <div>
-                <h1 class="font-serif text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Levare</h1>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-serif text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Levare</h1>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30 uppercase tracking-wide">v1.0 Beta</span>
+                </div>
                 <p class="hidden md:block text-xs text-zinc-500 dark:text-zinc-400">Plataforma de Organización Musical</p>
             </div>
         </div>

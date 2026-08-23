@@ -17,6 +17,7 @@
     <script src="assets/js/views/suggestions.js?v=2.0.1"></script>
     <script src="assets/js/views/members.js?v=2.0.1"></script>
     <script src="assets/js/views/profile.js?v=2.0.1"></script>
+    <script src="assets/js/views/feedback.js?v=2.0.1"></script>
     <script src="assets/js/views/admin.js?v=2.0.1"></script>
     <script src="assets/js/views/announcements.js?v=2.0.1"></script>
 </body>

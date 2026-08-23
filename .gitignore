@@ -6,4 +6,7 @@ storage/avatars/*
 !storage/avatars/.gitkeep
 storage/announcements/*
 !storage/announcements/.gitkeep
+storage/feedback/*
+!storage/feedback/.gitkeep
+
 

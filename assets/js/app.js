@@ -281,26 +281,57 @@ function initApp() {
     // Hash listener router
     window.onhashchange = handleHashRouting;
 
-    // Auto-sync when returning to the PWA / tab focus
+    // Auto-sync when returning to the PWA / tab focus (safely throttled and guarded)
+    let lastVisibilitySyncTime = 0;
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && currentUser) {
-            syncUserGroupsAndValidateMembership().then(() => {
-                const currentView = window.location.hash.replace('#', '') || 'dashboard';
-                triggerViewInitializer(currentView, true);
-            });
-        }
-    });
+            const now = Date.now();
+            if (now - lastVisibilitySyncTime < 2500) return;
+            lastVisibilitySyncTime = now;
 
-    window.addEventListener('focus', () => {
-        if (currentUser) {
             syncUserGroupsAndValidateMembership().then(() => {
                 const currentView = window.location.hash.replace('#', '') || 'dashboard';
-                triggerViewInitializer(currentView, true);
+                if (canSafelyAutoRefreshView(currentView)) {
+                    triggerViewInitializer(currentView, true);
+                }
             });
         }
     });
 
     updateShellVisibility();
+}
+
+/**
+ * Check if the active view can safely be auto-refreshed without losing user drafts or open modals
+ */
+function canSafelyAutoRefreshView(viewId) {
+    // 1. Creation and report forms should never be re-initialized on background return
+    if (viewId === 'feedback') return false;
+
+    // 2. Setlist presentation mode must never be interrupted
+    if (document.body.classList.contains('setlist-presentation-mode')) return false;
+
+    // 3. Prevent auto-refresh if any interactive action modal is currently open
+    const openModals = document.querySelectorAll('[id^="modal-"]:not(.hidden), .modal-backdrop:not(.hidden)');
+    for (let i = 0; i < openModals.length; i++) {
+        const m = openModals[i];
+        if (m.id === 'modal-more-menu') continue;
+        const style = window.getComputedStyle(m);
+        if (style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0') {
+            return false;
+        }
+    }
+
+    // 4. Prevent auto-refresh if user is actively focused on an input/textarea
+    const activeEl = document.activeElement;
+    if (activeEl) {
+        const tag = activeEl.tagName;
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || activeEl.isContentEditable) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 function applyTheme(themeName) {
@@ -653,7 +684,7 @@ async function handleHashRouting() {
     if (!viewId) viewId = 'dashboard';
 
     // Validate page lists
-    const pages = ['dashboard', 'songs', 'setlists', 'events', 'suggestions', 'members', 'profile', 'announcements', 'admin'];
+    const pages = ['dashboard', 'songs', 'setlists', 'events', 'suggestions', 'members', 'profile', 'feedback', 'announcements', 'admin'];
     if (!pages.includes(viewId)) {
         viewId = currentUser?.account_type === 'superadmin' ? 'admin' : 'dashboard';
         window.location.hash = `#${viewId}`;
@@ -662,8 +693,8 @@ async function handleHashRouting() {
 
     // Role-based view guards
     if (currentUser?.account_type === 'superadmin') {
-        // Super Admin can access dashboard, admin, announcements and profile
-        if (!['dashboard', 'admin', 'profile', 'announcements'].includes(viewId)) {
+        // Super Admin can access dashboard, admin, announcements, profile and feedback
+        if (!['dashboard', 'admin', 'profile', 'feedback', 'announcements'].includes(viewId)) {
             viewId = 'dashboard';
             window.location.hash = `#${viewId}`;
             return;
@@ -735,6 +766,7 @@ async function handleHashRouting() {
         'suggestions': 'Caja de Sugerencias',
         'members': 'Directorio de Miembros',
         'profile': 'Editar Mi Perfil',
+        'feedback': 'Feedback & Soporte',
         'announcements': 'Novedades y Anuncios',
         'admin': 'Panel de Administración'
     };
@@ -752,6 +784,7 @@ function triggerViewInitializer(viewId, forceRefresh = true) {
     if (viewId === 'suggestions' && typeof initSuggestionsView === 'function') initSuggestionsView(forceRefresh);
     if (viewId === 'members' && typeof initMembersView === 'function') initMembersView(forceRefresh);
     if (viewId === 'profile' && typeof initProfileView === 'function') initProfileView(forceRefresh);
+    if (viewId === 'feedback' && typeof initFeedbackView === 'function') initFeedbackView(forceRefresh);
     if (viewId === 'announcements' && typeof initAnnouncementsView === 'function') initAnnouncementsView(forceRefresh);
     if (viewId === 'admin' && typeof initAdminView === 'function') initAdminView(forceRefresh);
 }
