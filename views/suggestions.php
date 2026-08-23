@@ -42,6 +42,13 @@
     <div id="suggestions-container-list" class="space-y-3">
         <!-- Rendered dynamically by JS -->
     </div>
+
+    <!-- Load More Container -->
+    <div id="suggestions-load-more-container" class="pt-2 text-center hidden">
+        <button type="button" id="btn-suggestions-load-more" class="px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shadow-sm cursor-pointer">
+            Cargar más
+        </button>
+    </div>
 </div>
 
 <!-- ================= MODALS ================= -->
@@ -55,23 +62,23 @@
         </div>
         <form id="suggestion-form" class="overflow-y-auto flex-1 p-5 space-y-4">
             <div class="space-y-1.5">
-                <label for="suggestion-form-title" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Título de la Canción</label>
-                <input type="text" id="suggestion-form-title" placeholder="Ej. Yellow" required
+                <label for="suggestion-form-title" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Título de la Canción / Obra</label>
+                <input type="text" id="suggestion-form-title" placeholder="Ej. Claro de Luna, Sinfonía No. 5, Canon en Re..." required
                     class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
             </div>
             <div class="space-y-1.5">
-                <label for="suggestion-form-artist" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Artista / Banda</label>
-                <input type="text" id="suggestion-form-artist" placeholder="Ej. Coldplay" required
+                <label for="suggestion-form-artist" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Artista / Compositor / Banda</label>
+                <input type="text" id="suggestion-form-artist" placeholder="Ej. Ludwig van Beethoven, W. A. Mozart, J. S. Bach..." required
                     class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
             </div>
             <div class="space-y-1.5">
                 <label for="suggestion-form-url" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Enlace a Video / Audio <span class="font-normal text-zinc-400">(opcional)</span></label>
-                <input type="url" id="suggestion-form-url" placeholder="https://youtube.com/..."
+                <input type="url" id="suggestion-form-url" placeholder="https://youtube.com/watch?v=..."
                     class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
             </div>
             <div class="space-y-1.5">
                 <label for="suggestion-form-notes" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Notas o Justificación <span class="font-normal text-zinc-400">(opcional)</span></label>
-                <textarea id="suggestion-form-notes" rows="3" placeholder="¿Por qué deberíamos ensayar esta canción?"
+                <textarea id="suggestion-form-notes" rows="3" placeholder="¿Por qué deberíamos ensayar o interpretar esta canción?"
                     class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition resize-none"></textarea>
             </div>
         </form>

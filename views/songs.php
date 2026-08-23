@@ -22,6 +22,13 @@
     <div id="songs-catalog-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <!-- Rendered dynamically by JS -->
     </div>
+
+    <!-- Load More Container -->
+    <div id="songs-load-more-container" class="pt-2 text-center hidden">
+        <button type="button" id="btn-songs-load-more" class="px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shadow-sm cursor-pointer">
+            Cargar más
+        </button>
+    </div>
 </div>
 
 <!-- Subpanel 2: Visor de Letra y Acordes -->
@@ -318,6 +325,13 @@
     <div id="community-songs-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <!-- Rendered dynamically by JS -->
     </div>
+
+    <!-- Community Load More Container -->
+    <div id="community-load-more-container" class="pt-2 text-center hidden">
+        <button type="button" id="btn-community-load-more" class="px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shadow-sm cursor-pointer">
+            Cargar más
+        </button>
+    </div>
 </div>
 
 <!-- ================= MODALS SECTION ================= -->
@@ -353,7 +367,7 @@
                 <div class="space-y-0.5 flex-1 min-w-0">
                     <div class="flex items-center justify-between gap-2">
                         <h4 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-700 dark:group-hover:text-white">Desde Catálogo de la Comunidad</h4>
-                        <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">Levare OS</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">Levare</span>
                     </div>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">Explora canciones de la biblioteca compartida para importarlas directamente.</p>
                 </div>

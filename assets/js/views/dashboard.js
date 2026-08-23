@@ -1,8 +1,7 @@
-/* ==========================================================================
-   Levare OS — DASHBOARD PANEL CONTROLLER (API Connected & Role-Aware)
-   ========================================================================== */
-
 let selectedAnnouncementImageFile = null;
+let saAnnouncementsVisibleLimit = 10;
+const SA_ANNOUNCEMENTS_PAGE_SIZE = 10;
+let cachedSaGlobalAnnouncements = [];
 
 async function initDashboardView(forceRefresh = false) {
     const currentUser = getData('currentUser');
@@ -111,10 +110,14 @@ async function loadSuperadminDashboardData(forceRefresh = false) {
         }
 
         // Render Global Announcements List
+        const loadMoreContainer = document.getElementById('sa-announcements-load-more-container');
+        const btnLoadMore = document.getElementById('btn-sa-announcements-load-more');
+
         if (listContainer) {
             listContainer.innerHTML = '';
 
             const globalAnnouncements = (announcements || []).filter(a => !a.group_id && !a.user_id);
+            cachedSaGlobalAnnouncements = globalAnnouncements;
 
             if (globalAnnouncements.length === 0) {
                 listContainer.innerHTML = `
@@ -126,10 +129,13 @@ async function loadSuperadminDashboardData(forceRefresh = false) {
                         <p class="text-[11px] text-zinc-400">Haz clic en "Nuevo Anuncio Global" para publicar el primer comunicado a toda la comunidad.</p>
                     </div>
                 `;
+                if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
                 return;
             }
 
-            globalAnnouncements.forEach(a => {
+            const visibleAnnouncements = globalAnnouncements.slice(0, saAnnouncementsVisibleLimit);
+
+            visibleAnnouncements.forEach(a => {
                 const card = document.createElement('div');
                 card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-zinc-300 dark:hover:border-zinc-700 transition';
 
@@ -171,6 +177,19 @@ async function loadSuperadminDashboardData(forceRefresh = false) {
 
                 listContainer.appendChild(card);
             });
+
+            // Controlar botón Cargar más para superadmin announcements
+            if (loadMoreContainer && btnLoadMore) {
+                if (globalAnnouncements.length > saAnnouncementsVisibleLimit) {
+                    loadMoreContainer.classList.remove('hidden');
+                    btnLoadMore.onclick = () => {
+                        saAnnouncementsVisibleLimit += SA_ANNOUNCEMENTS_PAGE_SIZE;
+                        loadSuperadminDashboardData(false);
+                    };
+                } else {
+                    loadMoreContainer.classList.add('hidden');
+                }
+            }
         }
     } catch (e) {
         console.error("Error loading superadmin dashboard data:", e);

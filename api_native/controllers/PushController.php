@@ -1,6 +1,6 @@
 <?php
 /**
- * Push Notifications Controller for Levare OS API
+ * Push Notifications Controller for Levare API
  */
 
 require_once __DIR__ . '/../services/PushService.php';

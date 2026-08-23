@@ -28,6 +28,13 @@
         <div id="events-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <!-- Dynamic Event Cards rendered by JS -->
         </div>
+
+        <!-- Load More Container -->
+        <div id="events-load-more-container" class="pt-2 text-center hidden">
+            <button type="button" id="btn-events-load-more" class="px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shadow-sm cursor-pointer">
+                Cargar más
+            </button>
+        </div>
     </div>
 
     <!-- WRAPPER 2: Calendar View -->

@@ -15,7 +15,12 @@
             </div>
             <div class="space-y-1">
                 <label for="login-password" class="text-xs text-zinc-400">Contraseña</label>
-                <input type="password" id="login-password" placeholder="••••••••" required class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                <div class="relative">
+                    <input type="password" id="login-password" placeholder="••••••••" required class="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                    <button type="button" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-200 transition focus:outline-none" onclick="togglePasswordVisibility('login-password', this)" tabindex="-1" title="Mostrar u ocultar contraseña">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
             </div>
             <button type="submit" class="w-full py-3 rounded-xl bg-white text-zinc-950 font-semibold text-sm hover:bg-zinc-200 transition shadow-sm">
                 Iniciar Sesión
@@ -51,7 +56,21 @@
             </div>
             <div class="space-y-1">
                 <label for="register-password" class="text-xs text-zinc-400">Contraseña</label>
-                <input type="password" id="register-password" placeholder="Mínimo 6 caracteres" required minlength="6" class="w-full px-3 py-2 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                <div class="relative">
+                    <input type="password" id="register-password" placeholder="Mínimo 8 caracteres (letras y números)" required minlength="8" class="w-full px-3 py-2 pr-10 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-200 transition focus:outline-none" onclick="togglePasswordVisibility('register-password', this)" tabindex="-1" title="Mostrar u ocultar contraseña">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <label for="register-password-confirm" class="text-xs text-zinc-400">Confirmar Contraseña</label>
+                <div class="relative">
+                    <input type="password" id="register-password-confirm" placeholder="Repite tu contraseña" required minlength="8" class="w-full px-3 py-2 pr-10 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-200 transition focus:outline-none" onclick="togglePasswordVisibility('register-password-confirm', this)" tabindex="-1" title="Mostrar u ocultar contraseña">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
             </div>
             <button type="submit" class="w-full py-2.5 rounded-xl bg-white text-zinc-950 font-semibold text-xs hover:bg-zinc-200 transition">
                 Crear Cuenta
@@ -112,7 +131,21 @@
             </div>
             <div class="space-y-1">
                 <label for="member-register-password" class="text-xs text-zinc-400">Contraseña</label>
-                <input type="password" id="member-register-password" placeholder="Mínimo 6 caracteres" required minlength="6" class="w-full px-3 py-2 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                <div class="relative">
+                    <input type="password" id="member-register-password" placeholder="Mínimo 8 caracteres (letras y números)" required minlength="8" class="w-full px-3 py-2 pr-10 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-200 transition focus:outline-none" onclick="togglePasswordVisibility('member-register-password', this)" tabindex="-1" title="Mostrar u ocultar contraseña">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <label for="member-register-password-confirm" class="text-xs text-zinc-400">Confirmar Contraseña</label>
+                <div class="relative">
+                    <input type="password" id="member-register-password-confirm" placeholder="Repite tu contraseña" required minlength="8" class="w-full px-3 py-2 pr-10 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-200 transition focus:outline-none" onclick="togglePasswordVisibility('member-register-password-confirm', this)" tabindex="-1" title="Mostrar u ocultar contraseña">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
             </div>
             <button type="submit" class="w-full py-2.5 rounded-xl bg-white text-zinc-950 font-semibold text-xs hover:bg-zinc-200 transition shadow-sm">
                 Completar Registro
@@ -135,11 +168,21 @@
         <form id="force-password-form" class="space-y-3.5 text-left">
             <div class="space-y-1">
                 <label for="force-password-new" class="text-xs text-zinc-400">Nueva Contraseña</label>
-                <input type="password" id="force-password-new" placeholder="••••••••" required minlength="6" class="w-full px-3 py-2 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                <div class="relative">
+                    <input type="password" id="force-password-new" placeholder="Mínimo 8 caracteres (letras y números)" required minlength="8" class="w-full px-3 py-2 pr-10 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-200 transition focus:outline-none" onclick="togglePasswordVisibility('force-password-new', this)" tabindex="-1" title="Mostrar u ocultar contraseña">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
             </div>
             <div class="space-y-1">
                 <label for="force-password-confirm" class="text-xs text-zinc-400">Confirmar Nueva Contraseña</label>
-                <input type="password" id="force-password-confirm" placeholder="••••••••" required minlength="6" class="w-full px-3 py-2 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                <div class="relative">
+                    <input type="password" id="force-password-confirm" placeholder="Repite tu nueva contraseña" required minlength="8" class="w-full px-3 py-2 pr-10 rounded-xl border border-zinc-800 bg-zinc-950 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                    <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-200 transition focus:outline-none" onclick="togglePasswordVisibility('force-password-confirm', this)" tabindex="-1" title="Mostrar u ocultar contraseña">
+                        <i class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
             </div>
             <button type="submit" class="w-full py-2.5 rounded-xl bg-white text-zinc-950 font-semibold text-xs hover:bg-zinc-200 transition shadow-sm">
                 Guardar Nueva Contraseña

@@ -97,6 +97,15 @@ function initProfileView() {
     const activeAccent = currentUser.accentColor || currentUser.accent_color || 'purple';
     initAccentColorSelectors(activeAccent);
 
+    // Sync Theme Switch state & Push Notifications state
+    const currentTheme = localStorage.getItem('worship_theme') || 'dark';
+    if (typeof applyTheme === 'function') {
+        applyTheme(currentTheme);
+    }
+    if (typeof syncPushNotificationState === 'function') {
+        syncPushNotificationState();
+    }
+
 
 
     // Form Submits
@@ -437,6 +446,15 @@ async function handleProfilePasswordSubmit(e) {
     const newPw = document.getElementById('profile-pw-new').value;
     const confirmPw = document.getElementById('profile-pw-confirm').value;
 
+    const pwdError = typeof validatePasswordRules === 'function' 
+        ? validatePasswordRules(newPw) 
+        : (newPw.length < 8 ? "La contraseña debe tener al menos 8 caracteres." : null);
+        
+    if (pwdError) {
+        showToast(pwdError, "warning");
+        return;
+    }
+
     if (newPw !== confirmPw) {
         showToast("Las nuevas contraseñas no coinciden.", "warning");
         return;
@@ -502,7 +520,7 @@ function openChangePasswordModal() {
     const check = document.getElementById('toggle-show-passwords');
     if (check) {
         check.checked = false;
-        togglePasswordVisibility(false);
+        toggleProfileModalPasswords(false);
     }
     const modal = document.getElementById('modal-change-password');
     if (modal) modal.classList.remove('hidden');
@@ -513,13 +531,14 @@ function closeChangePasswordModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-function togglePasswordVisibility(show) {
+function toggleProfileModalPasswords(show) {
     const type = show ? 'text' : 'password';
     ['profile-input-current-password', 'profile-pw-new', 'profile-pw-confirm'].forEach(id => {
         const input = document.getElementById(id);
         if (input) input.type = type;
     });
 }
+window.toggleProfileModalPasswords = toggleProfileModalPasswords;
 
 window.openEditProfileModal = openEditProfileModal;
 window.closeEditProfileModal = closeEditProfileModal;
@@ -567,5 +586,16 @@ async function confirmRemoveAvatar() {
         btn.disabled = false;
         btn.textContent = 'Eliminar Foto';
     }
+}
+
+// --- Sobre Levare Modal Flow ---
+function openAboutLevareModal() {
+    const modal = document.getElementById('modal-about-levare');
+    if (modal) modal.classList.remove('hidden');
+}
+
+function closeAboutLevareModal() {
+    const modal = document.getElementById('modal-about-levare');
+    if (modal) modal.classList.add('hidden');
 }
 

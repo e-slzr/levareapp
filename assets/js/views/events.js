@@ -6,6 +6,8 @@ let calendarCurrentYear = new Date().getFullYear();
 let calendarCurrentMonth = new Date().getMonth(); // 0-11
 let cachedEvents = [];
 let eventIdToDelete = null;
+let eventsVisibleLimit = 12;
+const EVENTS_PAGE_SIZE = 12;
 
 function getEventTypeBadgeHTML(typeStr) {
     const typeLower = (typeStr || '').toLowerCase();
@@ -142,16 +144,19 @@ function initEventsView() {
         scheduleForm.onsubmit = handleEventScheduleFormSubmit;
     }
 
+    eventsVisibleLimit = EVENTS_PAGE_SIZE;
     renderEvents(true); // force first fetch
 }
 
 async function renderEvents(forceRefresh = false) {
     const listContainer = document.getElementById('events-list-container');
+    const loadMoreContainer = document.getElementById('events-load-more-container');
+    const btnLoadMore = document.getElementById('btn-events-load-more');
     if (!listContainer) return;
 
-    listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">Cargando eventos...</div>`;
-
     if (forceRefresh || cachedEvents.length === 0) {
+        listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">Cargando eventos...</div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         try {
             cachedEvents = await apiFetch('/events') || [];
         } catch (e) {
@@ -165,10 +170,13 @@ async function renderEvents(forceRefresh = false) {
 
     if (cachedEvents.length === 0) {
         listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">No hay eventos programados.</div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         return;
     }
 
-    cachedEvents.forEach(ev => {
+    const visibleEvents = cachedEvents.slice(0, eventsVisibleLimit);
+
+    visibleEvents.forEach(ev => {
         const card = document.createElement('div');
         card.className = 'p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition cursor-pointer space-y-3';
         
@@ -232,6 +240,19 @@ async function renderEvents(forceRefresh = false) {
 
         listContainer.appendChild(card);
     });
+
+    // Controlar botón Cargar más
+    if (loadMoreContainer && btnLoadMore) {
+        if (cachedEvents.length > eventsVisibleLimit) {
+            loadMoreContainer.classList.remove('hidden');
+            btnLoadMore.onclick = () => {
+                eventsVisibleLimit += EVENTS_PAGE_SIZE;
+                renderEvents(false);
+            };
+        } else {
+            loadMoreContainer.classList.add('hidden');
+        }
+    }
 
     const calendarWrapper = document.getElementById('events-calendar-wrapper');
     if (calendarWrapper && !calendarWrapper.classList.contains('hidden')) {

@@ -200,8 +200,9 @@ class AuthController {
         $newPw = $input['password'] ?? $input['new_password'] ?? '';
         $confirmPw = $input['password_confirmation'] ?? $input['confirm_password'] ?? '';
 
-        if (empty($newPw) || strlen($newPw) < 6) {
-            jsonResponse(['message' => 'La nueva contraseña debe tener al menos 6 caracteres.'], 422);
+        $error = self::validatePasswordStrength($newPw);
+        if ($error) {
+            jsonResponse(['message' => $error], 422);
         }
 
         if ($newPw !== $confirmPw) {
@@ -270,6 +271,7 @@ class AuthController {
         $lastname = trim($input['lastname'] ?? '');
         $email = strtolower(trim($input['email'] ?? ''));
         $password = $input['password'] ?? '';
+        $confirmPassword = $input['password_confirmation'] ?? null;
 
         if (empty($name) || empty($email) || empty($password)) {
             jsonResponse(['message' => 'Por favor, completa todos los campos requeridos.'], 422);
@@ -279,8 +281,13 @@ class AuthController {
             jsonResponse(['message' => 'El correo electrónico no es válido.'], 422);
         }
 
-        if (strlen($password) < 6) {
-            jsonResponse(['message' => 'La contraseña debe tener al menos 6 caracteres.'], 422);
+        $pwdError = self::validatePasswordStrength($password);
+        if ($pwdError) {
+            jsonResponse(['message' => $pwdError], 422);
+        }
+
+        if ($confirmPassword !== null && $password !== $confirmPassword) {
+            jsonResponse(['message' => 'Las contraseñas no coinciden.'], 422);
         }
 
         $pdo = DB::getConnection();
@@ -335,6 +342,7 @@ class AuthController {
         $lastname = trim($input['lastname'] ?? '');
         $email = strtolower(trim($input['email'] ?? ''));
         $password = $input['password'] ?? '';
+        $confirmPassword = $input['password_confirmation'] ?? null;
         $inviteCode = trim($input['invite_code'] ?? '');
 
         if (empty($name) || empty($email) || empty($password) || empty($inviteCode)) {
@@ -345,8 +353,13 @@ class AuthController {
             jsonResponse(['message' => 'El correo electrónico no es válido.'], 422);
         }
 
-        if (strlen($password) < 6) {
-            jsonResponse(['message' => 'La contraseña debe tener al menos 6 caracteres.'], 422);
+        $pwdError = self::validatePasswordStrength($password);
+        if ($pwdError) {
+            jsonResponse(['message' => $pwdError], 422);
+        }
+
+        if ($confirmPassword !== null && $password !== $confirmPassword) {
+            jsonResponse(['message' => 'Las contraseñas no coinciden.'], 422);
         }
 
         $pdo = DB::getConnection();
@@ -427,6 +440,16 @@ class AuthController {
             'invite_code' => $group['invite_code'],
             'group_name' => $group['name']
         ]);
+    }
+
+    private static function validatePasswordStrength(string $password): ?string {
+        if (strlen($password) < 8) {
+            return 'La contraseña debe tener al menos 8 caracteres.';
+        }
+        if (!preg_match('/[a-zA-Z]/', $password) || !preg_match('/[0-9]/', $password)) {
+            return 'La contraseña debe combinar letras y números.';
+        }
+        return null;
     }
 
     private static function generateUniqueUsername(PDO $pdo, string $email, string $name): string {

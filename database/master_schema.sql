@@ -1,5 +1,5 @@
 -- ==============================================================================
--- Levare OS — Master Database Schema
+-- Levare — Master Database Schema
 -- Database: levareapp_dev / levareapp
 -- Charset: utf8mb4 / utf8mb4_unicode_ci
 -- Architecture: Native PHP (PDO)

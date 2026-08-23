@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Levare OS — Web Push Notifications Client Manager
+   Levare — Web Push Notifications Client Manager
    ========================================================================== */
 
 let isPushSubscribing = false;
@@ -210,19 +210,17 @@ async function updatePushUI(isSubscribed) {
 
     if (switchBtn && switchKnob) {
         if (isSubscribed) {
-            switchBtn.classList.remove('bg-zinc-300', 'dark:bg-zinc-700');
-            switchBtn.classList.add('bg-zinc-900', 'dark:bg-zinc-100');
-            switchKnob.classList.remove('translate-x-0');
-            switchKnob.classList.add('translate-x-5');
-            switchKnob.classList.add('dark:bg-zinc-900');
+            switchBtn.classList.remove('bg-zinc-300', 'dark:bg-zinc-700', 'bg-zinc-900', 'dark:bg-zinc-100');
+            switchBtn.classList.add('bg-emerald-500');
+            switchKnob.classList.remove('translate-x-0', 'dark:bg-zinc-900');
+            switchKnob.classList.add('translate-x-5', 'bg-white');
             if (statusText) statusText.textContent = "Notificaciones activas en este dispositivo";
             if (testBtn) testBtn.classList.remove('hidden');
         } else {
-            switchBtn.classList.remove('bg-zinc-900', 'dark:bg-zinc-100');
+            switchBtn.classList.remove('bg-emerald-500', 'bg-zinc-900', 'dark:bg-zinc-100');
             switchBtn.classList.add('bg-zinc-300', 'dark:bg-zinc-700');
-            switchKnob.classList.remove('translate-x-5');
-            switchKnob.classList.add('translate-x-0');
-            switchKnob.classList.remove('dark:bg-zinc-900');
+            switchKnob.classList.remove('translate-x-5', 'dark:bg-zinc-900');
+            switchKnob.classList.add('translate-x-0', 'bg-white');
             if (statusText) {
                 if (Notification.permission === 'denied') {
                     statusText.textContent = "Bloqueado en ajustes del navegador";

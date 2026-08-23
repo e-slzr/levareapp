@@ -7,6 +7,8 @@ let filterSongQuery = "";
 let filterAuthorQuery = "";
 let filterStatus = "all";
 let suggestionIdToDelete = null;
+let suggestionsVisibleLimit = 12;
+const SUGGESTIONS_PAGE_SIZE = 12;
 
 function initSuggestionsView() {
     const currentUser = getData('currentUser');
@@ -42,6 +44,7 @@ function initSuggestionsView() {
     filterAuthorQuery = "";
     filterStatus = "all";
     suggestionIdToDelete = null;
+    suggestionsVisibleLimit = SUGGESTIONS_PAGE_SIZE;
 
     const filterSongInput = document.getElementById('suggestions-filter-song');
     const filterAuthorInput = document.getElementById('suggestions-filter-author');
@@ -51,6 +54,7 @@ function initSuggestionsView() {
         filterSongInput.value = "";
         filterSongInput.oninput = (e) => {
             filterSongQuery = e.target.value;
+            suggestionsVisibleLimit = SUGGESTIONS_PAGE_SIZE;
             renderSuggestionsList();
         };
     }
@@ -58,6 +62,7 @@ function initSuggestionsView() {
         filterAuthorInput.value = "";
         filterAuthorInput.oninput = (e) => {
             filterAuthorQuery = e.target.value;
+            suggestionsVisibleLimit = SUGGESTIONS_PAGE_SIZE;
             renderSuggestionsList();
         };
     }
@@ -65,6 +70,7 @@ function initSuggestionsView() {
         filterStatusSelect.value = "all";
         filterStatusSelect.onchange = (e) => {
             filterStatus = e.target.value;
+            suggestionsVisibleLimit = SUGGESTIONS_PAGE_SIZE;
             renderSuggestionsList();
         };
     }
@@ -128,6 +134,8 @@ function getCreatorId(s) {
 
 function renderSuggestionsList() {
     const container = document.getElementById('suggestions-container-list');
+    const loadMoreContainer = document.getElementById('suggestions-load-more-container');
+    const btnLoadMore = document.getElementById('btn-suggestions-load-more');
     if (!container) return;
     container.innerHTML = '';
 
@@ -150,13 +158,15 @@ function renderSuggestionsList() {
 
     if (filtered.length === 0) {
         container.innerHTML = `<div class="text-center py-12 text-xs text-zinc-500 dark:text-zinc-400">No se encontraron sugerencias.</div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         return;
     }
 
     const currentUser = getData('currentUser');
     const isLeader = canEdit();
+    const visibleItems = filtered.slice(0, suggestionsVisibleLimit);
 
-    filtered.forEach(s => {
+    visibleItems.forEach(s => {
         const card = document.createElement('div');
         card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition flex gap-3.5 items-start';
 
@@ -268,6 +278,19 @@ function renderSuggestionsList() {
 
         container.appendChild(card);
     });
+
+    // Controlar botón Cargar más
+    if (loadMoreContainer && btnLoadMore) {
+        if (filtered.length > suggestionsVisibleLimit) {
+            loadMoreContainer.classList.remove('hidden');
+            btnLoadMore.onclick = () => {
+                suggestionsVisibleLimit += SUGGESTIONS_PAGE_SIZE;
+                renderSuggestionsList();
+            };
+        } else {
+            loadMoreContainer.classList.add('hidden');
+        }
+    }
 }
 
 async function toggleSuggestionVote(id) {

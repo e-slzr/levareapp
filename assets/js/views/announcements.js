@@ -1,10 +1,12 @@
 /* ==========================================================================
-   Levare OS — ANNOUNCEMENTS & ACTIVITY HISTORY CONTROLLER (API Connected)
+   Levare — ANNOUNCEMENTS & ACTIVITY HISTORY CONTROLLER (API Connected)
    ========================================================================== */
 
 let cachedAnnouncementsList = [];
 let announcementsSearchQuery = "";
 let announcementsDateQuery = "";
+let announcementsVisibleLimit = 15;
+const ANNOUNCEMENTS_PAGE_SIZE = 15;
 
 function initAnnouncementsView() {
     const currentUser = getData('currentUser');
@@ -13,6 +15,7 @@ function initAnnouncementsView() {
     // Reset filters
     announcementsSearchQuery = "";
     announcementsDateQuery = "";
+    announcementsVisibleLimit = ANNOUNCEMENTS_PAGE_SIZE;
 
     const searchInput = document.getElementById('announcements-search-input');
     const dateInput = document.getElementById('announcements-date-input');
@@ -22,6 +25,7 @@ function initAnnouncementsView() {
         searchInput.value = "";
         searchInput.oninput = (e) => {
             announcementsSearchQuery = e.target.value;
+            announcementsVisibleLimit = ANNOUNCEMENTS_PAGE_SIZE;
             renderAnnouncementsFullList();
         };
     }
@@ -30,6 +34,7 @@ function initAnnouncementsView() {
         dateInput.value = "";
         dateInput.onchange = (e) => {
             announcementsDateQuery = e.target.value;
+            announcementsVisibleLimit = ANNOUNCEMENTS_PAGE_SIZE;
             renderAnnouncementsFullList();
         };
     }
@@ -43,10 +48,12 @@ function initAnnouncementsView() {
 
 async function loadAnnouncementsHistory(forceRefresh = false) {
     const container = document.getElementById('announcements-full-list');
+    const loadMoreContainer = document.getElementById('announcements-load-more-container');
     if (!container) return;
 
     if (forceRefresh || cachedAnnouncementsList.length === 0) {
         container.innerHTML = `<div class="text-center py-12 text-xs text-zinc-500 dark:text-zinc-400">Cargando historial de novedades...</div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         try {
             cachedAnnouncementsList = await apiFetch('/announcements?limit=100') || [];
         } catch (e) {
@@ -62,6 +69,7 @@ async function loadAnnouncementsHistory(forceRefresh = false) {
 function resetAnnouncementsFilters() {
     announcementsSearchQuery = "";
     announcementsDateQuery = "";
+    announcementsVisibleLimit = ANNOUNCEMENTS_PAGE_SIZE;
 
     const searchInput = document.getElementById('announcements-search-input');
     const dateInput = document.getElementById('announcements-date-input');
@@ -75,6 +83,8 @@ function renderAnnouncementsFullList() {
     const container = document.getElementById('announcements-full-list');
     const summaryContainer = document.getElementById('announcements-filter-summary');
     const summaryCount = document.getElementById('announcements-filter-count');
+    const loadMoreContainer = document.getElementById('announcements-load-more-container');
+    const btnLoadMore = document.getElementById('btn-announcements-load-more');
     if (!container) return;
 
     container.innerHTML = '';
@@ -109,10 +119,13 @@ function renderAnnouncementsFullList() {
 
     if (filtered.length === 0) {
         container.innerHTML = `<div class="text-center py-12 text-xs text-zinc-500 dark:text-zinc-400">No se encontraron registros en el historial.</div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         return;
     }
 
-    filtered.forEach(a => {
+    const visibleItems = filtered.slice(0, announcementsVisibleLimit);
+
+    visibleItems.forEach(a => {
         const card = document.createElement('div');
         card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-start gap-3.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition cursor-pointer';
 
@@ -154,4 +167,17 @@ function renderAnnouncementsFullList() {
 
         container.appendChild(card);
     });
+
+    // Controlar botón Cargar más
+    if (loadMoreContainer && btnLoadMore) {
+        if (filtered.length > announcementsVisibleLimit) {
+            loadMoreContainer.classList.remove('hidden');
+            btnLoadMore.onclick = () => {
+                announcementsVisibleLimit += ANNOUNCEMENTS_PAGE_SIZE;
+                renderAnnouncementsFullList();
+            };
+        } else {
+            loadMoreContainer.classList.add('hidden');
+        }
+    }
 }

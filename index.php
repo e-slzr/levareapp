@@ -1,6 +1,6 @@
 <?php
 /**
- * Levare OS v2.0 - Main Application Router Entrypoint
+ * Levare - Main Application Router Entrypoint
  */
 
 // Include Shared Header

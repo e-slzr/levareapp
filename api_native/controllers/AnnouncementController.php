@@ -1,6 +1,6 @@
 <?php
 /**
- * Announcement & System Broadcast Controller for Levare OS API
+ * Announcement & System Broadcast Controller for Levare API
  */
 
 require_once __DIR__ . '/../services/NotificationService.php';
@@ -15,7 +15,9 @@ class AnnouncementController {
         $user = requireAuth();
         $groupId = getGroupIdHeader();
         $pdo = DB::getConnection();
-        $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 100) : 20;
+        $limit = isset($_GET['limit']) ? max(1, min((int)$_GET['limit'], 100)) : 15;
+        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $offset = isset($_GET['offset']) ? max(0, (int)$_GET['offset']) : (($page - 1) * $limit);
 
         if ($groupId) {
             $stmt = $pdo->prepare("
@@ -24,7 +26,7 @@ class AnnouncementController {
                    OR (user_id = :user_id AND group_id IS NULL)
                    OR (group_id IS NULL AND user_id IS NULL)
                 ORDER BY created_at DESC 
-                LIMIT {$limit}
+                LIMIT {$limit} OFFSET {$offset}
             ");
             $stmt->execute(['group_id' => $groupId, 'user_id' => $user['id']]);
         } else {
@@ -33,7 +35,7 @@ class AnnouncementController {
                 WHERE (user_id = :user_id AND group_id IS NULL)
                    OR (group_id IS NULL AND user_id IS NULL)
                 ORDER BY created_at DESC 
-                LIMIT {$limit}
+                LIMIT {$limit} OFFSET {$offset}
             ");
             $stmt->execute(['user_id' => $user['id']]);
         }

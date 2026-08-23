@@ -1,5 +1,5 @@
 <!-- Profile & Settings Screen (Minimalist UI - Dual Light & Dark Mode) -->
-<div class="space-y-6 screen-fade max-w-2xl mx-auto">
+<div class="space-y-6 screen-fade max-w-2xl mx-auto pb-32 md:pb-24">
     <header class="pt-2">
         <h1 class="font-serif text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Perfil & Ajustes</h1>
         <p class="text-xs text-zinc-500 dark:text-zinc-400">Preferencias de cuenta y bandas musicales</p>
@@ -106,8 +106,8 @@
                         <p id="profile-theme-status-text" class="text-xs text-zinc-500 dark:text-zinc-400">Modo actual: Oscuro</p>
                     </div>
                 </div>
-                <button type="button" id="theme-switch-btn" onclick="toggleTheme()" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-zinc-700">
-                    <span id="theme-switch-knob" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5"></span>
+                <button type="button" id="theme-switch-btn" onclick="toggleTheme()" class="relative inline-flex h-6 w-11 p-0.5 items-center flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out bg-emerald-500">
+                    <span id="theme-switch-knob" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out translate-x-5"></span>
                 </button>
             </div>
 
@@ -144,8 +144,8 @@
                         <i class="fa-solid fa-paper-plane text-[10px]"></i>
                         <span class="hidden sm:inline ml-1">Probar</span>
                     </button>
-                    <button type="button" id="push-switch-btn" onclick="togglePushNotifications()" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-zinc-300 dark:bg-zinc-700">
-                        <span id="push-switch-knob" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0"></span>
+                    <button type="button" id="push-switch-btn" onclick="togglePushNotifications()" class="relative inline-flex h-6 w-11 p-0.5 items-center flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out bg-zinc-300 dark:bg-zinc-700">
+                        <span id="push-switch-knob" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out translate-x-0"></span>
                     </button>
                 </div>
             </div>
@@ -171,8 +171,20 @@
                 <i class="fa-solid fa-chevron-right text-zinc-400 dark:text-zinc-500 text-xs"></i>
             </button>
 
+            <!-- Sobre Levare Link -->
+            <button type="button" id="profile-about-levare-row" onclick="openAboutLevareModal()" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left border-t border-zinc-100 dark:border-zinc-800/60 cursor-pointer">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-circle-info text-zinc-500 dark:text-zinc-400 text-sm"></i>
+                    <div>
+                        <h4 class="text-sm font-semibold text-zinc-900 dark:text-zinc-200">Sobre Levare</h4>
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Información de la app</p>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-zinc-400 dark:text-zinc-500 text-xs"></i>
+            </button>
+
             <!-- Logout -->
-            <button type="button" onclick="confirmLogout()" class="w-full p-4 flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-950/30 transition text-left text-red-600 dark:text-red-400 cursor-pointer">
+            <button type="button" onclick="confirmLogout()" class="w-full p-4 flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-950/30 transition text-left text-red-600 dark:text-red-400 border-t border-zinc-100 dark:border-zinc-800/60 cursor-pointer">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
                     <span class="text-sm font-semibold">Cerrar Sesión</span>
@@ -239,16 +251,16 @@
 
             <div class="space-y-1.5">
                 <label for="profile-pw-new" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Nueva Contraseña</label>
-                <input type="password" id="profile-pw-new" placeholder="Mínimo 6 caracteres" required minlength="6" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                <input type="password" id="profile-pw-new" placeholder="Mínimo 8 caracteres (letras y números)" required minlength="8" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
             </div>
 
             <div class="space-y-1.5">
                 <label for="profile-pw-confirm" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Confirmar Nueva Contraseña</label>
-                <input type="password" id="profile-pw-confirm" placeholder="••••••••" required minlength="6" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                <input type="password" id="profile-pw-confirm" placeholder="Repite tu nueva contraseña" required minlength="8" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
             </div>
 
             <div class="flex items-center gap-2 pt-1">
-                <input type="checkbox" id="toggle-show-passwords" onchange="togglePasswordVisibility(this.checked)" class="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-zinc-400 cursor-pointer accent-zinc-900 dark:accent-white" />
+                <input type="checkbox" id="toggle-show-passwords" onchange="toggleProfileModalPasswords(this.checked)" class="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 focus:ring-zinc-400 cursor-pointer accent-zinc-900 dark:accent-white" />
                 <label for="toggle-show-passwords" class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 cursor-pointer select-none">
                     Mostrar contraseñas
                 </label>
@@ -277,5 +289,46 @@
                 <button type="button" id="btn-confirm-remove-avatar" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow transition">Eliminar Foto</button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- MODAL 4: Sobre Levare -->
+<div id="modal-about-levare" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden px-4" onclick="if(event.target === this) closeAboutLevareModal()">
+    <div class="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden screen-fade p-6 space-y-5 text-center relative">
+        
+        <button type="button" onclick="closeAboutLevareModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">
+            <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+
+        <!-- Header: Logo y Nombre -->
+        <div class="flex flex-col items-center gap-2 pt-2">
+            <img src="icon-levareapp.svg" alt="Levare Logo" class="w-16 h-16 rounded-2xl shadow-md object-cover border border-zinc-200 dark:border-zinc-800 p-0.5 bg-white dark:bg-zinc-950" />
+            <h3 class="font-serif text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Levare</h3>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">Versión 1.0 Beta</span>
+        </div>
+
+        <!-- Mensaje de bienvenida y agradecimiento -->
+        <div class="text-left bg-zinc-50 dark:bg-zinc-950/60 rounded-2xl p-4 border border-zinc-100 dark:border-zinc-800/80 space-y-3 text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed">
+            <p class="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">
+                ¡Hola y bienvenido a Levare!
+            </p>
+            <p>
+                Levare fue diseñada especialmente para simplificar y enriquecer la experiencia de músicos, directores y bandas. Desde la sincronización de acordes y transposición de tonos en tiempo real, hasta la planificación integral de repertorios, eventos y ensayos.
+            </p>
+            <p>
+                Gracias de corazón por formar parte de esta comunidad y confiar en Levare para tus ensayos, presentaciones y actividades musicales. Cada sugerencia y cada acorde compartido nos impulsa a seguir mejorando esta herramienta.
+            </p>
+            
+            <div class="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500">
+                <span>Desarrollado con dedicación por</span>
+                <span class="font-bold text-zinc-800 dark:text-zinc-200">Eliu Salazar</span>
+            </div>
+        </div>
+
+        <!-- Botón de Cerrar -->
+        <button type="button" onclick="closeAboutLevareModal()" class="w-full py-2.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition cursor-pointer">
+            Entendido
+        </button>
+
     </div>
 </div>

@@ -9,6 +9,8 @@ let adminCurrentTab = 'all';
 let allAdminUsers = [];
 let adminSearchQuery = '';
 let pendingActionUser = null;
+let adminUsersVisibleLimit = 15;
+const ADMIN_USERS_PAGE_SIZE = 15;
 
 // Feedback Management State
 let allAdminFeedback = [];
@@ -17,6 +19,8 @@ let adminFeedbackStatusFilter = 'all';
 let adminFeedbackTypeFilter = '';
 let adminFeedbackSearch = '';
 let pendingFeedbackAction = null;
+let adminFeedbackVisibleLimit = 15;
+const ADMIN_FB_PAGE_SIZE = 15;
 
 /**
  * Initialize Superadmin View
@@ -35,6 +39,9 @@ function initAdminView(forceRefresh = false) {
         return;
     }
 
+    adminUsersVisibleLimit = ADMIN_USERS_PAGE_SIZE;
+    adminFeedbackVisibleLimit = ADMIN_FB_PAGE_SIZE;
+
     // Tab switching for Users
     const tabAll = document.getElementById('tab-all-users');
     const tabActive = document.getElementById('tab-active-users');
@@ -50,6 +57,7 @@ function initAdminView(forceRefresh = false) {
         searchInput.value = adminSearchQuery;
         searchInput.oninput = (e) => {
             adminSearchQuery = e.target.value;
+            adminUsersVisibleLimit = ADMIN_USERS_PAGE_SIZE;
             renderAdminRequests();
         };
     }
@@ -60,6 +68,7 @@ function initAdminView(forceRefresh = false) {
         fbSearchInput.value = adminFeedbackSearch;
         fbSearchInput.oninput = (e) => {
             adminFeedbackSearch = e.target.value;
+            adminFeedbackVisibleLimit = ADMIN_FB_PAGE_SIZE;
             renderAdminFeedback();
         };
     }
@@ -136,6 +145,7 @@ function handleActiveAdminRefresh() {
 
 function switchAdminTab(tab) {
     adminCurrentTab = tab;
+    adminUsersVisibleLimit = ADMIN_USERS_PAGE_SIZE;
 
     const tabs = {
         'all': document.getElementById('tab-all-users'),
@@ -159,6 +169,7 @@ function switchAdminTab(tab) {
 
 async function loadAdminRequests(forceRefresh = false) {
     const list = document.getElementById('admin-requests-list');
+    const loadMoreContainer = document.getElementById('admin-users-load-more-container');
     if (!list) return;
 
     if (forceRefresh || allAdminUsers.length === 0) {
@@ -167,6 +178,7 @@ async function loadAdminRequests(forceRefresh = false) {
                 <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2 block"></i>
                 Cargando directorio de usuarios...
             </div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
 
         try {
             allAdminUsers = await apiFetch('/admin/users') || [];
@@ -186,6 +198,8 @@ async function loadAdminRequests(forceRefresh = false) {
 
 function renderAdminRequests() {
     const list = document.getElementById('admin-requests-list');
+    const loadMoreContainer = document.getElementById('admin-users-load-more-container');
+    const btnLoadMore = document.getElementById('btn-admin-users-load-more');
     if (!list) return;
 
     const currentUser = getData('currentUser');
@@ -228,10 +242,13 @@ function renderAdminRequests() {
             <div class="p-12 text-center text-xs text-zinc-400 dark:text-zinc-500 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
                 No se encontraron usuarios en este filtro.
             </div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         return;
     }
 
-    filtered.forEach(u => {
+    const visibleUsers = filtered.slice(0, adminUsersVisibleLimit);
+
+    visibleUsers.forEach(u => {
         const card = document.createElement('div');
         card.className = 'p-4 sm:p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition hover:border-zinc-300 dark:hover:border-zinc-700';
 
@@ -326,6 +343,19 @@ function renderAdminRequests() {
 
         list.appendChild(card);
     });
+
+    // Controlar botón Cargar más de usuarios
+    if (loadMoreContainer && btnLoadMore) {
+        if (filtered.length > adminUsersVisibleLimit) {
+            loadMoreContainer.classList.remove('hidden');
+            btnLoadMore.onclick = () => {
+                adminUsersVisibleLimit += ADMIN_USERS_PAGE_SIZE;
+                renderAdminRequests();
+            };
+        } else {
+            loadMoreContainer.classList.add('hidden');
+        }
+    }
 }
 
 // User Block / Unblock Modal Actions
@@ -518,6 +548,7 @@ async function loadAdminFeedback(forceRefresh = false) {
 function handleFeedbackFilterChange() {
     const select = document.getElementById('admin-feedback-type-filter');
     adminFeedbackTypeFilter = select ? select.value : '';
+    adminFeedbackVisibleLimit = ADMIN_FB_PAGE_SIZE;
     renderAdminFeedback();
 }
 
@@ -526,6 +557,7 @@ function handleFeedbackFilterChange() {
  */
 function switchFeedbackStatusTab(status) {
     adminFeedbackStatusFilter = status;
+    adminFeedbackVisibleLimit = ADMIN_FB_PAGE_SIZE;
 
     const tabs = {
         'all': document.getElementById('fb-tab-all'),
@@ -553,6 +585,8 @@ function switchFeedbackStatusTab(status) {
  */
 function renderAdminFeedback() {
     const list = document.getElementById('admin-feedback-list');
+    const loadMoreContainer = document.getElementById('admin-feedback-load-more-container');
+    const btnLoadMore = document.getElementById('btn-admin-feedback-load-more');
     if (!list) return;
 
     // Update Stats counters
@@ -609,10 +643,13 @@ function renderAdminFeedback() {
             <div class="p-12 text-center text-xs text-zinc-400 dark:text-zinc-500 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
                 No se encontraron reportes de feedback con los filtros seleccionados.
             </div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         return;
     }
 
-    filtered.forEach(report => {
+    const visibleFeedback = filtered.slice(0, adminFeedbackVisibleLimit);
+
+    visibleFeedback.forEach(report => {
         const card = document.createElement('div');
         card.className = 'p-3.5 sm:p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm flex items-center justify-between gap-3 hover:border-zinc-300 dark:hover:border-zinc-700 cursor-pointer transition group screen-fade';
         card.onclick = () => openFeedbackDetailModal(report.id);
@@ -679,6 +716,19 @@ function renderAdminFeedback() {
 
         list.appendChild(card);
     });
+
+    // Controlar botón Cargar más de feedback
+    if (loadMoreContainer && btnLoadMore) {
+        if (filtered.length > adminFeedbackVisibleLimit) {
+            loadMoreContainer.classList.remove('hidden');
+            btnLoadMore.onclick = () => {
+                adminFeedbackVisibleLimit += ADMIN_FB_PAGE_SIZE;
+                renderAdminFeedback();
+            };
+        } else {
+            loadMoreContainer.classList.add('hidden');
+        }
+    }
 }
 
 // Global active detailed feedback

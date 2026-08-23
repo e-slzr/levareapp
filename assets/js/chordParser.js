@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Levare OS — CHORD & SECTION PARSER ENGINE (Dual Format & Visual Badges)
+   Levare — CHORD & SECTION PARSER ENGINE (Dual Format & Visual Badges)
    ========================================================================== */
 
 const CHORD_REGEX = /^[A-G][#b]?(m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]+)*(\/[A-G][#b]?)?$/;
@@ -134,7 +134,7 @@ function detectSectionHeader(line) {
 
 /**
  * Convierte texto pegado desde internet (formato de 2 líneas: línea de acordes sobre letra)
- * al formato estándar de Levare OS (ChordPro con secciones en [MAYÚSCULAS] e instrumentales #[Acordes]).
+ * al formato estándar de Levare (ChordPro con secciones en [MAYÚSCULAS] e instrumentales #[Acordes]).
  */
 function parseInternetLyricsToChordPro(rawText) {
     if (!rawText) return '';

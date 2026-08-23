@@ -92,6 +92,13 @@
             </div>
         </div>
 
+        <!-- Load More Container: Users -->
+        <div id="admin-users-load-more-container" class="pt-2 text-center hidden">
+            <button type="button" id="btn-admin-users-load-more" class="px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shadow-sm cursor-pointer">
+                Cargar más
+            </button>
+        </div>
+
     </div>
 
 
@@ -181,6 +188,13 @@
                 <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2 block"></i>
                 Cargando reportes de feedback...
             </div>
+        </div>
+
+        <!-- Load More Container: Feedback -->
+        <div id="admin-feedback-load-more-container" class="pt-2 text-center hidden">
+            <button type="button" id="btn-admin-feedback-load-more" class="px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shadow-sm cursor-pointer">
+                Cargar más
+            </button>
         </div>
 
     </div>

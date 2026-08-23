@@ -1,6 +1,6 @@
 <?php
 /**
- * Unified Notification Service for Levare OS
+ * Unified Notification Service for Levare
  * Handles In-App Dashboard Announcements & Real-Time Web Push Notifications
  */
 

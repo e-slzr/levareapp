@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Levare OS — SONGS CATALOG, FULLSCREEN WIZARD & CHORD BUILDER (v2.0)
+   Levare — SONGS CATALOG, FULLSCREEN WIZARD & CHORD BUILDER (v2.0)
    ========================================================================== */
 
 let songsSearchQuery = "";
@@ -10,11 +10,20 @@ let isScrolling = false;
 let cachedSongs = [];
 let songIdToDelete = null;
 
-// Community Catalog State
+// Pagination state for local songs
+let songsVisibleLimit = 12;
+const SONGS_PAGE_SIZE = 12;
+
+// Community Catalog State & Pagination
 let communitySongs = [];
 let communitySearchQuery = "";
 let communitySort = "popular"; // 'popular', 'recent', 'alpha'
 let currentCommunityViewingSong = null;
+let commCurrentPage = 1;
+const COMM_PAGE_SIZE = 12;
+let commHasMore = false;
+let commIsLoading = false;
+let commSearchDebounceTimer = null;
 
 // Wizard & Builder State
 let wizardCurrentStep = 1;
@@ -488,16 +497,19 @@ function setupVisorControls() {
 
 function handleSongsSearch(e) {
     songsSearchQuery = e.target.value;
+    songsVisibleLimit = SONGS_PAGE_SIZE;
     renderSongsCatalog(false);
 }
 
 async function renderSongsCatalog(forceRefresh = false) {
     const list = document.getElementById('songs-catalog-list') || document.getElementById('songs-list-container');
+    const loadMoreContainer = document.getElementById('songs-load-more-container');
+    const btnLoadMore = document.getElementById('btn-songs-load-more');
     if (!list) return;
     
-    list.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">Cargando canciones del catálogo...</div>`;
-
     if (forceRefresh || cachedSongs.length === 0) {
+        list.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">Cargando canciones del catálogo...</div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         try {
             cachedSongs = await apiFetch('/songs') || [];
         } catch (e) {
@@ -518,12 +530,14 @@ async function renderSongsCatalog(forceRefresh = false) {
 
     if (filtered.length === 0) {
         list.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">No se encontraron canciones en el catálogo.</div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         return;
     }
 
     const editAllowed = canEdit();
+    const visibleSongs = filtered.slice(0, songsVisibleLimit);
 
-    filtered.forEach(s => {
+    visibleSongs.forEach(s => {
         const card = document.createElement('div');
 
         // Caso 1: Canción eliminada por el autor original (No disponible)
@@ -612,6 +626,19 @@ async function renderSongsCatalog(forceRefresh = false) {
 
         list.appendChild(card);
     });
+
+    // Controlar visibilidad del botón "Cargar más"
+    if (loadMoreContainer && btnLoadMore) {
+        if (filtered.length > songsVisibleLimit) {
+            loadMoreContainer.classList.remove('hidden');
+            btnLoadMore.onclick = () => {
+                songsVisibleLimit += SONGS_PAGE_SIZE;
+                renderSongsCatalog(false);
+            };
+        } else {
+            loadMoreContainer.classList.add('hidden');
+        }
+    }
 }
 
 function syncEditorToFormContent() {
@@ -739,7 +766,7 @@ async function executeDeleteSong() {
 }
 
 /* ==========================================================================
-   CATÁLOGO DE CANCIONES DE LA COMUNIDAD (LEVARE OS)
+   CATÁLOGO DE CANCIONES DE LA COMUNIDAD (LEVARE)
    ========================================================================== */
 
 /**
@@ -778,7 +805,11 @@ function exitCommunityCatalogView() {
  */
 function handleCommunitySearch(e) {
     communitySearchQuery = e.target.value;
-    loadCommunitySongs();
+    commCurrentPage = 1;
+    if (commSearchDebounceTimer) clearTimeout(commSearchDebounceTimer);
+    commSearchDebounceTimer = setTimeout(() => {
+        loadCommunitySongs(false);
+    }, 300);
 }
 
 /**
@@ -786,6 +817,7 @@ function handleCommunitySearch(e) {
  */
 function handleCommunitySortChange(sortType) {
     communitySort = sortType;
+    commCurrentPage = 1;
     document.querySelectorAll('.btn-community-sort').forEach(btn => {
         if (btn.getAttribute('data-sort') === sortType) {
             btn.className = 'btn-community-sort active px-3 py-1.5 rounded-lg font-bold bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm transition flex items-center gap-1.5 cursor-pointer';
@@ -793,49 +825,86 @@ function handleCommunitySortChange(sortType) {
             btn.className = 'btn-community-sort px-3 py-1.5 rounded-lg font-semibold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition flex items-center gap-1.5 cursor-pointer';
         }
     });
-    loadCommunitySongs();
+    loadCommunitySongs(false);
 }
 
 /**
- * Carga canciones comunitarias desde el backend
+ * Carga canciones comunitarias desde el backend con paginación
  */
-async function loadCommunitySongs() {
+async function loadCommunitySongs(isAppend = false) {
     const grid = document.getElementById('community-songs-grid');
     const countEl = document.getElementById('community-songs-count');
+    const loadMoreContainer = document.getElementById('community-load-more-container');
+    const btnLoadMore = document.getElementById('btn-community-load-more');
     if (!grid) return;
 
-    grid.innerHTML = `<div class="col-span-full text-center py-12 text-xs text-zinc-500 dark:text-zinc-400">Explorando canciones de la comunidad...</div>`;
+    if (!isAppend) {
+        commCurrentPage = 1;
+        grid.innerHTML = `<div class="col-span-full text-center py-12 text-xs text-zinc-500 dark:text-zinc-400">Explorando canciones de la comunidad...</div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
+    } else {
+        commCurrentPage++;
+        if (btnLoadMore) {
+            btnLoadMore.disabled = true;
+            btnLoadMore.textContent = "Cargando...";
+        }
+    }
 
     try {
-        const url = `/songs/community?q=${encodeURIComponent(communitySearchQuery)}&sort=${communitySort}`;
-        communitySongs = await apiFetch(url) || [];
-        renderCommunityCatalog();
+        const url = `/songs/community?q=${encodeURIComponent(communitySearchQuery)}&sort=${communitySort}&page=${commCurrentPage}&limit=${COMM_PAGE_SIZE}`;
+        const data = await apiFetch(url) || [];
+
+        commHasMore = data.length === COMM_PAGE_SIZE;
+
+        if (!isAppend) {
+            communitySongs = data;
+        } else {
+            communitySongs = [...communitySongs, ...data];
+        }
+
+        renderCommunityCatalog(isAppend, data);
     } catch (e) {
         console.error("Error al cargar canciones comunitarias:", e);
-        grid.innerHTML = `<div class="col-span-full text-center py-12 text-xs text-red-500">Error al cargar el catálogo de la comunidad.</div>`;
+        if (!isAppend) {
+            grid.innerHTML = `<div class="col-span-full text-center py-12 text-xs text-red-500">Error al cargar el catálogo de la comunidad.</div>`;
+        } else {
+            showToast("Error al cargar más canciones de la comunidad.", "danger");
+        }
+    } finally {
+        if (btnLoadMore) {
+            btnLoadMore.disabled = false;
+            btnLoadMore.textContent = "Cargar más";
+        }
     }
 }
 
 /**
  * Renderiza las tarjetas del catálogo comunitario
  */
-function renderCommunityCatalog() {
+function renderCommunityCatalog(isAppend = false, newBatch = []) {
     const grid = document.getElementById('community-songs-grid');
     const countEl = document.getElementById('community-songs-count');
+    const loadMoreContainer = document.getElementById('community-load-more-container');
+    const btnLoadMore = document.getElementById('btn-community-load-more');
     if (!grid) return;
 
     if (countEl) {
         countEl.textContent = `${communitySongs.length} ${communitySongs.length === 1 ? 'canción' : 'canciones'}`;
     }
 
+    if (!isAppend) {
+        grid.innerHTML = '';
+    }
+
     if (communitySongs.length === 0) {
         grid.innerHTML = `<div class="col-span-full text-center py-12 text-xs text-zinc-500 dark:text-zinc-400">No se encontraron canciones disponibles en la comunidad con los filtros actuales.</div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         return;
     }
 
-    grid.innerHTML = '';
+    const itemsToRender = isAppend ? newBatch : communitySongs;
 
-    communitySongs.forEach(s => {
+    itemsToRender.forEach(s => {
         const card = document.createElement('div');
         card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition flex flex-col justify-between gap-3 cursor-pointer group';
 
@@ -859,36 +928,32 @@ function renderCommunityCatalog() {
                 </div>
             </div>
 
-            <div class="flex items-center justify-between gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800 text-xs">
-                <!-- Likes Indicator -->
-                <button type="button" class="btn-card-toggle-like flex items-center gap-1.5 text-xs font-bold transition ${s.user_has_liked ? 'text-red-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'}" data-id="${s.id}" title="Me gusta">
-                    <i class="${s.user_has_liked ? 'fa-solid' : 'fa-regular'} fa-heart text-sm pointer-events-none"></i>
-                    <span class="font-mono pointer-events-none">${s.likes_count || 0}</span>
-                </button>
+            <div class="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800/80 text-xs">
+                <div class="flex items-center gap-1.5">
+                    <button type="button" class="btn-community-like-toggle px-2.5 py-1 rounded-xl border ${s.user_has_liked ? 'border-pink-500/30 bg-pink-500/10 text-pink-500' : 'border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-pink-500'} transition flex items-center gap-1.5 cursor-pointer" data-id="${s.id}">
+                        <i class="${s.user_has_liked ? 'fa-solid' : 'fa-regular'} fa-heart text-xs"></i>
+                        <span class="font-semibold comm-likes-count">${s.likes_count}</span>
+                    </button>
+                </div>
 
-                <!-- Action Button -->
-                <div>
+                <div class="flex items-center gap-2">
+                    <button type="button" class="btn-community-preview px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer" data-id="${s.id}">
+                        Ver letra
+                    </button>
                     ${s.already_in_group ? `
-                        <span class="px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                            <i class="fa-solid fa-check text-[10px]"></i>
-                            <span>En tu repertorio</span>
+                        <span class="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-check text-[10px]"></i> En la banda
                         </span>
                     ` : `
-                        <button type="button" class="btn-card-import-song px-3 py-1 rounded-xl text-xs font-bold bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 hover:opacity-90 transition flex items-center gap-1 shadow-sm cursor-pointer" data-id="${s.id}">
-                            <i class="fa-solid fa-plus text-[10px]"></i>
-                            <span>Agregar</span>
+                        <button type="button" class="btn-community-import px-3 py-1.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition flex items-center gap-1 cursor-pointer" data-id="${s.id}">
+                            <i class="fa-solid fa-plus text-[10px]"></i> Agregar
                         </button>
                     `}
                 </div>
             </div>
         `;
 
-        card.onclick = (e) => {
-            if (e.target.closest('.btn-card-toggle-like') || e.target.closest('.btn-card-import-song')) return;
-            openCommunitySongPreview(s.id);
-        };
-
-        const btnLike = card.querySelector('.btn-card-toggle-like');
+        const btnLike = card.querySelector('.btn-community-like-toggle');
         if (btnLike) {
             btnLike.onclick = (e) => {
                 e.stopPropagation();
@@ -896,7 +961,15 @@ function renderCommunityCatalog() {
             };
         }
 
-        const btnImport = card.querySelector('.btn-card-import-song');
+        const btnPreview = card.querySelector('.btn-community-preview');
+        if (btnPreview) {
+            btnPreview.onclick = (e) => {
+                e.stopPropagation();
+                openCommunitySongPreview(s.id);
+            };
+        }
+
+        const btnImport = card.querySelector('.btn-community-import');
         if (btnImport) {
             btnImport.onclick = (e) => {
                 e.stopPropagation();
@@ -904,8 +977,23 @@ function renderCommunityCatalog() {
             };
         }
 
+        card.onclick = (e) => {
+            if (e.target.closest('button')) return;
+            openCommunitySongPreview(s.id);
+        };
+
         grid.appendChild(card);
     });
+
+    // Controlar botón Cargar más de la comunidad
+    if (loadMoreContainer && btnLoadMore) {
+        if (commHasMore) {
+            loadMoreContainer.classList.remove('hidden');
+            btnLoadMore.onclick = () => loadCommunitySongs(true);
+        } else {
+            loadMoreContainer.classList.add('hidden');
+        }
+    }
 }
 
 /**

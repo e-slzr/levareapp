@@ -296,6 +296,10 @@ class SongController {
             $orderBy = "s.title ASC";
         }
 
+        $limit = isset($_GET['limit']) ? max(1, min((int)$_GET['limit'], 100)) : 12;
+        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $offset = isset($_GET['offset']) ? max(0, (int)$_GET['offset']) : (($page - 1) * $limit);
+
         $sql = "
             SELECT 
                 s.id,
@@ -317,6 +321,7 @@ class SongController {
             LEFT JOIN users u ON s.created_by = u.id
             WHERE {$whereClause}
             ORDER BY {$orderBy}
+            LIMIT {$limit} OFFSET {$offset}
         ";
 
         $stmt = $pdo->prepare($sql);

@@ -41,6 +41,39 @@ function initApp() {
     }
     window.switchAuthTab = switchAuthTab;
 
+    // Validate password rules (min 8 chars, letters and numbers)
+    function validatePasswordRules(pwd) {
+        if (!pwd || pwd.length < 8) {
+            return "La contraseña debe tener al menos 8 caracteres.";
+        }
+        if (!/[a-zA-Z]/.test(pwd) || !/[0-9]/.test(pwd)) {
+            return "La contraseña debe combinar letras y números.";
+        }
+        return null;
+    }
+    window.validatePasswordRules = validatePasswordRules;
+
+    // Toggle password visibility helper
+    function togglePasswordVisibility(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const icon = btn ? btn.querySelector('i') : null;
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (icon) {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        } else {
+            input.type = 'password';
+            if (icon) {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    }
+    window.togglePasswordVisibility = togglePasswordVisibility;
+
     // Login page switches
     const goRegisterLink = document.getElementById('go-to-leader-register');
     if (goRegisterLink) {
@@ -354,15 +387,28 @@ function applyTheme(themeName) {
     const switchKnob = document.getElementById('theme-switch-knob');
     if (switchBtn && switchKnob) {
         if (isDark) {
-            switchBtn.classList.remove('bg-zinc-300');
-            switchBtn.classList.add('bg-zinc-700');
+            switchBtn.classList.remove('bg-zinc-300', 'dark:bg-zinc-700', 'bg-zinc-700');
+            switchBtn.classList.add('bg-emerald-500');
             switchKnob.classList.remove('translate-x-0');
             switchKnob.classList.add('translate-x-5');
         } else {
-            switchBtn.classList.remove('bg-zinc-700');
-            switchBtn.classList.add('bg-zinc-300');
+            switchBtn.classList.remove('bg-emerald-500', 'bg-zinc-700');
+            switchBtn.classList.add('bg-zinc-300', 'dark:bg-zinc-700');
             switchKnob.classList.remove('translate-x-5');
             switchKnob.classList.add('translate-x-0');
+        }
+    }
+
+    // Update Dashboard theme toggle icon (Sun for Dark mode -> click to light, Moon for Light mode -> click to dark)
+    const dashboardThemeIcon = document.getElementById('dashboard-theme-toggle-icon');
+    const dashboardThemeBtn = document.getElementById('dashboard-theme-toggle-btn');
+    if (dashboardThemeIcon) {
+        if (isDark) {
+            dashboardThemeIcon.className = 'fa-solid fa-sun text-sm text-amber-400';
+            if (dashboardThemeBtn) dashboardThemeBtn.title = 'Cambiar a modo claro';
+        } else {
+            dashboardThemeIcon.className = 'fa-solid fa-moon text-sm text-zinc-700';
+            if (dashboardThemeBtn) dashboardThemeBtn.title = 'Cambiar a modo oscuro';
         }
     }
 
@@ -874,11 +920,29 @@ async function handleLeaderRegisterSubmit(e) {
     const lastname = document.getElementById('register-lastname').value.trim();
     const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
+    const passwordConfirm = document.getElementById('register-password-confirm')?.value || '';
+
+    const pwdError = validatePasswordRules(password);
+    if (pwdError) {
+        showToast(pwdError, "warning");
+        return;
+    }
+
+    if (password !== passwordConfirm) {
+        showToast("Las contraseñas no coinciden.", "warning");
+        return;
+    }
 
     try {
         const data = await apiFetch('/auth/register/leader', {
             method: 'POST',
-            body: { name, lastname, email, password }
+            body: { 
+                name, 
+                lastname, 
+                email, 
+                password,
+                password_confirmation: passwordConfirm
+            }
         });
 
         // Save active session state (Auto Login)
@@ -900,6 +964,12 @@ async function handleForcePasswordChangeSubmit(e) {
     e.preventDefault();
     const password = document.getElementById('force-password-new').value;
     const confirmPw = document.getElementById('force-password-confirm').value;
+
+    const pwdError = validatePasswordRules(password);
+    if (pwdError) {
+        showToast(pwdError, "warning");
+        return;
+    }
 
     if (password !== confirmPw) {
         showToast("Las contraseñas no coinciden.", "warning");
@@ -1041,12 +1111,31 @@ async function handleMemberRegisterSubmit(e) {
     const lastname = document.getElementById('member-register-lastname').value.trim();
     const email = document.getElementById('member-register-email').value.trim();
     const password = document.getElementById('member-register-password').value;
+    const passwordConfirm = document.getElementById('member-register-password-confirm')?.value || '';
     const inviteCode = document.getElementById('register-member-invite-code').value;
+
+    const pwdError = validatePasswordRules(password);
+    if (pwdError) {
+        showToast(pwdError, "warning");
+        return;
+    }
+
+    if (password !== passwordConfirm) {
+        showToast("Las contraseñas no coinciden.", "warning");
+        return;
+    }
 
     try {
         const data = await apiFetch('/auth/register/member', {
             method: 'POST',
-            body: { name, lastname, email, password, invite_code: inviteCode }
+            body: { 
+                name, 
+                lastname, 
+                email, 
+                password, 
+                password_confirmation: passwordConfirm,
+                invite_code: inviteCode 
+            }
         });
 
         // Save active session state

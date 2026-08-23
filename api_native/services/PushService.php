@@ -1,6 +1,6 @@
 <?php
 /**
- * Native Web Push Service for Levare OS (RFC 8291 AES-128-GCM + RFC 8292 VAPID)
+ * Native Web Push Service for Levare (RFC 8291 AES-128-GCM + RFC 8292 VAPID)
  */
 
 class PushService {

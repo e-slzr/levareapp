@@ -23,8 +23,8 @@
             </div>
 
             <!-- Theme & Logout -->
-            <button type="button" onclick="toggleTheme()" class="w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 flex items-center justify-center text-xs hover:bg-zinc-300 dark:hover:bg-zinc-800 transition cursor-pointer" title="Cambiar tema">
-                <i class="fa-solid fa-sun text-sm dark:text-amber-400"></i>
+            <button type="button" id="dashboard-theme-toggle-btn" onclick="toggleTheme()" class="w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 flex items-center justify-center text-xs hover:bg-zinc-300 dark:hover:bg-zinc-800 transition cursor-pointer" title="Cambiar tema">
+                <i id="dashboard-theme-toggle-icon" class="fa-solid fa-sun text-sm dark:text-amber-400"></i>
             </button>
             <button type="button" onclick="confirmLogout()" class="w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 flex items-center justify-center text-xs hover:text-red-600 dark:hover:text-red-400 hover:bg-zinc-300 dark:hover:bg-zinc-800 transition cursor-pointer" title="Cerrar sesión">
                 <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
@@ -125,6 +125,13 @@
 
             <div id="sa-announcements-list" class="space-y-2.5">
                 <!-- Loaded dynamically by JS -->
+            </div>
+
+            <!-- Load More Container: SA Announcements -->
+            <div id="sa-announcements-load-more-container" class="pt-2 text-center hidden">
+                <button type="button" id="btn-sa-announcements-load-more" class="px-6 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shadow-sm cursor-pointer">
+                    Cargar más
+                </button>
             </div>
         </div>
     </div>
