@@ -92,7 +92,7 @@ Cuando el usuario solicite explícitamente **`sync test`**, el asistente debe ej
 1. **Identificación Automática de Entorno y Rutas:**
    * **Linux (Manjaro / Arch)**: `/mnt/myhome/WebProjects/levareapp/`
    * **macOS**: `/Volumes/myhome/WebProjects/levareapp/` (Montado vía SMB desde `smb://truenas._smb._tcp.local/myhome/WebProjects/levareapp/`)
-   * **Windows**: *(Ruta pendiente por definir)*
+   * **Windows**: `Z:\WebProjects\levareapp\`
    * Si el sistema operativo detectado tiene su ruta configurada y la carpeta existe, operar directamente en esa ubicación. Solo en caso de que la ruta no esté configurada o no sea accesible, solicitar la confirmación de la ruta al usuario.
 
 2. **Flujo de Ejecución:**
