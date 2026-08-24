@@ -447,13 +447,18 @@ textarea {
 /* Fix iOS WebKit date & time input sizing and inner value alignment */
 input[type="date"],
 input[type="time"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     min-height: 42px;
 }
 
 input[type="date"]::-webkit-date-and-time-value,
 input[type="time"]::-webkit-date-and-time-value {
     text-align: left;
-    min-height: 1.5em;
+    min-height: 1.4em;
 }
 
 input:focus,

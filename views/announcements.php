@@ -18,22 +18,20 @@
     <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shadow-sm">
         <!-- Search Keyword -->
         <div class="relative w-full sm:flex-1 min-w-0">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500 z-10">
                 <i class="fa-solid fa-magnifying-glass text-sm"></i>
             </div>
             <input type="text" id="announcements-search-input" placeholder="Buscar en el historial..."
-                style="padding-left: 40px !important;"
-                class="w-full pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                class="w-full !pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
         </div>
 
         <!-- Filter Date -->
         <div class="relative w-full sm:w-52 min-w-0">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500 z-10">
                 <i class="fa-regular fa-calendar text-sm"></i>
             </div>
             <input type="date" id="announcements-date-input" onclick="try{this.showPicker()}catch(e){}"
-                style="padding-left: 40px !important;"
-                class="w-full max-w-full box-border pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition cursor-pointer" />
+                class="w-full max-w-full box-border !pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition cursor-pointer appearance-none -webkit-appearance-none" />
         </div>
 
         <!-- Reset Button -->
