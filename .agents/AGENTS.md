@@ -116,3 +116,16 @@ Cuando el usuario solicite explícitamente **`sync test`**, el asistente debe ej
        * **Descarga Git:** `<resumen-del-commit-o-cambios-descargados>`
        * **Migraciones de BD:** `<migraciones-aplicadas-o-confirmacion-al-dia>`
        ```
+
+---
+
+## 📋 Mantenimiento Automático de CHANGELOG y ROADMAP
+
+1. **Registro Continuo de Cambios (`CHANGELOG.md`)**:
+   * Al implementar cualquier cambio, corrección de bug (`fix`), nueva funcionalidad (`feat`) o ajuste de diseño (`style`/`refactor`), el asistente debe actualizar automáticamente el archivo **`CHANGELOG.md`** registrando el cambio en la sección correspondiente (`Added`, `Fixed`, `Changed`) bajo la versión en desarrollo activa.
+
+2. **Mantenimiento de la Hoja de Ruta (`ROADMAP.md`)**:
+   * Al completar tareas o agregar nuevas iniciativas al proyecto, mantener actualizado **`ROADMAP.md`** marcando casillas de verificación (`[x]`) o ajustando los hitos planificados.
+
+3. **Cierre y Confirmación de Versiones**:
+   * El asistente acumulará los cambios de desarrollo de forma continua y **solo solicitará confirmación explícita al usuario** cuando no existan más tareas o parches pendientes para liberar una versión oficial (ej. consolidar `v1.0.0-beta` a `v1.0.0` Estable o liberar `v1.1.0`).

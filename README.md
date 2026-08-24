@@ -6,6 +6,13 @@ Este archivo sirve como referencia del análisis de la estructura del proyecto y
 
 ---
 
+## 📌 Documentación de Versiones y Hoja de Ruta
+
+- 🗺️ **[ROADMAP.md](file:///Users/macbook/Documents/Proyectos/levareapp/ROADMAP.md)**: Planificación de versiones futuras (v1.0.0 Estable, v1.1.0 Herramientas del Músico, v2.0.0 Live Sync).
+- 📝 **[CHANGELOG.md](file:///Users/macbook/Documents/Proyectos/levareapp/CHANGELOG.md)**: Historial de cambios, parches y lanzamientos por versión según el estándar SemVer.
+
+---
+
 ## 📂 Estructura del Proyecto
 
 El proyecto está dividido en dos partes principales:
