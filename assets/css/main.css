@@ -434,12 +434,26 @@ input[type="time"],
 select,
 textarea {
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 12px 16px;
     background-color: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     color: var(--text-main);
     transition: all var(--transition-fast);
+}
+
+/* Fix iOS WebKit date & time input sizing and inner value alignment */
+input[type="date"],
+input[type="time"] {
+    min-height: 42px;
+}
+
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+    text-align: left;
+    min-height: 1.5em;
 }
 
 input:focus,
