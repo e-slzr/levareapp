@@ -799,6 +799,23 @@ function handleDeleteSong(songId, songTitle) {
     songIdToDelete = songId;
     const modalNameEl = document.getElementById('delete-song-modal-name');
     if (modalNameEl) modalNameEl.textContent = songTitle;
+
+    // Check if user is the author of this song to show community removal option
+    const song = cachedSongs.find(s => s.id == songId);
+    const currentUser = getData('currentUser');
+    const communityContainer = document.getElementById('container-delete-from-community');
+    const communityCheck = document.getElementById('checkbox-delete-from-community');
+
+    if (communityContainer) {
+        if (song && currentUser && (song.created_by == currentUser.id || currentUser.account_type === 'superadmin')) {
+            communityContainer.classList.remove('hidden');
+            if (communityCheck) communityCheck.checked = false;
+        } else {
+            communityContainer.classList.add('hidden');
+            if (communityCheck) communityCheck.checked = false;
+        }
+    }
+
     document.getElementById('modal-delete-song-confirm').classList.remove('hidden');
 }
 
@@ -808,9 +825,12 @@ async function executeDeleteSong() {
     btn.disabled = true;
     btn.textContent = 'Eliminando...';
 
+    const communityCheck = document.getElementById('checkbox-delete-from-community');
+    const deleteFromCommunity = (communityCheck && communityCheck.checked) ? 1 : 0;
+
     try {
-        await apiFetch(`/songs/${songIdToDelete}`, { method: 'DELETE' });
-        showToast("Canción eliminada del catálogo");
+        const res = await apiFetch(`/songs/${songIdToDelete}?delete_from_community=${deleteFromCommunity}`, { method: 'DELETE' });
+        showToast(res?.message || "Canción eliminada del catálogo");
         document.getElementById('modal-delete-song-confirm').classList.add('hidden');
         exitSongWizard();
         await renderSongsCatalog(true);

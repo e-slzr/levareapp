@@ -227,6 +227,8 @@ class SongController {
             $groupId = $rowG ? (int)$rowG['group_id'] : 3;
         }
 
+        $deleteFromCommunity = isset($_GET['delete_from_community']) && ($_GET['delete_from_community'] == '1' || $_GET['delete_from_community'] == 'true');
+
         $stmtCheck = $pdo->prepare("SELECT * FROM songs WHERE id = ? LIMIT 1");
         $stmtCheck->execute([$id]);
         $song = $stmtCheck->fetch();
@@ -249,8 +251,8 @@ class SongController {
         // Always remove from this group's catalog
         $pdo->prepare("DELETE FROM group_songs WHERE group_id = ? AND song_id = ?")->execute([$groupId, $id]);
 
-        if ($isAuthor) {
-            // Author deletes it -> mark is_deleted = 1 (soft delete)
+        if ($isAuthor && $deleteFromCommunity) {
+            // Author deletes it from community -> mark is_deleted = 1 (soft delete)
             $pdo->prepare("UPDATE songs SET is_deleted = 1, updated_at = NOW() WHERE id = ?")->execute([$id]);
             
             // Recalculate author's community points (-1 point)
@@ -258,7 +260,7 @@ class SongController {
 
             jsonResponse(['message' => 'Canción eliminada de tu catálogo y de la comunidad.']);
         } else {
-            // Not author -> only removed from this group
+            // Not author or kept in community -> only removed from this group
             jsonResponse(['message' => 'Canción removida del catálogo de la banda.']);
         }
     }

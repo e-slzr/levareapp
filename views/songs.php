@@ -704,8 +704,17 @@
             <button type="button" id="btn-close-delete-song-modal-x" class="btn-close-modal text-zinc-400 hover:text-zinc-600 text-lg font-bold">&times;</button>
         </div>
         <p class="text-xs text-zinc-600 dark:text-zinc-400">
-            ¿Estás seguro de que deseas eliminar la canción "<strong id="delete-song-modal-name" class="text-zinc-900 dark:text-zinc-100">---</strong>"? Esta acción la removerá de la biblioteca y de los repertorios.
+            ¿Estás seguro de que deseas eliminar la canción "<strong id="delete-song-modal-name" class="text-zinc-900 dark:text-zinc-100">---</strong>"? Esta acción la removerá de la biblioteca de tu banda.
         </p>
+        <div id="container-delete-from-community" class="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 hidden">
+            <label class="flex items-start gap-2.5 cursor-pointer select-none">
+                <input type="checkbox" id="checkbox-delete-from-community" class="w-4 h-4 mt-0.5 rounded border-zinc-300 dark:border-zinc-700 text-red-600 focus:ring-red-500 cursor-pointer accent-red-600" />
+                <div class="space-y-0.5">
+                    <span class="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Eliminar también de la Comunidad Levare</span>
+                    <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Si dejas esta opción desmarcada, la canción se quitará de tu banda pero seguirá estando disponible en el catálogo general de la comunidad.</p>
+                </div>
+            </label>
+        </div>
         <div class="flex justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
             <button type="button" id="btn-cancel-delete-song" class="btn-close-modal px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 dark:text-zinc-400">Cancelar</button>
             <button type="button" id="btn-confirm-delete-song" class="px-4 py-2 rounded-xl bg-red-600 text-white text-xs font-bold hover:bg-red-700">Eliminar</button>
