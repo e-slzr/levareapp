@@ -1,3 +1,15 @@
+<?php
+if (!function_exists('asset_v')) {
+    function asset_v($relativePath) {
+        $cleanPath = ltrim(explode('?', $relativePath)[0], '/');
+        $fullPath = __DIR__ . '/../../' . $cleanPath;
+        if (file_exists($fullPath)) {
+            return $cleanPath . '?v=' . filemtime($fullPath);
+        }
+        return $relativePath;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -25,11 +37,11 @@
         }
     </script>
     <!-- Main Styles -->
-    <link rel="stylesheet" href="assets/css/main.css?v=2.0.1">
+    <link rel="stylesheet" href="<?= asset_v('assets/css/main.css') ?>">
     <!-- PWA Manifest & iOS Meta Tags -->
-    <link rel="icon" type="image/svg+xml" href="icon-levareapp.svg?v=2.0.1">
-    <link rel="apple-touch-icon" href="icon-levareapp.svg?v=2.0.1">
-    <link rel="manifest" href="manifest.json?v=2.0.1">
+    <link rel="icon" type="image/svg+xml" href="<?= asset_v('icon-levareapp.svg') ?>">
+    <link rel="apple-touch-icon" href="<?= asset_v('icon-levareapp.svg') ?>">
+    <link rel="manifest" href="<?= asset_v('manifest.json') ?>">
     <meta name="theme-color" content="#09090b">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">

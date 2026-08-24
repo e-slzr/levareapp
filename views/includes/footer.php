@@ -1,24 +1,21 @@
     <!-- Application Scripts -->
-    <script src="assets/js/db.js?v=2.0.4"></script>
-    <script src="assets/js/utils.js?v=2.0.4"></script>
-    <script src="assets/js/chordParser.js?v=2.0.2"></script>
-    <script src="assets/js/transposer.js?v=2.0.2"></script>
-    <script src="assets/js/app.js?v=2.0.5"></script>
-    <script src="assets/js/push.js?v=2.0.4"></script>
-
-
-
+    <script src="<?= asset_v('assets/js/db.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/utils.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/chordParser.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/transposer.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/app.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/push.js') ?>"></script>
 
     <!-- View Controllers -->
-    <script src="assets/js/views/dashboard.js?v=2.0.1"></script>
-    <script src="assets/js/views/songs.js?v=2.0.1"></script>
-    <script src="assets/js/views/setlists.js?v=2.0.1"></script>
-    <script src="assets/js/views/events.js?v=2.0.1"></script>
-    <script src="assets/js/views/suggestions.js?v=2.0.1"></script>
-    <script src="assets/js/views/members.js?v=2.0.1"></script>
-    <script src="assets/js/views/profile.js?v=2.0.1"></script>
-    <script src="assets/js/views/feedback.js?v=2.0.1"></script>
-    <script src="assets/js/views/admin.js?v=2.0.1"></script>
-    <script src="assets/js/views/announcements.js?v=2.0.1"></script>
+    <script src="<?= asset_v('assets/js/views/dashboard.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/songs.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/setlists.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/events.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/suggestions.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/members.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/profile.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/feedback.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/admin.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/announcements.js') ?>"></script>
 </body>
 </html>

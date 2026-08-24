@@ -1,24 +1,26 @@
-const CACHE_NAME = "levare-cache-v2.0.4";
+const CACHE_NAME = "levare-cache-v2.0.7";
 const ASSETS = [
   "./",
   "./index.php",
-  "./assets/css/main.css?v=2.0.1",
-  "./assets/js/db.js?v=2.0.3",
-  "./assets/js/utils.js?v=2.0.3",
-  "./assets/js/transposer.js?v=2.0.2",
-  "./assets/js/app.js?v=2.0.3",
-  "./assets/js/push.js?v=2.0.3",
-  "./icon-levareapp.svg?v=2.0.1",
-  "./manifest.json?v=2.0.1"
+  "./assets/css/main.css",
+  "./assets/js/db.js",
+  "./assets/js/utils.js",
+  "./assets/js/chordParser.js",
+  "./assets/js/transposer.js",
+  "./assets/js/app.js",
+  "./assets/js/push.js",
+  "./icon-levareapp.svg",
+  "./manifest.json"
 ];
 
 
 // Install Event
 self.addEventListener("install", (e) => {
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
@@ -37,8 +39,10 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-// Fetch Event - Stale-While-Revalidate for local assets, Network-Only for API
+// Fetch Event - Network-First for static assets, Network-Only for API
 self.addEventListener("fetch", (e) => {
+  if (e.request.method !== 'GET') return;
+
   const url = e.request.url;
   const isApi = url.includes("/api/") || 
                 url.includes("/api_native") || 
@@ -51,18 +55,19 @@ self.addEventListener("fetch", (e) => {
   }
 
   e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Update cache in background
-        fetch(e.request).then((networkResponse) => {
-          if (networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, networkResponse));
-          }
-        }).catch(() => {});
-        return cachedResponse;
-      }
-      return fetch(e.request);
-    })
+    fetch(e.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, responseClone);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(e.request);
+      })
   );
 });
 
