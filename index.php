@@ -12,9 +12,18 @@ require_once __DIR__ . '/views/includes/header.php';
     (function() {
         try {
             var token = localStorage.getItem('worship_token');
-            var user = localStorage.getItem('worship_currentUser');
-            if (token && user && user !== 'null') {
+            var userStr = localStorage.getItem('worship_currentUser');
+            if (token && userStr && userStr !== 'null') {
                 document.documentElement.classList.add('user-is-authenticated');
+                var hash = (window.location.hash || '').replace('#', '');
+                var user = JSON.parse(userStr);
+                var activeView = hash || (user && user.account_type === 'superadmin' ? 'admin' : 'dashboard');
+                document.addEventListener('DOMContentLoaded', function() {
+                    var activePanel = document.getElementById('panel-' + activeView);
+                    if (activePanel) {
+                        activePanel.classList.remove('hidden');
+                    }
+                });
             }
         } catch (e) {}
     })();
@@ -45,7 +54,7 @@ require_once __DIR__ . '/views/includes/header.php';
     <!-- MAIN APP CONTAINER (Responsive Desktop & Mobile Layout) -->
     <div id="main-container" class="main-container hidden w-full max-w-4xl mx-auto min-h-screen flex flex-col relative pb-36 md:pb-20 px-4 md:px-8">
         <main id="main-content" class="flex-1 screen-fade w-full pt-4">
-            <div id="panel-dashboard" class="content-view">
+            <div id="panel-dashboard" class="content-view hidden">
                 <?php include __DIR__ . '/views/dashboard.php'; ?>
             </div>
             <div id="panel-songs" class="content-view hidden">

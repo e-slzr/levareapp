@@ -26,10 +26,11 @@
 
         <!-- Photo Action Buttons -->
         <div class="flex items-center gap-2">
+            <input type="file" id="profile-avatar-upload" class="hidden" accept="image/*" />
+
             <label id="btn-upload-avatar" for="profile-avatar-upload" class="px-3 py-1.5 rounded-xl border border-zinc-700 bg-zinc-800 text-xs font-semibold text-zinc-200 hover:bg-zinc-700 transition cursor-pointer flex items-center gap-1.5 shadow-sm" title="Cambiar foto">
                 <i class="fa-solid fa-camera text-xs"></i>
                 <span class="hidden sm:inline">Foto</span>
-                <input type="file" id="profile-avatar-upload" class="hidden" accept="image/*" />
             </label>
 
             <button type="button" id="btn-remove-avatar" class="px-3 py-1.5 rounded-xl border border-red-900/50 bg-red-950/20 text-xs font-semibold text-red-400 hover:bg-red-950/40 transition" title="Eliminar foto">

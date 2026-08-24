@@ -366,7 +366,10 @@ async function handleAvatarUpload(e) {
 
     // Show uploading state
     const uploadBtn = document.getElementById('btn-upload-avatar');
-    if (uploadBtn) { uploadBtn.disabled = true; uploadBtn.textContent = 'Subiendo...'; }
+    if (uploadBtn) {
+        uploadBtn.classList.add('pointer-events-none', 'opacity-70');
+        uploadBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xs"></i><span class="hidden sm:inline">Subiendo...</span>`;
+    }
 
     try {
         const data = await apiFetch('/user/profile/avatar', {
@@ -398,7 +401,10 @@ async function handleAvatarUpload(e) {
     } catch (err) {
         showToast(err.message || "Error al subir la foto de perfil.", "danger");
     } finally {
-        if (uploadBtn) { uploadBtn.disabled = false; uploadBtn.textContent = 'Cambiar Foto'; }
+        if (uploadBtn) {
+            uploadBtn.classList.remove('pointer-events-none', 'opacity-70');
+            uploadBtn.innerHTML = `<i class="fa-solid fa-camera text-xs"></i><span class="hidden sm:inline">Foto</span>`;
+        }
     }
 }
 
@@ -567,6 +573,9 @@ async function confirmRemoveAvatar() {
         setData('currentUser', user);
         
         renderProfileAvatar();
+
+        const uploadInput = document.getElementById('profile-avatar-upload');
+        if (uploadInput) uploadInput.value = '';
         
         // Update sidebar avatar
         const sidebarAvatar = document.getElementById('sidebar-avatar');

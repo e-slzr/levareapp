@@ -737,6 +737,11 @@ async function handleHashRouting() {
         return;
     }
 
+    // Immediately switch view containers synchronously to prevent any layout flash
+    document.querySelectorAll('.content-view').forEach(p => p.classList.add('hidden'));
+    const initialContainer = document.getElementById(`panel-${viewId}`);
+    if (initialContainer) initialContainer.classList.remove('hidden');
+
     // Role-based view guards
     if (currentUser?.account_type === 'superadmin') {
         // Super Admin can access dashboard, admin, announcements, profile and feedback
@@ -764,9 +769,6 @@ async function handleHashRouting() {
             return;
         }
     }
-
-    // Hide all views
-    document.querySelectorAll('.content-view').forEach(p => p.classList.add('hidden'));
 
     const container = document.getElementById(`panel-${viewId}`);
     if (container) {

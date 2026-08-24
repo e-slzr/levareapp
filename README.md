@@ -33,17 +33,17 @@ El proyecto está dividido en dos partes principales:
 │   │       ├── profile.js      # Edición de perfil, color de acento y subida de avatar
 │   │       ├── setlists.js     # Creación y consulta de repertorios de canciones
 │   │       └── suggestions.js  # Propuestas musicales y votación de integrantes
-├── views/                      # Archivos HTML parciales de la SPA (cargados perezosamente)
-│   ├── admin.html
-│   ├── dashboard.html
-│   ├── events.html
-│   ├── group-selector.html
-│   ├── members.html
-│   ├── onboarding.html
-│   ├── profile.html
-│   ├── setlists.html
-│   ├── songs.html
-│   └── suggestions.html
+├── views/                      # Archivos PHP de vistas modulares de la SPA
+│   ├── admin.php
+│   ├── dashboard.php
+│   ├── events.php
+│   ├── group-selector.php
+│   ├── members.php
+│   ├── onboarding.php
+│   ├── profile.php
+│   ├── setlists.php
+│   ├── songs.php
+│   └── suggestions.php
 └── api/                        # Backend API en Laravel 13
     ├── app/Http/Controllers/   # Controladores REST del backend
     ├── app/Http/Middleware/    # Middleware de multi-tenancy (TenantMiddleware)
