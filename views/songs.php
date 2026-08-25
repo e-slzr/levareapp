@@ -5,9 +5,15 @@
             <h1 class="font-serif text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Canciones</h1>
             <p class="text-xs text-zinc-500 dark:text-zinc-400">Biblioteca del repertorio general</p>
         </div>
-        <button type="button" id="btn-add-song" onclick="openAddSongModal()" class="w-10 h-10 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 flex items-center justify-center text-lg font-bold shadow-md hover:scale-105 transition cursor-pointer">
-            +
-        </button>
+        <div class="flex items-center gap-2">
+            <button type="button" id="btn-open-community-catalog" class="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition flex items-center gap-2 shadow-sm cursor-pointer" title="Explorar canciones de la Comunidad">
+                <i class="fa-solid fa-earth-americas text-blue-600 dark:text-blue-400 text-xs"></i>
+                <span>Comunidad</span>
+            </button>
+            <button type="button" id="btn-add-song" onclick="openAddSongModal()" class="w-10 h-10 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 flex items-center justify-center text-lg font-bold shadow-md hover:scale-105 transition cursor-pointer" title="Nueva Canción">
+                +
+            </button>
+        </div>
     </header>
 
     <!-- Search Input -->
@@ -414,7 +420,7 @@
             <button type="button" id="btn-close-comm-preview-x" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xl font-bold p-1 flex-shrink-0 cursor-pointer">&times;</button>
         </div>
 
-        <!-- Action Bar: Like Button & Add to Band Button -->
+        <!-- Action Bar: Like Button, Superadmin Actions & Add to Band Button -->
         <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/80 border border-zinc-200 dark:border-zinc-800 flex-shrink-0">
             <!-- Like Button -->
             <button type="button" id="btn-comm-preview-like" class="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold transition flex items-center gap-2 hover:scale-105 cursor-pointer">
@@ -423,12 +429,26 @@
                 <span class="text-[11px] text-zinc-400 font-normal">Likes</span>
             </button>
 
-            <!-- Import / Add Button -->
-            <div id="comm-preview-import-container">
-                <button type="button" id="btn-comm-preview-import" class="px-5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center gap-1.5 shadow-sm cursor-pointer">
-                    <i class="fa-solid fa-plus text-xs"></i>
-                    <span>Agregar a mi Repertorio</span>
-                </button>
+            <!-- Acciones de Administración e Importar -->
+            <div class="flex items-center gap-2">
+                <div id="comm-preview-admin-actions" class="flex items-center gap-2 hidden">
+                    <button type="button" id="btn-comm-preview-edit" class="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center gap-1.5 cursor-pointer" title="Editar canción comunitaria">
+                        <i class="fa-solid fa-pen text-xs"></i>
+                        <span>Editar</span>
+                    </button>
+                    <button type="button" id="btn-comm-preview-delete" class="px-3 py-2 rounded-xl border border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-500/20 transition flex items-center gap-1.5 cursor-pointer" title="Eliminar de la comunidad">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                        <span>Eliminar</span>
+                    </button>
+                </div>
+
+                <!-- Import / Add Button -->
+                <div id="comm-preview-import-container">
+                    <button type="button" id="btn-comm-preview-import" class="px-5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        <span>Agregar a mi Repertorio</span>
+                    </button>
+                </div>
             </div>
         </div>
 

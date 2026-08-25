@@ -175,9 +175,12 @@ class SongController {
             jsonResponse(['message' => 'Canción no encontrada.'], 404);
         }
 
-        // Only creator can edit song details/content
-        if ((int)$song['created_by'] !== (int)$user['id']) {
-            jsonResponse(['message' => 'Solo el autor que registró la canción en la comunidad puede editarla.'], 403);
+        $isSuperadmin = ($user['account_type'] ?? '') === 'superadmin';
+        $isAuthor = ((int)$song['created_by'] === (int)$user['id']);
+
+        // Only creator or superadmin can edit song details/content
+        if (!$isAuthor && !$isSuperadmin) {
+            jsonResponse(['message' => 'Solo el autor o un superadministrador puede editar esta canción.'], 403);
         }
 
         $rawInput = file_get_contents('php://input');
@@ -239,6 +242,7 @@ class SongController {
             jsonResponse(['message' => 'Canción eliminada del catálogo de la banda.']);
         }
 
+        $isSuperadmin = ($user['account_type'] ?? '') === 'superadmin';
         $isAuthor = ((int)$song['created_by'] === (int)$user['id']);
 
         // Remove from setlists of this group
@@ -251,14 +255,14 @@ class SongController {
         // Always remove from this group's catalog
         $pdo->prepare("DELETE FROM group_songs WHERE group_id = ? AND song_id = ?")->execute([$groupId, $id]);
 
-        if ($isAuthor && $deleteFromCommunity) {
-            // Author deletes it from community -> mark is_deleted = 1 (soft delete)
+        if (($isAuthor || $isSuperadmin) && $deleteFromCommunity) {
+            // Author or Superadmin deletes it from community -> mark is_deleted = 1 (soft delete)
             $pdo->prepare("UPDATE songs SET is_deleted = 1, updated_at = NOW() WHERE id = ?")->execute([$id]);
             
             // Recalculate author's community points (-1 point)
             self::recalculateUserPoints((int)$song['created_by'], $pdo);
 
-            jsonResponse(['message' => 'Canción eliminada de tu catálogo y de la comunidad.']);
+            jsonResponse(['message' => 'Canción eliminada de la comunidad.']);
         } else {
             // Not author or kept in community -> only removed from this group
             jsonResponse(['message' => 'Canción removida del catálogo de la banda.']);

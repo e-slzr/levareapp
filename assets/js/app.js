@@ -729,30 +729,33 @@ async function handleHashRouting() {
     let viewId = window.location.hash.replace('#', '');
     if (!viewId) viewId = 'dashboard';
 
-    // Validate page lists
-    const pages = ['dashboard', 'songs', 'setlists', 'events', 'suggestions', 'members', 'profile', 'feedback', 'announcements', 'admin'];
+    // Validate page lists (including community aliases)
+    const pages = ['dashboard', 'songs', 'community', 'songs-community', 'setlists', 'events', 'suggestions', 'members', 'profile', 'feedback', 'announcements', 'admin'];
     if (!pages.includes(viewId)) {
         viewId = currentUser?.account_type === 'superadmin' ? 'admin' : 'dashboard';
         window.location.hash = `#${viewId}`;
         return;
     }
 
+    const isCommunityView = viewId === 'community' || viewId === 'songs-community';
+    const panelViewId = isCommunityView ? 'songs' : viewId;
+
     // Immediately switch view containers synchronously to prevent any layout flash
     document.querySelectorAll('.content-view').forEach(p => p.classList.add('hidden'));
-    const initialContainer = document.getElementById(`panel-${viewId}`);
+    const initialContainer = document.getElementById(`panel-${panelViewId}`);
     if (initialContainer) initialContainer.classList.remove('hidden');
 
     // Role-based view guards
     if (currentUser?.account_type === 'superadmin') {
-        // Super Admin can access dashboard, admin, announcements, profile and feedback
-        if (!['dashboard', 'admin', 'profile', 'feedback', 'announcements'].includes(viewId)) {
+        // Super Admin can access dashboard, admin, announcements, profile, feedback and songs (community)
+        if (!['dashboard', 'admin', 'profile', 'feedback', 'announcements', 'songs'].includes(panelViewId)) {
             viewId = 'dashboard';
             window.location.hash = `#${viewId}`;
             return;
         }
     } else {
         // Normal users cannot access admin
-        if (viewId === 'admin') {
+        if (panelViewId === 'admin') {
             viewId = 'dashboard';
             window.location.hash = `#${viewId}`;
             return;
@@ -762,7 +765,7 @@ async function handleHashRouting() {
         const syncResult = await syncUserGroupsAndValidateMembership();
         const restrictedViews = ['songs', 'setlists', 'events', 'suggestions', 'members'];
 
-        if (syncResult.hasNoGroups && restrictedViews.includes(viewId)) {
+        if (syncResult.hasNoGroups && restrictedViews.includes(panelViewId)) {
             viewId = 'dashboard';
             window.location.hash = '#dashboard';
             openNoGroupAlertModal();
@@ -770,11 +773,11 @@ async function handleHashRouting() {
         }
     }
 
-    const container = document.getElementById(`panel-${viewId}`);
+    const container = document.getElementById(`panel-${panelViewId}`);
     if (container) {
         if (container.dataset.loaded !== 'true') {
             try {
-                const response = await fetch(`views/${viewId}.php?t=${Date.now()}`);
+                const response = await fetch(`views/${panelViewId}.php?t=${Date.now()}`);
                 if (!response.ok) throw new Error("Fallo la carga de la vista");
                 container.innerHTML = await response.text();
                 container.dataset.loaded = 'true';
@@ -792,12 +795,13 @@ async function handleHashRouting() {
     }
 
     // Update active nav links lists classes
-    const mainMobileViews = ['dashboard', 'songs', 'setlists', 'events'];
+    const mainMobileViews = ['dashboard', 'songs', 'community', 'songs-community', 'setlists', 'events'];
     const isSecondaryView = !mainMobileViews.includes(viewId);
+    const activeNavView = isCommunityView ? 'songs' : viewId;
 
     document.querySelectorAll('#app-bottom-nav button').forEach(link => {
         const linkView = link.getAttribute('data-view');
-        const isActive = linkView === viewId || (link.id === 'btn-nav-more' && isSecondaryView);
+        const isActive = linkView === activeNavView || (link.id === 'btn-nav-more' && isSecondaryView);
         if (isActive) {
             link.classList.add('active');
         } else {
@@ -809,6 +813,8 @@ async function handleHashRouting() {
     const titles = {
         'dashboard': 'Panel Inicial',
         'songs': 'Catálogo de Canciones',
+        'community': 'Comunidad',
+        'songs-community': 'Comunidad',
         'setlists': 'Listas de Repertorios',
         'events': 'Calendario de Eventos',
         'suggestions': 'Caja de Sugerencias',
@@ -826,7 +832,9 @@ async function handleHashRouting() {
 
 function triggerViewInitializer(viewId, forceRefresh = true) {
     if (viewId === 'dashboard' && typeof initDashboardView === 'function') initDashboardView(forceRefresh);
-    if (viewId === 'songs' && typeof initSongsView === 'function') initSongsView(forceRefresh);
+    if ((viewId === 'songs' || viewId === 'community' || viewId === 'songs-community') && typeof initSongsView === 'function') {
+        initSongsView(forceRefresh, (viewId === 'community' || viewId === 'songs-community'));
+    }
     if (viewId === 'setlists' && typeof initSetlistsView === 'function') initSetlistsView(forceRefresh);
     if (viewId === 'events' && typeof initEventsView === 'function') initEventsView(forceRefresh);
     if (viewId === 'suggestions' && typeof initSuggestionsView === 'function') initSuggestionsView(forceRefresh);

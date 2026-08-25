@@ -129,6 +129,7 @@ function openSongWizardView(prefilledData = null) {
     // Switch a subpanel pantalla completa
     document.getElementById('subpanel-songs-list')?.classList.add('hidden');
     document.getElementById('subpanel-song-detail')?.classList.add('hidden');
+    document.getElementById('subpanel-community-catalog')?.classList.add('hidden');
     document.getElementById('subpanel-song-wizard')?.classList.remove('hidden');
 
     const pageTitleElem = document.getElementById('current-page-title');
@@ -141,18 +142,27 @@ function openSongWizardView(prefilledData = null) {
  * Abre el Wizard para editar una canción existente
  */
 function openEditSongModal(songId) {
-    const song = cachedSongs.find(s => s.id == songId);
+    let song = cachedSongs.find(s => s.id == songId);
+    if (!song) {
+        song = communitySongs.find(s => s.id == songId);
+    }
     if (!song) return;
     openSongWizardView(song);
 }
 
 /**
- * Cierra la vista del Wizard y regresa al catálogo de canciones
+ * Cierra la vista del Wizard y regresa al catálogo de canciones o comunidad
  */
 function exitSongWizard() {
     document.getElementById('subpanel-song-wizard')?.classList.add('hidden');
     document.getElementById('subpanel-song-detail')?.classList.add('hidden');
-    document.getElementById('subpanel-songs-list')?.classList.remove('hidden');
+
+    if (window.location.hash === '#community' || window.location.hash === '#songs-community') {
+        document.getElementById('subpanel-community-catalog')?.classList.remove('hidden');
+        document.getElementById('subpanel-songs-list')?.classList.add('hidden');
+    } else {
+        document.getElementById('subpanel-songs-list')?.classList.remove('hidden');
+    }
 
     const pageTitleElem = document.getElementById('current-page-title');
     if (pageTitleElem) pageTitleElem.textContent = 'Canciones';
@@ -320,7 +330,7 @@ function renderWizardLivePreview() {
 /**
  * Inicialización de la vista principal de canciones
  */
-function initSongsView() {
+function initSongsView(forceRefresh = true, openCommunity = false) {
     const currentUser = getData('currentUser');
     if (!currentUser) return;
 
@@ -331,14 +341,27 @@ function initSongsView() {
     const subpanelList = document.getElementById('subpanel-songs-list');
     const subpanelCommunity = document.getElementById('subpanel-community-catalog');
 
-    if (subpanelDetail) subpanelDetail.classList.add('hidden');
-    if (subpanelWizard) subpanelWizard.classList.add('hidden');
-    if (subpanelCommunity) subpanelCommunity.classList.add('hidden');
-    if (subpanelList) subpanelList.classList.remove('hidden');
-    
     currentViewingSong = null;
     currentCommunityViewingSong = null;
     transposeOffset = 0;
+
+    // Si viene explícitamente a la comunidad o la URL es #community
+    const isCommunityHash = window.location.hash === '#community' || window.location.hash === '#songs-community';
+    if (openCommunity || isCommunityHash) {
+        if (subpanelDetail) subpanelDetail.classList.add('hidden');
+        if (subpanelWizard) subpanelWizard.classList.add('hidden');
+        if (subpanelList) subpanelList.classList.add('hidden');
+        if (subpanelCommunity) subpanelCommunity.classList.remove('hidden');
+        
+        const pageTitleElem = document.getElementById('current-page-title');
+        if (pageTitleElem) pageTitleElem.textContent = 'Comunidad';
+        loadCommunitySongs();
+    } else {
+        if (subpanelDetail) subpanelDetail.classList.add('hidden');
+        if (subpanelWizard) subpanelWizard.classList.add('hidden');
+        if (subpanelCommunity) subpanelCommunity.classList.add('hidden');
+        if (subpanelList) subpanelList.classList.remove('hidden');
+    }
 
     // Buscador general del catálogo propio
     const searchInput = document.getElementById('song-search-input') || document.getElementById('songs-search-input');
@@ -356,6 +379,12 @@ function initSongsView() {
         commSearchInput.value = "";
         commSearchInput.removeEventListener('input', handleCommunitySearch);
         commSearchInput.addEventListener('input', handleCommunitySearch);
+    }
+
+    // Botón directo a la Comunidad desde el header (visible para todos los miembros)
+    const btnOpenCommunity = document.getElementById('btn-open-community-catalog');
+    if (btnOpenCommunity) {
+        btnOpenCommunity.onclick = () => openCommunityCatalogView();
     }
 
     // Botón principal de agregar canción (+)
@@ -785,6 +814,9 @@ async function handleSongWizardSubmit(e) {
 
         exitSongWizard();
         await renderSongsCatalog(true);
+        if (window.location.hash === '#community' || window.location.hash === '#songs-community' || !document.getElementById('subpanel-community-catalog')?.classList.contains('hidden')) {
+            loadCommunitySongs();
+        }
     } catch (err) {
         showToast(err.message, "danger");
     } finally {
@@ -800,8 +832,11 @@ function handleDeleteSong(songId, songTitle) {
     const modalNameEl = document.getElementById('delete-song-modal-name');
     if (modalNameEl) modalNameEl.textContent = songTitle;
 
-    // Check if user is the author of this song to show community removal option
-    const song = cachedSongs.find(s => s.id == songId);
+    // Check if user is the author or superadmin of this song to show community removal option
+    let song = cachedSongs.find(s => s.id == songId);
+    if (!song) {
+        song = communitySongs.find(s => s.id == songId);
+    }
     const currentUser = getData('currentUser');
     const communityContainer = document.getElementById('container-delete-from-community');
     const communityCheck = document.getElementById('checkbox-delete-from-community');
@@ -809,7 +844,7 @@ function handleDeleteSong(songId, songTitle) {
     if (communityContainer) {
         if (song && currentUser && (song.created_by == currentUser.id || currentUser.account_type === 'superadmin')) {
             communityContainer.classList.remove('hidden');
-            if (communityCheck) communityCheck.checked = false;
+            if (communityCheck) communityCheck.checked = (window.location.hash === '#community' || !song.already_in_group);
         } else {
             communityContainer.classList.add('hidden');
             if (communityCheck) communityCheck.checked = false;
@@ -830,10 +865,13 @@ async function executeDeleteSong() {
 
     try {
         const res = await apiFetch(`/songs/${songIdToDelete}?delete_from_community=${deleteFromCommunity}`, { method: 'DELETE' });
-        showToast(res?.message || "Canción eliminada del catálogo");
+        showToast(res?.message || "Canción eliminada");
         document.getElementById('modal-delete-song-confirm').classList.add('hidden');
         exitSongWizard();
         await renderSongsCatalog(true);
+        if (window.location.hash === '#community' || window.location.hash === '#songs-community' || !document.getElementById('subpanel-community-catalog')?.classList.contains('hidden')) {
+            loadCommunitySongs();
+        }
     } catch (err) {
         showToast(err.message, "danger");
     } finally {
@@ -851,6 +889,9 @@ async function executeDeleteSong() {
  * Abre el subpanel de exploración de la comunidad
  */
 function openCommunityCatalogView() {
+    if (window.location.hash !== '#community' && window.location.hash !== '#songs-community') {
+        window.location.hash = '#community';
+    }
     document.getElementById('modal-song-choose-type')?.classList.add('hidden');
     document.getElementById('subpanel-songs-list')?.classList.add('hidden');
     document.getElementById('subpanel-song-detail')?.classList.add('hidden');
@@ -867,6 +908,7 @@ function openCommunityCatalogView() {
  * Regresa de la comunidad a la lista propia de canciones
  */
 function exitCommunityCatalogView() {
+    window.location.hash = '#songs';
     document.getElementById('subpanel-community-catalog')?.classList.add('hidden');
     document.getElementById('subpanel-song-detail')?.classList.add('hidden');
     document.getElementById('subpanel-song-wizard')?.classList.add('hidden');
@@ -981,6 +1023,8 @@ function renderCommunityCatalog(isAppend = false, newBatch = []) {
     }
 
     const itemsToRender = isAppend ? newBatch : communitySongs;
+    const currentUser = getData('currentUser');
+    const isSuperadmin = currentUser && currentUser.account_type === 'superadmin';
 
     itemsToRender.forEach(s => {
         const card = document.createElement('div');
@@ -989,6 +1033,7 @@ function renderCommunityCatalog(isAppend = false, newBatch = []) {
         const medleyBadge = s.is_medley ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mr-1.5">Medley</span>` : '';
         const albumText = s.album ? ` • ${s.album}` : '';
         const creatorName = s.creator_name ? `${s.creator_name}${s.creator_lastname ? ' ' + s.creator_lastname : ''}` : 'Usuario Levare';
+        const canAdminSong = isSuperadmin || (currentUser && s.created_by == currentUser.id);
 
         card.innerHTML = `
             <div class="space-y-1">
@@ -1015,6 +1060,11 @@ function renderCommunityCatalog(isAppend = false, newBatch = []) {
                 </div>
 
                 <div class="flex items-center gap-2">
+                    ${canAdminSong ? `
+                        <button type="button" class="btn-community-card-edit p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer" data-id="${s.id}" title="Editar canción">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                    ` : ''}
                     <button type="button" class="btn-community-preview px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer" data-id="${s.id}">
                         Ver letra
                     </button>
@@ -1022,11 +1072,11 @@ function renderCommunityCatalog(isAppend = false, newBatch = []) {
                         <span class="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1">
                             <i class="fa-solid fa-check text-[10px]"></i> En la banda
                         </span>
-                    ` : `
+                    ` : (canEdit() ? `
                         <button type="button" class="btn-community-import px-3 py-1.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition flex items-center gap-1 cursor-pointer" data-id="${s.id}">
                             <i class="fa-solid fa-plus text-[10px]"></i> Agregar
                         </button>
-                    `}
+                    ` : '')}
                 </div>
             </div>
         `;
@@ -1036,6 +1086,14 @@ function renderCommunityCatalog(isAppend = false, newBatch = []) {
             btnLike.onclick = (e) => {
                 e.stopPropagation();
                 toggleCommunitySongLike(s.id);
+            };
+        }
+
+        const btnCardEdit = card.querySelector('.btn-community-card-edit');
+        if (btnCardEdit) {
+            btnCardEdit.onclick = (e) => {
+                e.stopPropagation();
+                openEditSongModal(s.id);
             };
         }
 
@@ -1112,6 +1170,33 @@ function openCommunitySongPreview(songId) {
     // Likes
     updateCommunityModalLikeUI(song.user_has_liked, song.likes_count);
 
+    // Acciones de Administración (Superadmin o Autor)
+    const currentUser = getData('currentUser');
+    const adminActions = document.getElementById('comm-preview-admin-actions');
+    const btnEdit = document.getElementById('btn-comm-preview-edit');
+    const btnDelete = document.getElementById('btn-comm-preview-delete');
+    const canAdminSong = currentUser && (currentUser.account_type === 'superadmin' || song.created_by == currentUser.id);
+
+    if (adminActions) {
+        if (canAdminSong) {
+            adminActions.classList.remove('hidden');
+            if (btnEdit) {
+                btnEdit.onclick = () => {
+                    modal.classList.add('hidden');
+                    openEditSongModal(song.id);
+                };
+            }
+            if (btnDelete) {
+                btnDelete.onclick = () => {
+                    modal.classList.add('hidden');
+                    handleDeleteSong(song.id, song.title);
+                };
+            }
+        } else {
+            adminActions.classList.add('hidden');
+        }
+    }
+
     // Botón de Importar / Agregar
     updateCommunityModalImportUI(song.already_in_group);
 
@@ -1168,7 +1253,7 @@ function updateCommunityModalImportUI(alreadyInGroup) {
                 <span>En tu repertorio</span>
             </span>
         `;
-    } else {
+    } else if (canEdit()) {
         container.innerHTML = `
             <button type="button" id="btn-comm-preview-import" class="px-5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                 <i class="fa-solid fa-plus text-xs"></i>
@@ -1179,6 +1264,8 @@ function updateCommunityModalImportUI(alreadyInGroup) {
         if (btnImport && currentCommunityViewingSong) {
             btnImport.onclick = () => importCommunitySong(currentCommunityViewingSong.id);
         }
+    } else {
+        container.innerHTML = '';
     }
 }
 
@@ -2676,6 +2763,7 @@ function viewSongDetail(songId) {
     
     // Cambiar subpaneles
     document.getElementById('subpanel-songs-list')?.classList.add('hidden');
+    document.getElementById('subpanel-community-catalog')?.classList.add('hidden');
     document.getElementById('subpanel-song-wizard')?.classList.add('hidden');
     document.getElementById('subpanel-song-detail')?.classList.remove('hidden');
     

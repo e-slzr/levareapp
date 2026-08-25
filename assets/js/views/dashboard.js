@@ -109,6 +109,17 @@ async function loadSuperadminDashboardData(forceRefresh = false) {
             if (pushEl) pushEl.textContent = stats.push?.total_devices ?? 0;
         }
 
+        // Clickable stat cards navigation for Superadmin
+        const btnUsersStat = document.getElementById('btn-sa-stat-users');
+        if (btnUsersStat) {
+            btnUsersStat.onclick = () => navigateTo('admin');
+        }
+
+        const btnSongsStat = document.getElementById('btn-sa-stat-songs');
+        if (btnSongsStat) {
+            btnSongsStat.onclick = () => navigateTo('community');
+        }
+
         // Render Global Announcements List
         const loadMoreContainer = document.getElementById('sa-announcements-load-more-container');
         const btnLoadMore = document.getElementById('btn-sa-announcements-load-more');

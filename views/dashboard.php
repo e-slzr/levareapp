@@ -55,16 +55,21 @@
     <div id="dashboard-superadmin-section" class="space-y-6 hidden">
         <!-- Platform Metrics Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-            <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-1">
-                <div class="flex items-center justify-between text-zinc-400">
+            <!-- 1. Usuarios (Cliqueable -> Directorio de Usuarios) -->
+            <div id="btn-sa-stat-users" class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-1 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition cursor-pointer group">
+                <div class="flex items-center justify-between text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-200 transition">
                     <span class="text-[11px] font-bold uppercase tracking-wider">Usuarios</span>
                     <i class="fa-solid fa-users text-xs"></i>
                 </div>
                 <p id="sa-stat-users" class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">--</p>
-                <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Plataforma activa</p>
+                <div class="flex items-center justify-between">
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Plataforma activa</p>
+                    <i class="fa-solid fa-chevron-right text-[9px] text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-500 transition"></i>
+                </div>
             </div>
 
-            <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-1">
+            <!-- 2. Bandas (Pendiente) -->
+            <div id="btn-sa-stat-groups" class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-1 opacity-90">
                 <div class="flex items-center justify-between text-zinc-400">
                     <span class="text-[11px] font-bold uppercase tracking-wider">Bandas</span>
                     <i class="fa-solid fa-people-group text-xs"></i>
@@ -73,16 +78,21 @@
                 <p class="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Grupos creados</p>
             </div>
 
-            <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-1">
-                <div class="flex items-center justify-between text-zinc-400">
+            <!-- 3. Canciones (Cliqueable -> Catálogo Comunitario / Gestión) -->
+            <div id="btn-sa-stat-songs" class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-1 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition cursor-pointer group">
+                <div class="flex items-center justify-between text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-200 transition">
                     <span class="text-[11px] font-bold uppercase tracking-wider">Canciones</span>
                     <i class="fa-solid fa-music text-xs"></i>
                 </div>
                 <p id="sa-stat-songs" class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">--</p>
-                <p class="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">En catálogo</p>
+                <div class="flex items-center justify-between">
+                    <p class="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">En catálogo</p>
+                    <i class="fa-solid fa-chevron-right text-[9px] text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-500 transition"></i>
+                </div>
             </div>
 
-            <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-1">
+            <!-- 4. Web Push (Sin interacción) -->
+            <div id="btn-sa-stat-push" class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-1">
                 <div class="flex items-center justify-between text-zinc-400">
                     <span class="text-[11px] font-bold uppercase tracking-wider">Web Push</span>
                     <i class="fa-solid fa-bell text-xs text-amber-500"></i>
