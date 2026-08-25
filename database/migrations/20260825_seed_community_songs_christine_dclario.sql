@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Christine D’Clario
 -- Total canciones: 2
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Que Se Abra El Cielo', 'Christine D’Clario', 'Eterno Live', 'Bb', 1, 0, 0, '[VERSO 1]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Que Se Abra El Cielo', 'Christine D’Clario', 'Eterno Live', 'Bb', 1, 0, 0, '[VERSO 1]
 
 Di[A]os bienvenido a este lugar
 Y en nuestro c[E/G#]ora__z[F#m]Ã³n
@@ -130,7 +130,7 @@ En t[A]i esta nuestra esperanza
 Oh, Gran Di[E]os
 
 Oh, Gran Dios', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Magnífico', 'Christine D’Clario', 'Emanuel', 'E', 1, 0, 0, '#[F#m] [E] [A]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Magnífico', 'Christine D’Clario', 'Emanuel', 'E', 1, 0, 0, '#[F#m] [E] [A]
 #[Bm] [A] [F#m]
 #[Bm] [F#m] [E]
 

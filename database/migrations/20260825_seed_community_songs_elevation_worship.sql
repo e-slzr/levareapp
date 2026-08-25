@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Elevation Worship en Español
 -- Total canciones: 6
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'La Bendición (The Blessing)', 'Elevation Worship en Español', 'Graves Into Gardens', 'B', 1, 0, 0, '#[G#m7] [E] [B] [F#] [B]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'La Bendición (The Blessing)', 'Elevation Worship en Español', 'Graves Into Gardens', 'B', 1, 0, 0, '#[G#m7] [E] [B] [F#] [B]
 
 [VERSO 1]
 
@@ -36,7 +36,7 @@ INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_m
 
 [G#m7]  Amé[E]n, am[B]én, am[F#]én
 [G#m7]  Amé[E]n, am[B]én, am[F#]én', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Tumbas a Jardines (Graves Into Gardens)', 'Elevation Worship en Español', 'Tumbas a Jardines', 'B', 1, 0, 0, '#[G] [C/G] [G]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Tumbas a Jardines (Graves Into Gardens)', 'Elevation Worship en Español', 'Tumbas a Jardines', 'B', 1, 0, 0, '#[G] [C/G] [G]
 
 [VERSO 1]
 
@@ -133,7 +133,7 @@ SÃ© que [Em7]solo [C9]tÃº lo h[G]arÃ¡s
 SÃ© que [Em7]solo [C9]tÃº lo h[G]arÃ¡s
 
 #[C] [G] [C] [G]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Lo Harás Otra Vez (Do It Again)', 'Elevation Worship en Español', 'Lo Harás Otra Vez', 'Bb', 1, 0, 0, '#[C] [G9] [C] [G9]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Lo Harás Otra Vez (Do It Again)', 'Elevation Worship en Español', 'Lo Harás Otra Vez', 'Bb', 1, 0, 0, '#[C] [G9] [C] [G9]
 
 [VERSO 1]
 
@@ -236,7 +236,7 @@ En tus manos [G]estarÃ©
 S[C]iempre has sido fi[G9]el[C]
 
 #[G9] [C] [G9] [C] [G9]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Alaba (Praise)', 'Elevation Worship en Español', 'CAN YOU IMAGINE?', 'Ab', 1, 0, 0, '[A]Alabo en el monte
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Alaba (Praise)', 'Elevation Worship en Español', 'CAN YOU IMAGINE?', 'Ab', 1, 0, 0, '[A]Alabo en el monte
 Al[D]abo en el v[A]alle
 En [E/G#]incertidumbre
 Y a[D]Ãºn si no hay [A]duda
@@ -288,7 +288,7 @@ Pues Ã[D]©l vivo estÃ¡
 [F#m]Alma [D]mÃ­a [A]alaba al S[E]eÃ±or
 
 Q[A]ue todo lo que respira alabe al SeÃ±or, al SeÃ±or', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Como en el cielo', 'Elevation Worship en Español', 'Como En El Cielo', 'G', 1, 0, 0, '#[D] [G/B] [D] [G/B] [A] [G/B]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Como en el cielo', 'Elevation Worship en Español', 'Como En El Cielo', 'G', 1, 0, 0, '#[D] [G/B] [D] [G/B] [A] [G/B]
 #[D] [G] [D] [G]
 
 [VERSO 1]
@@ -391,7 +391,7 @@ Tu Espíritu está aquí
 [G]  Tu Espíritu es[D]tá a[D7M]quí
 [G]  Es evidente t[D]u mov[D7M]er
 [G7M(9)]       Tu Espíritu es[D]tá[A]  a[G]quí', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Eco', 'Elevation Worship en Español', 'Hallelujah Here Below', 'G', 1, 0, 0, 'Transpose: D
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Eco', 'Elevation Worship en Español', 'Hallelujah Here Below', 'G', 1, 0, 0, 'Transpose: D
 
 Intro (x2)
 Asus / Bm / G / D

@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Julio Melgar
 -- Total canciones: 3
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Ya No Soy Esclavo', 'Julio Melgar', 'Se Trata De Ti', 'Bb', 1, 0, 0, '[VERSO 1]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Ya No Soy Esclavo', 'Julio Melgar', 'Se Trata De Ti', 'Bb', 1, 0, 0, '[VERSO 1]
 Me env[A]uelves hoy con una[C#] canción
 Melo[D]día   d[E]e Tu amo[A]r.
 Cantas[A] libertad en mi ad[C#]versidad
@@ -61,7 +61,7 @@ TAG (6x)
 
 Y solo s[F#]é    [E]           que yo soy tu [A]Hijo[D]
 El es mi P[F#]adre [E]                y mi Padre [A]me ama[D]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Cuerdas de Amor', 'Julio Melgar', 'El Encuentro', 'E', 1, 0, 0, 'Tono: Dm
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Cuerdas de Amor', 'Julio Melgar', 'El Encuentro', 'E', 1, 0, 0, 'Tono: Dm
 #[Dm7] [Bb] [F]
 
 [VERSO 1]
@@ -117,7 +117,7 @@ Nunca pierdes el cont[Csus4]rol[C][F/C]
 
 *****************************************
 El [Cadd6]Cadd6 se puede tocar tambien como [Am/C]Am7/C', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Vivire para alabarte', 'Julio Melgar', 'Creo En Ti', 'G', 1, 0, 0, '#[E] [B] [C#m] [A]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Vivire para alabarte', 'Julio Melgar', 'Creo En Ti', 'G', 1, 0, 0, '#[E] [B] [C#m] [A]
 
 [VERSO 1]
 

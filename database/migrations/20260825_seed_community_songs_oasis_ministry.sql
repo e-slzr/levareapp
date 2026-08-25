@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Oasis Ministry
 -- Total canciones: 4
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Yahweh Se Manifestará', 'Oasis Ministry', 'Yahweh Se Manifestará', 'C#m', 1, 0, 0, '[Em7]Se siente tu gloria en este [Bm]lugar
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Yahweh Se Manifestará', 'Oasis Ministry', 'Yahweh Se Manifestará', 'C#m', 1, 0, 0, '[Em7]Se siente tu gloria en este [Bm]lugar
 Algo grande va a pa[C]sar
 Se activa lo sobrenatu[D]ral
 
@@ -28,7 +28,7 @@ Se manifestará
 [D]Si le llamas él se manifiesta
 C                              ( Bm )
 Se le muscas él se manifestará', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Si Tu Presencia Conmigo No Va', 'Oasis Ministry', 'Si Tu Presencia Conmigo No Va', 'G', 1, 0, 0, '#[Dm7] [F] [C] [G]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Si Tu Presencia Conmigo No Va', 'Oasis Ministry', 'Si Tu Presencia Conmigo No Va', 'G', 1, 0, 0, '#[Dm7] [F] [C] [G]
 #[Dm7] [F] [C] [G]
 #[F] [Dm7] [C/G] [G]
 
@@ -127,7 +127,7 @@ No quiero lleg[C]ar, no v[G/B]oy a lleg[Am7]ar
 Si tu pres[Dm7]encia conmigo no va
 Yo no v[F]oy a ningún lugar
 No quiero lleg[C]ar[Am7][G/B]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Pablo y Silas (ft Grupo Barak)', 'Oasis Ministry', 'Pablo y Silas', 'Em', 1, 0, 0, '[INTRO]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Pablo y Silas (ft Grupo Barak)', 'Oasis Ministry', 'Pablo y Silas', 'Em', 1, 0, 0, '[INTRO]
 
 Bb - Eb - Gm - F
 
@@ -180,7 +180,7 @@ Llegó mi[Gm] amado Llegó mí amado[Gm]
 Llegó mi amado/// amadoooooooooo
 
 Tag: puente chords', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Algo Está Pasando', 'Oasis Ministry', 'Algo Está Pasando', 'G', 1, 0, 0, 'intro: Bbm
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Algo Está Pasando', 'Oasis Ministry', 'Algo Está Pasando', 'G', 1, 0, 0, 'intro: Bbm
 Db |Eb |f |Db-C-Ab
 
 Se escucha un son[Bbm]ido, desciende desde el cie[Ab]lo,

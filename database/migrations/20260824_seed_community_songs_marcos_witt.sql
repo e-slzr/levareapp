@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Marcos Witt
 -- Total canciones: 7
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Renuévame', 'Marcos Witt', 'Proyecto AA', 'D', 1, 0, 0, '// Intro: D  G  A //
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Renuévame', 'Marcos Witt', 'Proyecto AA', 'D', 1, 0, 0, '// Intro: D  G  A //
 
 [D]Renuevam[G]e Se[A]ñor Jesu[D]s
 [G]ya no qui[Em]ero ser igu[A]al
@@ -13,7 +13,7 @@ INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_m
 [G]necesi[Em]ta ser cambi[A]ado señor
 [D]Porque todo lo que hay dentro de [Bm]mi orazon[A]
 [G]necesi[A]ta mas de t[D]i.//', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Tu Fidelidad', 'Marcos Witt', 'Tú y Yo (En Vivo)', 'D', 1, 0, 0, '//T[D]U FIDELI[Bm]DAD ES GR[Em]ANDE
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Tu Fidelidad', 'Marcos Witt', 'Tú y Yo (En Vivo)', 'D', 1, 0, 0, '//T[D]U FIDELI[Bm]DAD ES GR[Em]ANDE
 [Asus4]TU FIDELID[A]AD INC[G]OMPARABLE [D]ES[A/C#]
 [Bm]NADIE COMO [A]TU BENDITO D[Em]IOS
 G[G]RANDE ES T[A]U FIDELID[D]AD//[A][G]
@@ -43,7 +43,7 @@ G[C]RANDE ES [D]TU FIDEL[G]IDAD[Em]
 [OUTRO]
 G[Am]RANDE ES [D]TU FIDE[Em]LIDAD
 [Am]GRANDE ES [D]TU FID[Gsus4]ELIDAD[G]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Gracias', 'Marcos Witt', 'Poderoso (En Vivo)', 'G', 1, 0, 0, '#[Bb] [F/A] [Cm] [Eb]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Gracias', 'Marcos Witt', 'Poderoso (En Vivo)', 'G', 1, 0, 0, '#[Bb] [F/A] [Cm] [Eb]
 #[Am] [Dm] [F/A]
 
 [VERSO 1]
@@ -101,8 +101,8 @@ Gr[C]a_c[G/B]ias (te digo gracias)
 Gr[Dm]acias, SeÃ[Am]±or[G/B]
 Gr[C]acias, mi SeÃ[G]±or
 J[F]esÃºs[C]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Temprano Yo Te Buscaré', 'Marcos Witt', 'Poderoso (En Vivo)', 'G', 1, 0, 0, '[Intro] G  C\\n\\n[Primera Parte]\\n\\nG                      D\\n   Temprano yo te buscaré\\nAm                      C         D\\n   De madrugada, yo me acercaré a tí\\nG                            D\\n   Mi alma te anhela y tiene sed\\nAm                    C       D\\n   Para ver tu gloria y tu poder\\n\\n[Estribillo]\\n\\nG       D              Em\\n   Mi socorro has sido tú\\n      G             D\\nEn la sombra de tus alas\\nC         D\\nYo me gozaré\\n\\nG            D            Em\\n   Mi alma está apegada a tí\\n          C      Am           D\\nPorque tu diestra, me ha sostenido\\nBm    C                C  D  G\\nOh! tu diestra me ha sostenido', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Poderoso', 'Marcos Witt', 'Poderoso (En Vivo)', 'Em', 1, 0, 0, '79:I[11466,["6874","static/chunks/vendors/zod-1e6a025907a4486d.js","2280","static/chunks/cc/components/compasso-1354cd602f7d302c.js","5557","static/chunks/5557-57f2d5c3e82ea5ca.js","9419","static/chunks/9419-7f126bee2b502745.js","9258","static/chunks/9258-efcbb4976bbb152f.js","2583","static/chunks/2583-6403e3b8744b5a29.js","6821","static/chunks/6821-53399ec181e2f2d8.js","7023","static/chunks/7023-bd74b79b47eca3e5.js","5617","static/chunks/5617-83d22bb1a6bfe00c.js","5071","static/chunks/5071-f2586d1d743740d3.js","6644","static/chunks/6644-dc0c7449f983bcab.js","6937","static/chunks/6937-61865ed6f2ad936b.js","7822","static/chunks/7822-2db3361f5de2c761.js","3375","static/chunks/3375-ea6c4e1700107240.js","5816","static/chunks/app/%5Bartist%5D/%5Bsong%5D/page-7840272bf16af527.js"],"HitsHandler"]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Temprano Yo Te Buscaré', 'Marcos Witt', 'Poderoso (En Vivo)', 'G', 1, 0, 0, '[Intro] G  C\\n\\n[Primera Parte]\\n\\nG                      D\\n   Temprano yo te buscaré\\nAm                      C         D\\n   De madrugada, yo me acercaré a tí\\nG                            D\\n   Mi alma te anhela y tiene sed\\nAm                    C       D\\n   Para ver tu gloria y tu poder\\n\\n[Estribillo]\\n\\nG       D              Em\\n   Mi socorro has sido tú\\n      G             D\\nEn la sombra de tus alas\\nC         D\\nYo me gozaré\\n\\nG            D            Em\\n   Mi alma está apegada a tí\\n          C      Am           D\\nPorque tu diestra, me ha sostenido\\nBm    C                C  D  G\\nOh! tu diestra me ha sostenido', NULL, 1, NOW(), NOW());
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Poderoso', 'Marcos Witt', 'Poderoso (En Vivo)', 'Em', 1, 0, 0, '79:I[11466,["6874","static/chunks/vendors/zod-1e6a025907a4486d.js","2280","static/chunks/cc/components/compasso-1354cd602f7d302c.js","5557","static/chunks/5557-57f2d5c3e82ea5ca.js","9419","static/chunks/9419-7f126bee2b502745.js","9258","static/chunks/9258-efcbb4976bbb152f.js","2583","static/chunks/2583-6403e3b8744b5a29.js","6821","static/chunks/6821-53399ec181e2f2d8.js","7023","static/chunks/7023-bd74b79b47eca3e5.js","5617","static/chunks/5617-83d22bb1a6bfe00c.js","5071","static/chunks/5071-f2586d1d743740d3.js","6644","static/chunks/6644-dc0c7449f983bcab.js","6937","static/chunks/6937-61865ed6f2ad936b.js","7822","static/chunks/7822-2db3361f5de2c761.js","3375","static/chunks/3375-ea6c4e1700107240.js","5816","static/chunks/app/%5Bartist%5D/%5Bsong%5D/page-7840272bf16af527.js"],"HitsHandler"]
 #[E] [D] [C] [G] [A]
 
 [E]Po-[D]de-[C]ro-s[G]o [A][A5][G5]
@@ -124,7 +124,7 @@ es Poder[G]o - [Am]so[C][Am][G]
 #[E] [Eb] [D] [Db] [C] [Db] [D] [Eb]
 
 [E]Po -[D]de -[C]roo[G]- [A]so,[C][A5][G5]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Mas el Dios de toda gracia', 'Marcos Witt', 'Venció (En Vivo)', 'C', 1, 0, 0, 'Mas [A]el Dios de tod[E]a gra [F#m7]- cia
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Mas el Dios de toda gracia', 'Marcos Witt', 'Venció (En Vivo)', 'C', 1, 0, 0, 'Mas [A]el Dios de tod[E]a gra [F#m7]- cia
 
 que nos llam[D]o a su g[Bm7]loria e[Esus4]ter - n[E]a
 
@@ -141,7 +141,7 @@ por los [D]siglos de los [Esus4]si - glo[E]s
 
 #[A] [A/G] [D/F#] [Esus4] [E] [A]
 Amén, - Amén,   Amén    y   Amén', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Tu mirada', 'Marcos Witt', 'Recordando Otra Vez', 'G', 1, 0, 0, '[G]Tus ojos revelan que yo
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Tu mirada', 'Marcos Witt', 'Recordando Otra Vez', 'G', 1, 0, 0, '[G]Tus ojos revelan que yo
 [Em]Nada puedo esconder
 que no soy[C] nada sin ti[Am7]
 oh fiel [D]Señor

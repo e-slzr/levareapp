@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Marco Barrientos
 -- Total canciones: 8
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Ven Espíritu Ven', 'Marco Barrientos', 'Sin Reservas (En Vivo)', 'F', 1, 0, 0, 'VEN ESPIRITU VEN
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Ven Espíritu Ven', 'Marco Barrientos', 'Sin Reservas (En Vivo)', 'F', 1, 0, 0, 'VEN ESPIRITU VEN
 
 //V[F]EN ES[C/E]PIRITU V[Dm]EN,
 Y LL[F/C]ENAME SEÑOR[Bb]
@@ -13,7 +13,7 @@ REN[Dm]UEVAME, RESTAU[F/C]RAME, SEÑOR,[Bb]
 PURI[F]FICAME Y LAV[C/E]AME,
 REN[Dm]UEVAME, RESTAUR[F/C]AME, SEÑOR,[Bb]
 TE QU[C11]IERO C[C]ONOCER.[F]      [Bb/C]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Preciosa Sangre (feat. Julio Melgar)', 'Marco Barrientos', 'El Encuentro', 'A', 1, 0, 0, 'KEY OF A
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Preciosa Sangre (feat. Julio Melgar)', 'Marco Barrientos', 'El Encuentro', 'A', 1, 0, 0, 'KEY OF A
 [INTRO]
 
 #[Bm] [A] [F#m] [C#m]
@@ -54,7 +54,7 @@ Tu[D]  sangre me[A]  perdonó[E]
 Tu[Bm]   sangre me[F#m]    limpió
 Tu[E]    sangre me sanó
 Tu[E]  sangre me sanó', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'De Gloria En Gloria', 'Marco Barrientos', 'Amanece', 'Bb', 1, 0, 0, '[INTRO]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'De Gloria En Gloria', 'Marco Barrientos', 'Amanece', 'Bb', 1, 0, 0, '[INTRO]
 #[Eb] [F] [Gm7] [Bb/D]
 #[Eb] [F] [Gm7] [Bb]
 
@@ -84,7 +84,7 @@ que [Gm7]todos puedan ver, [F]que todos oigan que:
 
 [OUTRO]
 #[Eb] [Bb] [Gm7] [F] [Eb]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Hosanna', 'Marco Barrientos', 'Avívanos', 'Bm', 1, 0, 0, '[INTRO]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Hosanna', 'Marco Barrientos', 'Avívanos', 'Bm', 1, 0, 0, '[INTRO]
 #[Bm] [A] [F#m] [G] x2
 
 [VERSO 1]
@@ -113,7 +113,7 @@ Hosanna, [G]Jesucristo, Je[A]sucristo es [Bm]Rey //
 
 [OUTRO]
 #[Bm] [A] [G] [F#m] [Bm]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'El Señor esta en este lugar', 'Marco Barrientos', 'Clamor De Guerra', 'Em', 1, 0, 0, '#[Em] [G] [C] [D] [Bsus2] [Em]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'El Señor esta en este lugar', 'Marco Barrientos', 'Clamor De Guerra', 'Em', 1, 0, 0, '#[Em] [G] [C] [D] [Bsus2] [Em]
 
 e)------7-------------7------------------------
 b)--8------------8------------7b8--------------
@@ -140,7 +140,7 @@ Aqui tocan el bajo y la bateria
 [C]EL [Bm]SEÑ[Am]OR, [C]EL [Bm]SEÑ[Am]OR, [C]EL [Bm]SEÑ[Am]OR, [C]EL [Bm]SEÑ[Am]OR   ¡[C]EST[D]A AQU[Em]I!
 
 BENDICIONES¡¡¡¡¡¡¡¡¡', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Ven es hora de adorarle', 'Marco Barrientos', 'Ven Es Hora De Adorarle', 'D', 1, 0, 0, '[INTRO]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Ven es hora de adorarle', 'Marco Barrientos', 'Ven Es Hora De Adorarle', 'D', 1, 0, 0, '[INTRO]
 #[D] [G] [D] [Asus4] [A]
 
 [VERSO 1]
@@ -161,7 +161,7 @@ INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_m
 
 [OUTRO]
 #[G] [A] [D]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Agnus Dei', 'Marco Barrientos', 'Muéstrame Tu Gloria', 'A', 1, 0, 0, '[INTRO]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Agnus Dei', 'Marco Barrientos', 'Muéstrame Tu Gloria', 'A', 1, 0, 0, '[INTRO]
 
 e-----------------------------------------------
 b-------7-----------7-9-9~10--10~9-9~7-7~-------
@@ -188,7 +188,7 @@ El Se[A]ñor Dio[F#m]s         pode[D]ro[E]so
 Amén.
 
 DIOS LES BENDIGA ESPERO QUE LES GUSTE MUCHO.', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'La cosecha', 'Marco Barrientos', 'Poderoso Dios', 'Am', 1, 0, 0, '#[A] [B] [C] [G] [Ab]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'La cosecha', 'Marco Barrientos', 'Poderoso Dios', 'Am', 1, 0, 0, '#[A] [B] [C] [G] [Ab]
 #[A] [C] [G] [Ab] [A]
 #[C] [G] [Ab] [A]
 #[A] [B] [C] [G] [Ab]

@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Grupo Grace
 -- Total canciones: 5
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Que vuelva lo santo al altar', 'Grupo Grace', 'Libres', 'Db', 1, 0, 0, '#[Bb] [Eb] [F]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Que vuelva lo santo al altar', 'Grupo Grace', 'Libres', 'Db', 1, 0, 0, '#[Bb] [Eb] [F]
 #[Bb] [F/A] [Gm]
 
 [Pre-Estribillo]
@@ -97,7 +97,7 @@ Conforme a t[Bb]i
 #[Eb] [F]
 #[Bb] [F/A] [Gm]
 #[Eb] [Cm] [Gm] [F]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Menos de mi ft Aaron Moses', 'Grupo Grace', 'Libres', 'F#', 1, 0, 0, '[G]Menos de mí, más de ti, yo d[C9]eseo
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Menos de mi ft Aaron Moses', 'Grupo Grace', 'Libres', 'F#', 1, 0, 0, '[G]Menos de mí, más de ti, yo d[C9]eseo
 
 [Pre-Estribillo]
 
@@ -132,7 +132,7 @@ Rindo mis cor[G]onas a tus pies[D/F#]
 [Em]Dame la forma q[D]ue soñaste para [C9]mi
 [G]Soy el barro, tu e[D/F#]l alfarero
 [Em]Hazme de nuev[D]o[C9]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Sucedera', 'Grupo Grace', 'Libres', 'Ab', 1, 0, 0, '#[G#] [D#] [Fm] [D#] [C#]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Sucedera', 'Grupo Grace', 'Libres', 'Ab', 1, 0, 0, '#[G#] [D#] [Fm] [D#] [C#]
 
 [VERSO 1]
 
@@ -200,7 +200,7 @@ Sucede[Fm]rá, Se que a[D#]lgo sucederá[C#]//
 [D#]Yo lo Creo, Yo lo Creo,
 [Fm]Yo lo Creo, [D#]Yo lo Creo,
 [C#]Yo lo Creo, Yo lo Creo,', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'La promesa ft Grupo Barak', 'Grupo Grace', 'Libres', 'F', 1, 0, 0, '#[Dm7] [F7M] [Gm7] [A7]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'La promesa ft Grupo Barak', 'Grupo Grace', 'Libres', 'F', 1, 0, 0, '#[Dm7] [F7M] [Gm7] [A7]
 
 [VERSO 1]
 
@@ -260,4 +260,4 @@ Bb7M
 Se siente el fuego, fuego, fuego
 Se siente el fue[C9]go, fuego, fuego
 En este[A7] Lugar', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'No parare ft Oasis Ministry', 'Grupo Grace', 'Libres', 'G', 1, 0, 0, 'Intro: Am F C Em\\n\\nAm                F\\nLa atmósfera está cambiando aquí\\nC               Em\\nAlgo se mueve, algo se mueve\\nAm               F\\nEstá fluyendo la liberación\\nC              Em\\nAlgo se mueve, algo se mueve\\n\\n\\nAm.                F\\nSiento Ángeles, que se unen a adorar\\n          C        G\\nAl Rey de reyes\\nAm                  F\\nVeo ángeles, que se unen adorar\\n           C       G\\nAl gran yo soy\\n\\n\\nCoro\\nF          C\\nNo parare, no parare\\nAm\\nHasta que pueda verte\\nG\\nQuiero ver tú gloria\\n\\n\\nIntermedio\\n\\n\\nF\\nTrae tu gloria\\nG\\nYo quiero más\\nAm\\nDe tu fuego\\nEm\\nEn mi altar\\n', NULL, 1, NOW(), NOW());
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'No parare ft Oasis Ministry', 'Grupo Grace', 'Libres', 'G', 1, 0, 0, 'Intro: Am F C Em\\n\\nAm                F\\nLa atmósfera está cambiando aquí\\nC               Em\\nAlgo se mueve, algo se mueve\\nAm               F\\nEstá fluyendo la liberación\\nC              Em\\nAlgo se mueve, algo se mueve\\n\\n\\nAm.                F\\nSiento Ángeles, que se unen a adorar\\n          C        G\\nAl Rey de reyes\\nAm                  F\\nVeo ángeles, que se unen adorar\\n           C       G\\nAl gran yo soy\\n\\n\\nCoro\\nF          C\\nNo parare, no parare\\nAm\\nHasta que pueda verte\\nG\\nQuiero ver tú gloria\\n\\n\\nIntermedio\\n\\n\\nF\\nTrae tu gloria\\nG\\nYo quiero más\\nAm\\nDe tu fuego\\nEm\\nEn mi altar\\n', NULL, 1, NOW(), NOW());

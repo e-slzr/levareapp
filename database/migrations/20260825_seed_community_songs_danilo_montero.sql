@@ -1,8 +1,8 @@
 -- Migración: Semilla de canciones comunitarias de Danilo Montero
 -- Total canciones: 5
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Cantaré de Tu Amor', 'Danilo Montero', 'Cantaré De Tu Amor', 'D', 1, 0, 0, 'F                    C\\nPor mucho tiempo busqué\\n   F          C/E\\nUna razón de vivir\\nF        G          Am7\\nEn medio de mil preguntas\\n    Fm          G\\nTu amor me respondió\\n\\n F            C\\nAhora veo la luz\\n F               C\\nY ya no tengo temor\\nF         G        Am7\\nTu reino vino a mi vida\\n        F         G\\nY ahora vivo para tí\\n\\n      C         G/B\\nCantaré de tu amor\\n       Am7       G      F\\nRendiré mi corazón ante tí\\n      C         G/B\\nTu serás mi pasión\\n        Am7         G          F\\nY mis pasos se guiarán por tu voz\\n      Dm       G\\nMi jesús y mi rey\\n       F             G\\nDe tu gran amor cantaré', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'La Casa de Dios', 'Danilo Montero', 'Admirable', 'D', 1, 0, 0, '#[D] [A] [Bm] [G]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Cantaré de Tu Amor', 'Danilo Montero', 'Cantaré De Tu Amor', 'D', 1, 0, 0, 'F                    C\\nPor mucho tiempo busqué\\n   F          C/E\\nUna razón de vivir\\nF        G          Am7\\nEn medio de mil preguntas\\n    Fm          G\\nTu amor me respondió\\n\\n F            C\\nAhora veo la luz\\n F               C\\nY ya no tengo temor\\nF         G        Am7\\nTu reino vino a mi vida\\n        F         G\\nY ahora vivo para tí\\n\\n      C         G/B\\nCantaré de tu amor\\n       Am7       G      F\\nRendiré mi corazón ante tí\\n      C         G/B\\nTu serás mi pasión\\n        Am7         G          F\\nY mis pasos se guiarán por tu voz\\n      Dm       G\\nMi jesús y mi rey\\n       F             G\\nDe tu gran amor cantaré', NULL, 1, NOW(), NOW());
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'La Casa de Dios', 'Danilo Montero', 'Admirable', 'D', 1, 0, 0, '#[D] [A] [Bm] [G]
 #[D] [A] [G]
 
 [VERSO 1]
@@ -31,7 +31,7 @@ Le brinda[D]remos ofrendas de [A]obediencia y [G]amor
 Por [D]eso le an[A]hela [Bm]mi corazÃ[G]³n
 An[D]hela de s[A]u compa[Bm]Ã±Ã­a
 An[D]hela de s[A]u compaÃ[G]±Ã­a', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Junto a tus pies', 'Danilo Montero', 'Admirable', 'D', 1, 0, 0, 'ACORDES ORIGINALES   ( tengo las partituras )
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Junto a tus pies', 'Danilo Montero', 'Admirable', 'D', 1, 0, 0, 'ACORDES ORIGINALES   ( tengo las partituras )
 
 Intro = |   C    |   G/B  |   E/G#  |  Am7 C7/G  |
 
@@ -71,8 +71,8 @@ los acordes de la terminacion son :
    [F] es estar j[G]unto a [C]Ti.[C][F][G/B]
 
 Ojala les sirva DIOS LES BENDIGA.', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Admirable', 'Danilo Montero', 'Admirable', 'C', 1, 0, 0, 'Dm7            Bb        F            C\\nCon poder y autoridad  nuestro Dios venció a\\n           Dm7               Bb          Am7\\nLa muerte, sobre el trono celestial siempre\\n        Dm7\\nReinará\\n\\n Bb         C        Bb         Gm7\\nSentado en majestad suyo es el reino por los\\nF   C  Bb            C     Bb          Gm7\\nSiglos  y por la eternidad su luz de gloria\\n         Am7\\nBrillará\\n\\n      C Dm7      C Dm7  Bb\\nAdmirable, conseje-ro   mi  Dios\\n      C    Dm7 Am7      C Dm7     C   Dm7\\nConsolador,       eres dig-no de alabanza\\nBb   C        Dm7\\nPríncipe de paz\\n\\n[Solo]\\n\\n A  E  F#m  B\\n A  E  G#m', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Bendito Jesus', 'Danilo Montero', 'Eres Todopoderoso', 'G', 1, 0, 0, 'Intro: B - F# - G#m - F# - E
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Admirable', 'Danilo Montero', 'Admirable', 'C', 1, 0, 0, 'Dm7            Bb        F            C\\nCon poder y autoridad  nuestro Dios venció a\\n           Dm7               Bb          Am7\\nLa muerte, sobre el trono celestial siempre\\n        Dm7\\nReinará\\n\\n Bb         C        Bb         Gm7\\nSentado en majestad suyo es el reino por los\\nF   C  Bb            C     Bb          Gm7\\nSiglos  y por la eternidad su luz de gloria\\n         Am7\\nBrillará\\n\\n      C Dm7      C Dm7  Bb\\nAdmirable, conseje-ro   mi  Dios\\n      C    Dm7 Am7      C Dm7     C   Dm7\\nConsolador,       eres dig-no de alabanza\\nBb   C        Dm7\\nPríncipe de paz\\n\\n[Solo]\\n\\n A  E  F#m  B\\n A  E  G#m', NULL, 1, NOW(), NOW());
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Bendito Jesus', 'Danilo Montero', 'Eres Todopoderoso', 'G', 1, 0, 0, 'Intro: B - F# - G#m - F# - E
 
 [B]Por tí es mi cla[F#]mor, y sin ningun te[G#m]mor
 En tí puedo confi[F#]ar, Bend[E]ito Jes[B]ús

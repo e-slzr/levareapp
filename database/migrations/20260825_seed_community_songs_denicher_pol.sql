@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Denicher Pol
 -- Total canciones: 1
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Inexplicable', 'Denicher Pol', 'Inexplicable', 'E', 1, 0, 0, '[D]  Que tiene  tu[G] espiritu que cuando me[A] tocas
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Inexplicable', 'Denicher Pol', 'Inexplicable', 'E', 1, 0, 0, '[D]  Que tiene  tu[G] espiritu que cuando me[A] tocas
 Me haces   te[D]mblar
 Y que  es  tu p[G]resencia  que   al  manifes[A]tarse
 Tengo     que   ll[D]orar

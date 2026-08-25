@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Miel San Marcos
 -- Total canciones: 8
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'No Hay Lugar Más Alto', 'Miel San Marcos', 'Como En El Cielo (En Vivo)', 'A', 1, 0, 0, '#[G] [C/E] [G/D] [C]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'No Hay Lugar Más Alto', 'Miel San Marcos', 'Como En El Cielo (En Vivo)', 'A', 1, 0, 0, '#[G] [C/E] [G/D] [C]
 #[G] [C/E] [G/D] [C]
 
 [Solo - Intro]
@@ -79,9 +79,9 @@ No hay lugar más[C9] alto, más [D11]grande
 Que estar a tus pi[Em7]es[G/B]
 No hay lugar más[C9] alto, más [D11]grande
 Que estar a tus pi[Em7]es, que estar a tus pi[G]es[C9]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Danzo En El Río', 'Miel San Marcos', 'Proezas (En Vivo)', 'C', 1, 0, 0, '[Intro] Bm7  G  D  A\\n\\n[Primera Parte]\\n\\nG\\nUn estruendo de muchas aguas\\nBm7         A\\nSe escucha aquí\\n\\nTrae sanidad, trae libertad\\n\\nGozo y salvacion\\n\\nG\\nEs el rio del Señor\\n     Bm7         A\\nQue nace de su corazón\\n\\n G\\nNunca se secará\\n   Bm7      A\\nY esta ciudad se alegrará\\n\\n[Estribillo]\\n\\n D\\nYo danzo en el río\\n A\\nYo danzo en el río\\n      Em7   Bm7\\nEn el río de Dios\\n      G\\nEn el río de Dios\\n\\n[Puente]\\n\\n     Bm7  G     D     A\\nHay vida en el río de Dios\\n     Bm7  G     D     A\\nHay gozo en el río de Dios\\n      Bm7    G\\nSoy libre, libre\\n    D      A        Bm7\\nEl río de Dios está aquí', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Increíble', 'Miel San Marcos', 'Como En El Cielo (En Vivo)', 'G', 1, 0, 0, '[Intro] Eb  Bb  F  Gm\\n\\nEb        Bb          F\\nPoderoso, invencible, admirable\\nGm\\nGrande y fuerte\\nEb                Bb\\nDios Rey de Reyes, asombroso\\nF          Gm\\nIncomparable\\n\\n         Eb  Bb  F\\nEres increible, todopoderoso\\nGm                    Eb\\nGrande, eres increible\\n   F\\nVenciste las tinieblas\\nGm\\nCristo exaltado estas\\n\\n        Eb             Bb\\nTu Eres Increible, invencible\\n   F                   Gm7\\nMi Dios solo Tu, solo Tu\\n        Eb             Bb\\nTu Eres Increible, invencible\\n   F                   Gm7\\nMi Dios solo Tu, solo Tu', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Grande y Fuerte', 'Miel San Marcos', 'Grande Y Fuerte', 'Em', 1, 0, 0, '[Intro] Am  F7M  Em7
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Danzo En El Río', 'Miel San Marcos', 'Proezas (En Vivo)', 'C', 1, 0, 0, '[Intro] Bm7  G  D  A\\n\\n[Primera Parte]\\n\\nG\\nUn estruendo de muchas aguas\\nBm7         A\\nSe escucha aquí\\n\\nTrae sanidad, trae libertad\\n\\nGozo y salvacion\\n\\nG\\nEs el rio del Señor\\n     Bm7         A\\nQue nace de su corazón\\n\\n G\\nNunca se secará\\n   Bm7      A\\nY esta ciudad se alegrará\\n\\n[Estribillo]\\n\\n D\\nYo danzo en el río\\n A\\nYo danzo en el río\\n      Em7   Bm7\\nEn el río de Dios\\n      G\\nEn el río de Dios\\n\\n[Puente]\\n\\n     Bm7  G     D     A\\nHay vida en el río de Dios\\n     Bm7  G     D     A\\nHay gozo en el río de Dios\\n      Bm7    G\\nSoy libre, libre\\n    D      A        Bm7\\nEl río de Dios está aquí', NULL, 1, NOW(), NOW());
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Increíble', 'Miel San Marcos', 'Como En El Cielo (En Vivo)', 'G', 1, 0, 0, '[Intro] Eb  Bb  F  Gm\\n\\nEb        Bb          F\\nPoderoso, invencible, admirable\\nGm\\nGrande y fuerte\\nEb                Bb\\nDios Rey de Reyes, asombroso\\nF          Gm\\nIncomparable\\n\\n         Eb  Bb  F\\nEres increible, todopoderoso\\nGm                    Eb\\nGrande, eres increible\\n   F\\nVenciste las tinieblas\\nGm\\nCristo exaltado estas\\n\\n        Eb             Bb\\nTu Eres Increible, invencible\\n   F                   Gm7\\nMi Dios solo Tu, solo Tu\\n        Eb             Bb\\nTu Eres Increible, invencible\\n   F                   Gm7\\nMi Dios solo Tu, solo Tu', NULL, 1, NOW(), NOW());
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Grande y Fuerte', 'Miel San Marcos', 'Grande Y Fuerte', 'Em', 1, 0, 0, '[Intro] Am  F7M  Em7
 #[Am] [F7M] [Em7]
 #[Am] [F7M] [Em7]
 #[Am] [F7M] [Em7]
@@ -165,8 +165,8 @@ Gr[Am]ande y fu[G/B]erte es nu[F7M]estro Di[Em7]os
 Gr[Am]ande y fu[G/B]erte es nu[F7M]estro Di[Em7]os
 Gr[Am]ande y fu[G/B]erte es nu[F7M]estro Di[Em7]os
 Gr[Am]ande y fu[G/B]erte es nu[F7M]estro Di[Em7]os', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Levántate Señor', 'Miel San Marcos', 'Levántate Señor', 'Em', 1, 0, 0, 'Am  G  F      C       G        Am\\n      Levántate, levántate Señor\\nAm  G  F             C    E             Am\\n     Que tus enemigos huyan delante de ti\\nAm  G  F      C       G        Am\\n      Levántate, levántate Señor\\nAm  G  F             C    E             Am\\n      Que tus enemigos huyan delante de ti\\n\\nAm  G  F                   C\\nMas los justos se alegrarán\\n   G               Am\\nCantarán con regocijo\\nAm  G  F                C\\nEl Señor se ha levantado\\n E7                 Am\\nA triunfado con poder', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Los muros caeran', 'Miel San Marcos', 'Proezas (En Vivo)', 'Em', 1, 0, 0, '#[Cm] [Ab] [Bb]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Levántate Señor', 'Miel San Marcos', 'Levántate Señor', 'Em', 1, 0, 0, 'Am  G  F      C       G        Am\\n      Levántate, levántate Señor\\nAm  G  F             C    E             Am\\n     Que tus enemigos huyan delante de ti\\nAm  G  F      C       G        Am\\n      Levántate, levántate Señor\\nAm  G  F             C    E             Am\\n      Que tus enemigos huyan delante de ti\\n\\nAm  G  F                   C\\nMas los justos se alegrarán\\n   G               Am\\nCantarán con regocijo\\nAm  G  F                C\\nEl Señor se ha levantado\\n E7                 Am\\nA triunfado con poder', NULL, 1, NOW(), NOW());
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Los muros caeran', 'Miel San Marcos', 'Proezas (En Vivo)', 'Em', 1, 0, 0, '#[Cm] [Ab] [Bb]
 #[Cm] [Ab] [Bb]
 #[Cm] [Ab] [Bb]
 
@@ -252,7 +252,7 @@ Con gritos de j[Bb]úbilo[Gm]
 Caer[Cm]án  
 
 #[Cm] [Bb] [Ab] [Cm]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Exaltado estas', 'Miel San Marcos', 'Proezas (En Vivo)', 'G', 1, 0, 0, '[C]Del cielo bajast[G]e
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Exaltado estas', 'Miel San Marcos', 'Proezas (En Vivo)', 'G', 1, 0, 0, '[C]Del cielo bajast[G]e
 [Am]Por mi te entregast[F]e
 [C]El precio tu pagast[G]e
 Tomaste mi luga[F]r
@@ -294,7 +294,7 @@ Digno de toda la glo[Am]ria, digno de toda la h[F]onra
 Exaltado estas[C/E], coronado esta[G]s                   
 Digno de toda la glo[Am]ria, digno de toda la h[F]onra 
 Cristo Je[C]sus[G/B][F][C/E][Am]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Jubilo', 'Miel San Marcos', 'Evangelio (En Vivo)', 'Db', 1, 0, 0, '#[D] [Em7] [D/F#] [G7M]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Jubilo', 'Miel San Marcos', 'Evangelio (En Vivo)', 'Db', 1, 0, 0, '#[D] [Em7] [D/F#] [G7M]
 #[D] [Em7] [D/F#] [G7M]
 
 [VERSO 1]

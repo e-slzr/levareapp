@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Alex Marquez
 -- Total canciones: 1
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Amado de mi alma', 'Alex Marquez', 'Amado De Mi Alma', 'G', 1, 0, 0, '#[C] [Dm] [Am] [G]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Amado de mi alma', 'Alex Marquez', 'Amado De Mi Alma', 'G', 1, 0, 0, '#[C] [Dm] [Am] [G]
 
 [VERSO 1]
 

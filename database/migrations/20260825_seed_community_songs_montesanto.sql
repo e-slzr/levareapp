@@ -1,7 +1,7 @@
 -- Migración: Semilla de canciones comunitarias de Montesanto
 -- Total canciones: 4
 
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Fiesta En El Desierto', 'Montesanto', 'Fiesta En El Desierto', 'C#m', 1, 0, 0, '[INTRO]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Fiesta En El Desierto', 'Montesanto', 'Fiesta En El Desierto', 'C#m', 1, 0, 0, '[INTRO]
 #[C#m] [A] [B] [G#7]
 
 [VERSO 1]
@@ -34,7 +34,7 @@ porque de allí saldré victorioso.
 
 [OUTRO]
 #[A] [B] [G#7] [C#m]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Derramo el Perfume', 'Montesanto', 'Derramo el Perfume', 'Bb', 1, 0, 0, '[INTRO]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Derramo el Perfume', 'Montesanto', 'Derramo el Perfume', 'Bb', 1, 0, 0, '[INTRO]
 #[Gm] [F] [Bb] [Eb] [F]
 
 [VERSO 1]
@@ -55,7 +55,7 @@ Pues, [Cm]no hay lu[Eb]gar que se com[Gm]pare,
 
 [OUTRO]
 #[Bb] [F] [Gm] [Eb] [Bb]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Santo Es El Que Vive', 'Montesanto', 'Fuego X Dios', 'D#m', 1, 0, 0, '[INTRO]
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Santo Es El Que Vive', 'Montesanto', 'Fuego X Dios', 'D#m', 1, 0, 0, '[INTRO]
 #[D#m] [C#] [B] [A#] [G#m] [A#]
 
 [VERSO 1]
@@ -90,7 +90,7 @@ el Cor[B]dero y León reina[A#]rá.
 
 [OUTRO]
 #[D#m] [C#] [B] [A#] [D#m]', NULL, 1, NOW(), NOW());
-INSERT INTO songs (group_id, title, artist, album, , is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Como David', 'Montesanto', 'Fuego X Dios', 'Ab', 1, 0, 0, '[Intro] Am
+INSERT INTO songs (group_id, title, artist, album, `key`, is_public, is_deleted, is_medley, content, url, created_by, created_at, updated_at) VALUES (1, 'Como David', 'Montesanto', 'Fuego X Dios', 'Ab', 1, 0, 0, '[Intro] Am
 
 [VERSO 1]
 
