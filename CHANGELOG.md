@@ -39,7 +39,17 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 - Corregido reemplazo de contenido del botón de cambiar foto de perfil al subir o eliminar avatares.
 
 ### Changed
+- **Refactorización y Modularización de la SPA Frontend**: Desacoplamiento de archivos monolíticos en submódulos especializados con documentación JSDoc:
+  - `theme.js`: Gestión de modo oscuro/claro y colores de acento.
+  - `auth.js`: Formularios de autenticación, onboarding, validación de contraseñas y sesiones.
+  - `groups.js`: Multi-tenancy, sincronización de bandas, selectores de espacio de trabajo y creación/unión a grupos.
+  - `pwa.js`: Registro de Service Worker, control de eventos `beforeinstallprompt` e instalación guiada.
+  - `app.js`: Reducción del tamaño del enrutador central de 52 KB a 20 KB enfocado exclusivamente en ciclo de vida y navegación hash.
+  - `views/songs-wizard.js`: Wizard de 2 pasos, Constructor Visual de Acordes interactivo por tarjetas, drag & drop de secciones/acordes, modales de selección e importador inteligente.
+  - `views/songs-community.js`: Exploración paginada del catálogo comunitario, búsqueda con debounce, sistema de likes, vista previa e importación a la banda.
+  - `views/songs.js`: Reducción del controlador de canciones de 118 KB a 26 KB enfocado en el catálogo local de la banda, eliminación y visor de letra con transposición/autoscroll.
 - Depuración y eliminación de artistas y medleys no deseados del catálogo comunitario oficial (Jesús Adrián Romero, Josué del Cid, Coalo Zamorano, Danny Berríos, Jaime Murrell, Gateway Worship Español) y ajuste de archivos de migración.
+- Actualización de **Normas y Directrices de Desarrollo (`.agents/AGENTS.md`)**: Incorporación de la regla obligatoria de modularidad frontend, prohibición de archivos monolíticos y estándar JSDoc.
 - Migración completa de vistas HTML secundarias a componentes modulares PHP.
 - Eliminación de archivos `.html` obsoletos e ícono `favicon.ico` en favor de `icon-levareapp.svg`.
 

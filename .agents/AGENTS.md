@@ -1,4 +1,4 @@
-# Normas y Directrices de Desarrollo — Levare OS v2.0
+# Normas y Directrices de Desarrollo — Levare
 
 Este archivo establece las reglas, arquitectura y estándares de diseño y desarrollo que cualquier asistente de desarrollo de IA (como Antigravity) debe seguir obligatoriamente para el proyecto **Levare**.
 
@@ -40,10 +40,14 @@ Este archivo establece las reglas, arquitectura y estándares de diseño y desar
    * Toda solicitud del frontend que consulte o modifique recursos privados (canciones, repertorios, eventos, sugerencias, miembros) debe enviar la cabecera `X-Group-Id` con el ID del grupo activo.
    * Si no se envía un grupo o el usuario no pertenece a dicho grupo, los endpoints retornan inmediatamente colecciones vacías (`[]`) o código de estado `403`.
 
-4. **Frontend SPA Modular (`views/` y `assets/js/`):**
-   * Las vistas están estructuradas en componentes modulares PHP en la carpeta `views/` (`dashboard.php`, `songs.php`, `setlists.php`, `events.php`, `profile.php`, `members.php`, `suggestions.php`, `announcements.php`, `onboarding.php`).
-   * El router central `index.php` ensambla el header, las vistas modulares hidratadas y el menú inferior de navegación (`views/includes/navbar.php`).
-   * La navegación entre pestañas se realiza mediante la función global `navigateTo(viewId)` en `assets/js/app.js`, manteniendo sincronización de datos y validación de membresía en tiempo real.
+4. **Frontend SPA Modular y Desacoplamiento de Responsabilidades (`views/` y `assets/js/`):**
+   * **Arquitectura de Vistas**: Las vistas están estructuradas en componentes modulares PHP en la carpeta `views/` (`dashboard.php`, `songs.php`, `setlists.php`, `events.php`, `profile.php`, `members.php`, `suggestions.php`, `announcements.php`, `onboarding.php`).
+   * **Enrutador Central Ligero**: `index.php` ensambla el header, las vistas modulares hidratadas y el menú inferior de navegación (`views/includes/navbar.php`). La navegación entre pestañas se gestiona mediante la función global `navigateTo(viewId)` y `handleHashRouting()` en `assets/js/app.js`, el cual debe mantenerse ligero (~20 KB) enfocado exclusivamente en ciclo de vida SPA y enrutamiento hash.
+   * **Principio de Modularidad y Prohibición de Monolitos**: Queda estrictamente prohibido crear o saturar archivos monolíticos con responsabilidades mixtas.
+     * La lógica transversal debe residir en módulos desacoplados en `assets/js/` (`theme.js`, `auth.js`, `groups.js`, `pwa.js`, `utils.js`, `db.js`, etc.).
+     * Las vistas o módulos complejos que superen responsabilidades elementales deben dividirse en submódulos especializados en `assets/js/views/` (ej. `songs.js` para catálogo propio y visor, `songs-wizard.js` para creación/editor visual y `songs-community.js` para el catálogo comunitario).
+   * **Documentación JSDoc Obligatoria**: Todo nuevo módulo o submódulo JS debe incluir obligatoriamente encabezado `@fileoverview` y comentarios JSDoc claros en sus funciones principales describiendo parámetros, retornos y propósito.
+   * **Registro en `footer.php` con `asset_v()`**: Al crear submódulos, se deben incluir en `views/includes/footer.php` respetando el orden estricto de dependencias y empleando el helper de versionado automático `asset_v()`.
 
 ---
 
