@@ -83,7 +83,7 @@ function initApp() {
     // Escuchador de cambios de hash en la URL
     window.onhashchange = handleHashRouting;
 
-    // Auto-sincronización protegida al regresar a la pestaña/PWA
+    // Auto-sincronización protegida al regresar a la pestaña/PWA (sólo valida sesión y membresía)
     let lastVisibilitySyncTime = 0;
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && currentUser) {
@@ -91,11 +91,27 @@ function initApp() {
             if (now - lastVisibilitySyncTime < 2500) return;
             lastVisibilitySyncTime = now;
 
-            syncUserGroupsAndValidateMembership().then(() => {
+            syncUserGroupsAndValidateMembership().then((syncResult) => {
                 const currentView = window.location.hash.replace('#', '') || 'dashboard';
-                if (canSafelyAutoRefreshView(currentView)) {
-                    triggerViewInitializer(currentView, true);
+                const restrictedViews = ['songs', 'community', 'songs-community', 'setlists', 'events', 'suggestions', 'members'];
+
+                // 1. Si el usuario fue expulsado de todas sus bandas y está en una vista restringida
+                if (syncResult && syncResult.hasNoGroups && restrictedViews.includes(currentView)) {
+                    window.location.hash = '#dashboard';
+                    if (typeof openNoGroupAlertModal === 'function') openNoGroupAlertModal();
+                    return;
                 }
+
+                // 2. Si la banda activa del usuario cambió de forma forzosa (fue retirado de la anterior)
+                if (syncResult && syncResult.groupChanged && restrictedViews.includes(currentView)) {
+                    if (canSafelyAutoRefreshView(currentView)) {
+                        triggerViewInitializer(currentView, true);
+                    }
+                    return;
+                }
+
+                // En condiciones normales: NO hacer refresh de la vista al recuperar el foco.
+                // Mantiene el estado intacto (editor de canciones, paginación acumulada, visor de acordes, etc.)
             });
         }
     });
@@ -115,7 +131,18 @@ function canSafelyAutoRefreshView(viewId) {
     // 2. Modo presentación de repertorios nunca debe interrumpirse
     if (document.body.classList.contains('setlist-presentation-mode')) return false;
 
-    // 3. Modales interactivos abiertos
+    // 3. Subpaneles de edición o visualización de canciones activos
+    const subpanelWizard = document.getElementById('subpanel-song-wizard');
+    if (subpanelWizard && !subpanelWizard.classList.contains('hidden')) return false;
+
+    const subpanelSongDetail = document.getElementById('subpanel-song-detail');
+    if (subpanelSongDetail && !subpanelSongDetail.classList.contains('hidden')) return false;
+
+    // 4. Subpanel de detalle de repertorios activo
+    const subpanelSetlistDetail = document.getElementById('subpanel-setlist-detail');
+    if (subpanelSetlistDetail && !subpanelSetlistDetail.classList.contains('hidden')) return false;
+
+    // 5. Modales interactivos abiertos
     const openModals = document.querySelectorAll('[id^="modal-"]:not(.hidden), .modal-backdrop:not(.hidden)');
     for (let i = 0; i < openModals.length; i++) {
         const m = openModals[i];
@@ -126,7 +153,7 @@ function canSafelyAutoRefreshView(viewId) {
         }
     }
 
-    // 4. Usuario enfocado activamente en un campo de texto
+    // 6. Usuario enfocado activamente en un campo de texto
     const activeEl = document.activeElement;
     if (activeEl) {
         const tag = activeEl.tagName;

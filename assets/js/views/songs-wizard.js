@@ -149,7 +149,8 @@ function exitSongWizard() {
     document.getElementById('subpanel-song-wizard')?.classList.add('hidden');
     document.getElementById('subpanel-song-detail')?.classList.add('hidden');
 
-    if (window.location.hash === '#community' || window.location.hash === '#songs-community') {
+    const isCommunity = window.location.hash === '#community' || window.location.hash === '#songs-community';
+    if (isCommunity) {
         document.getElementById('subpanel-community-catalog')?.classList.remove('hidden');
         document.getElementById('subpanel-songs-list')?.classList.add('hidden');
     } else {
@@ -157,7 +158,7 @@ function exitSongWizard() {
     }
 
     const pageTitleElem = document.getElementById('current-page-title');
-    if (pageTitleElem) pageTitleElem.textContent = 'Canciones';
+    if (pageTitleElem) pageTitleElem.textContent = isCommunity ? 'Comunidad' : 'Canciones';
 }
 window.exitSongWizard = exitSongWizard;
 

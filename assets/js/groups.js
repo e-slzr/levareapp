@@ -118,7 +118,7 @@ window.goToProfileFromNoGroupModal = goToProfileFromNoGroupModal;
  */
 async function syncUserGroupsAndValidateMembership() {
     if (!currentUser || currentUser.account_type === 'superadmin') {
-        return { hasNoGroups: false, userGroups: [] };
+        return { hasNoGroups: false, userGroups: [], groupChanged: false };
     }
 
     try {
@@ -127,8 +127,10 @@ async function syncUserGroupsAndValidateMembership() {
         setData('userGroups', userGroups);
 
         const isCurrentGroupValid = currentGroupId && userGroups.some(g => g.id == currentGroupId);
+        let groupChanged = false;
 
         if (!isCurrentGroupValid) {
+            groupChanged = true;
             if (userGroups.length > 0) {
                 const prevGroupId = currentGroupId;
                 currentGroupId = userGroups[0].id;
@@ -148,14 +150,16 @@ async function syncUserGroupsAndValidateMembership() {
 
         return {
             hasNoGroups: userGroups.length === 0,
-            userGroups
+            userGroups,
+            groupChanged
         };
     } catch (e) {
         console.error("Error sincronizando grupos del usuario:", e);
         const userGroups = getData('userGroups') || [];
         return {
             hasNoGroups: !Array.isArray(userGroups) || userGroups.length === 0,
-            userGroups
+            userGroups,
+            groupChanged: false
         };
     }
 }

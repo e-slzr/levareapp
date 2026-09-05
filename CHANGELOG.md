@@ -31,6 +31,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 - Soporte para notificaciones push web comunitarias y pruebas de envío en dispositivos.
 
 ### Fixed
+- **Eliminación del refresco involuntario al recuperar el foco de la ventana (`visibilitychange`)**: Se ajustó la sincronización en segundo plano en `app.js` y `groups.js` para que solo valide el estado de membresía o bloqueo sin forzar la re-inicialización destructiva de la vista activa. Esto protege de forma definitiva el trabajo no guardado en el editor de canciones (`subpanel-song-wizard`), evita el cierre del visor de acordes (`subpanel-song-detail`) y preserva la paginación acumulada ("Cargar más") tanto en el catálogo comunitario como en el repertorio propio al alternar entre aplicaciones.
 - Corregido error de superposición visual donde el Wizard de edición de canciones no ocultaba el subpanel del catálogo comunitario al abrirse.
 - Corregido error en el editor de canciones donde tarjetas obsoletas en segundo plano sobrescribían letras y acordes pegados desde internet al guardar.
 - Corregido el problema de renderizado y desborde horizontal del selector de fecha (`input[type="date"]`) en iOS Safari / WebKit mediante normalización CSS `appearance-none` y `box-sizing: border-box !important`.
