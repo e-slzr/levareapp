@@ -9,4 +9,5 @@ storage/announcements/*
 storage/feedback/*
 !storage/feedback/.gitkeep
 
-
+# Context handoffs
+.antigravity/

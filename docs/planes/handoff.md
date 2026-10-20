@@ -1,0 +1,21 @@
+# Context Handoff Checkpoint
+- **Fecha y Rama:** 2026-10-19 23:30 | main
+- **Objetivo Principal:** Planificación y transición arquitectónica de Levare hacia Flutter + Supabase (Rumbo a v1.0.0), manteniendo el prototipo PHP/MySQL en TrueNAS activo para pruebas de la banda hasta el lanzamiento de la Beta.
+- **Decisiones Técnicas:**
+  - Se analizó la APK de Setlio 2.5.4 mediante ingeniería inversa (REA), descubriendo su stack Flutter + Google ML Kit OCR/QR + Firebase + banco de sonidos locales (Pads MP3, metrónomo, notas).
+  - Se eligió Flutter + Supabase Cloud (PostgreSQL + RLS) como la arquitectura definitiva para compilar Android (.apk), Web (PWA) y futuro iOS desde una sola base de código.
+  - La PWA actual (PHP/MySQL en TrueNAS) se mantendrá activa e intacta para que la banda del usuario (~22 músicos/coristas) la use en sus próximos cultos/ensayos sin interrupciones.
+  - La base de datos en Supabase se construirá desde cero con las 18 tablas definitivas, incorporando desde el día 1 las 19 funcionalidades clave (Modo Búnker offline en SQLite, visor de atril con notación Nashville, hoja compacta, capo sugerido, notas de 3 capas, live sync con señas del director, rol del mes, rotación del repertorio, confirmación de asistencia, orden del culto, vestimenta y pads ambientales).
+  - Protocolo de migración transparente: Las contraseñas encriptadas con bcrypt de los ~22 usuarios se migrarán directamente a `auth.users` de Supabase sin requerir cambio de clave ni re-registro. Las canciones y banda se migrarán al entregar la Beta v1.0.0-beta.1, momento en el cual se apagará TrueNAS.
+- **Archivos Modificados:**
+  - `docs/planes/hoja_de_ruta_levare.md` (Hoja de ruta maestra y ciclo SemVer v0.1.0 a v1.0.0).
+  - `docs/planes/paso_1_especificacion_funcional.md` (Paso 1: Especificación funcional completa de las 19 features).
+  - `docs/planes/paso_2_base_de_datos_supabase.md` (Paso 2: Diseño de las 18 tablas de PostgreSQL, RLS, Auth y Fase 2.5 de migración bcrypt).
+  - `docs/planes/paso_3_desarrollo_flutter.md` (Paso 3: Plan de desarrollo en Flutter en 10 fases pantalla por pantalla).
+  - `.antigravity/handoff-main.md` y `.gitignore`.
+- **Estado Actual:**
+  - Hoja de ruta y los 3 planes de implementación detallados y aprobados conceptualmente en archivos Markdown listos dentro del proyecto.
+  - El usuario va a revisar los planes en su MacBook antes de iniciar la construcción.
+  - La PWA actual está liberada y en uso por su banda de 22 miembros en TrueNAS.
+- **Siguiente Paso Inmediato:**
+  - Al reanudar en la MacBook tras la revisión de los planes por el usuario: Iniciar con el Paso 2 (Crear el proyecto en Supabase, preparar el archivo SQL maestro `supabase_schema.sql` con las 18 tablas, RLS, Auth con Google y las 59 canciones comunitarias).

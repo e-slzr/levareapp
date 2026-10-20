@@ -12,7 +12,8 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 - Metrónomo interactivo con BPM asociado por canción.
 - Afinador cromático en tiempo real (Web Audio API).
 - Configuración de Capo y Tono individual por músico.
-- Sincronización de pantallas en tiempo real (Live Sync) para líderes y músicos.
+- Modo Director / Live Sync en tiempo real (roles dinámicos, cambio de canción y transposición sincronizada).
+- Live Sync Offline vía red local / P2P con emparejamiento por código QR.
 
 ---
 

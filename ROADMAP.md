@@ -56,9 +56,15 @@ Enfoque en convertir Levare en la herramienta indispensable durante el ensayo in
 
 El gran salto tecnológico para dirigir las presentaciones en vivo de forma automatizada.
 
-* [ ] **Sincronización de Pantallas en Vivo (Live Sync)**:
-  * Comunicación bidireccional en tiempo real entre el Líder y los Músicos (vía WebSockets / SSE).
-  * Cuando el director avanza a la siguiente canción o cambia de sección en su dispositivo, las pantallas de todos los integrantes conectados se desplazan en tiempo real.
+* [ ] **Modo Director / Live Sync (Sincronización en Tiempo Real)**:
+  * **Roles Dinámicos ("Uno Dirige, el Otro Sigue")**: El primer líder/director en iniciar la sesión toma el control exclusivo; los demás integrantes (y otros líderes) se conectan como Seguidores en modo pasivo.
+  * **Sincronización de Repertorio y Transposición**: Al pasar de canción o subir/bajar el tono (+/- semitonos) en el dispositivo del Director, las pantallas de todos los músicos conectados se sincronizan y transponen automáticamente en tiempo real.
+  * **Control de Sesión y Salida Segura**: Botones de inicio/cierre de sesión en vivo con modal interactivo de confirmación al intentar salir, notificando y cerrando la vista sincronizada para todos los músicos.
+  * **Gestión de Espera**: Modal informativo para integrantes que intentan unirse cuando el Director aún no ha iniciado el Modo Live.
+* [ ] **Live Sync Offline vía Red Local / P2P (Fase Avanzada sin Internet)**:
+  * Sincronización directa entre dispositivos sobre Hotspot Wi-Fi local sin requerir conexión activa a internet ni consumo de datos móviles.
+  * Canal de datos WebRTC punto a punto (P2P) con emparejamiento rápido mediante escaneo de Código QR entre la pantalla del Director y los músicos.
 * [ ] **Gestión de Disponibilidad del Equipo (Roster & Unavailability)**:
   * Bloqueo de fechas de inasistencia por músico.
   * Alertas automáticas al programar eventos sobre disponibilidad de integrantes.
+
