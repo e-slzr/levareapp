@@ -83,13 +83,21 @@ function initApp() {
     // Escuchador de cambios de hash en la URL
     window.onhashchange = handleHashRouting;
 
-    // Auto-sincronización protegida al regresar a la pestaña/PWA (sólo valida sesión y membresía)
+    // Sincronizar en segundo plano el perfil más reciente desde el backend
+    if (currentUser) {
+        syncCurrentUserProfile();
+    }
+
+    // Auto-sincronización protegida al regresar a la pestaña/PWA (valida permisos de usuario y membresía)
     let lastVisibilitySyncTime = 0;
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && currentUser) {
             const now = Date.now();
             if (now - lastVisibilitySyncTime < 2500) return;
             lastVisibilitySyncTime = now;
+
+            // Refrescar permisos actualizados del usuario en servidor
+            syncCurrentUserProfile();
 
             syncUserGroupsAndValidateMembership().then((syncResult) => {
                 const currentView = window.location.hash.replace('#', '') || 'dashboard';
@@ -463,6 +471,45 @@ function triggerViewInitializer(viewId, forceRefresh = true) {
     if (viewId === 'announcements' && typeof initAnnouncementsView === 'function') initAnnouncementsView(forceRefresh);
     if (viewId === 'admin' && typeof initAdminView === 'function') initAdminView(forceRefresh);
 }
+
+/**
+ * Sincroniza en tiempo real los datos del usuario autenticado (/user/profile).
+ * Actualiza currentUser en memoria y localStorage, detectando cambios de permisos (Líder/Miembro)
+ * para refrescar la visibilidad de controles y botones reactivamente.
+ * @returns {Promise<Object|null>}
+ */
+async function syncCurrentUserProfile() {
+    if (!currentUser) return null;
+    try {
+        const freshUser = await apiFetch('/user/profile');
+        if (!freshUser || !freshUser.id) return null;
+
+        const prevAccountType = currentUser.account_type;
+        const newAccountType = freshUser.account_type;
+
+        currentUser = {
+            ...currentUser,
+            ...freshUser,
+            accentColor: freshUser.accentColor || freshUser.accent_color || currentUser.accentColor || 'purple'
+        };
+        setData('currentUser', currentUser);
+
+        // Si cambió el tipo de cuenta (ej. promovido a líder o cambiado a miembro)
+        if (prevAccountType !== newAccountType) {
+            updateShellVisibility();
+            const currentView = window.location.hash.replace('#', '') || 'dashboard';
+            const permissionSensitiveViews = ['setlists', 'events', 'members', 'songs', 'dashboard'];
+            if (permissionSensitiveViews.includes(currentView)) {
+                triggerViewInitializer(currentView, true);
+            }
+        }
+
+        return currentUser;
+    } catch (e) {
+        return null;
+    }
+}
+window.syncCurrentUserProfile = syncCurrentUserProfile;
 
 /**
  * Comprueba si el usuario autenticado tiene permisos de edición (Líder o Super Admin).

@@ -304,7 +304,7 @@ class AuthController {
 
         $stmtInsert = $pdo->prepare("
             INSERT INTO users (name, lastname, email, username, password, account_type, status, must_change_password, accent_color, created_at, updated_at) 
-            VALUES (?, ?, ?, ?, ?, 'leader', 'active', 0, 'purple', NOW(), NOW())
+            VALUES (?, ?, ?, ?, ?, 'member', 'active', 0, 'purple', NOW(), NOW())
         ");
         $stmtInsert->execute([$name, $lastname, $email, $username, $hashedPassword]);
         $userId = $pdo->lastInsertId();
@@ -322,7 +322,7 @@ class AuthController {
                 'lastname' => $lastname,
                 'email' => $email,
                 'username' => $username,
-                'account_type' => 'leader',
+                'account_type' => 'member',
                 'status' => 'active',
                 'accent_color' => 'purple',
                 'accentColor' => 'purple',

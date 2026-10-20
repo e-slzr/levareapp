@@ -51,14 +51,16 @@ class GroupController {
         $stmtInsert->execute([$name, $description, $inviteCode, $user['id']]);
         $groupId = $pdo->lastInsertId();
 
-        // Add creator as Leader in group_user and ensure account_type is 'leader'
-        $stmtGU = $pdo->prepare("INSERT INTO group_user (user_id, group_id, role, created_at) VALUES (?, ?, 'Líder', NOW())");
+        // Add creator to group_user with NULL musical role and ensure account_type is 'leader'
+        $stmtGU = $pdo->prepare("INSERT INTO group_user (user_id, group_id, role, created_at) VALUES (?, ?, NULL, NOW())");
         $stmtGU->execute([$user['id'], $groupId]);
 
         if ($user['account_type'] !== 'superadmin') {
             $stmtUser = $pdo->prepare("UPDATE users SET account_type = 'leader' WHERE id = ?");
             $stmtUser->execute([$user['id']]);
         }
+
+        $creatorAccountType = ($user['account_type'] === 'superadmin') ? 'superadmin' : 'leader';
 
         jsonResponse([
             'message' => 'Grupo creado exitosamente.',
@@ -67,7 +69,11 @@ class GroupController {
                 'name' => $name,
                 'description' => $description,
                 'invite_code' => $inviteCode,
-                'role' => 'Líder'
+                'role' => null
+            ],
+            'user' => [
+                'id' => (int)$user['id'],
+                'account_type' => $creatorAccountType
             ]
         ], 201);
     }
@@ -101,6 +107,8 @@ class GroupController {
         $stmtCheck->execute([$user['id'], $group['id']]);
         $existing = $stmtCheck->fetch();
 
+        $memberAccountType = ($user['account_type'] === 'superadmin') ? 'superadmin' : 'member';
+
         if ($existing) {
             jsonResponse([
                 'message' => 'Ya perteneces a este grupo.',
@@ -109,6 +117,10 @@ class GroupController {
                     'name' => $group['name'],
                     'invite_code' => $group['invite_code'],
                     'role' => $existing['role']
+                ],
+                'user' => [
+                    'id' => (int)$user['id'],
+                    'account_type' => $memberAccountType
                 ]
             ]);
         }
@@ -130,18 +142,17 @@ class GroupController {
                 'name' => $group['name'],
                 'invite_code' => $group['invite_code'],
                 'role' => null
+            ],
+            'user' => [
+                'id' => (int)$user['id'],
+                'account_type' => $memberAccountType
             ]
         ]);
     }
 
     public static function resetInviteCode(int $groupId): void {
-        $user = requireAuth();
+        $user = requireLeaderOrAdmin($groupId);
         $pdo = DB::getConnection();
-
-        // Check system role permissions
-        if ($user['account_type'] !== 'superadmin' && $user['account_type'] !== 'leader') {
-            jsonResponse(['message' => 'No tienes permisos para regenerar el código de invitación.'], 403);
-        }
 
         $newCode = self::generateUniqueInviteCode($pdo);
         $stmt = $pdo->prepare("UPDATE groups SET invite_code = ?, updated_at = NOW() WHERE id = ?");

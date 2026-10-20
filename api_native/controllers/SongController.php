@@ -615,8 +615,8 @@ class SetlistController {
     }
 
     public static function store(): void {
-        $user = requireAuth();
         $groupId = getGroupIdHeader();
+        $user = requireLeaderOrAdmin($groupId);
 
         $pdo = DB::getConnection();
         if (!$groupId) {
@@ -677,7 +677,15 @@ class SetlistController {
     }
 
     public static function update(int $id): void {
-        $user = requireAuth();
+        $pdo = DB::getConnection();
+        $stmtCheck = $pdo->prepare("SELECT group_id FROM setlists WHERE id = ? LIMIT 1");
+        $stmtCheck->execute([$id]);
+        $setlist = $stmtCheck->fetch();
+        if (!$setlist) {
+            jsonResponse(['message' => 'Repertorio no encontrado.'], 404);
+        }
+        $user = requireLeaderOrAdmin((int)$setlist['group_id']);
+
         $rawInput = file_get_contents('php://input');
         if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
             $rawInput = $GLOBALS['rawInput'];
@@ -693,7 +701,6 @@ class SetlistController {
             jsonResponse(['message' => 'El nombre del repertorio es obligatorio.'], 422);
         }
 
-        $pdo = DB::getConnection();
         $stmt = $pdo->prepare("UPDATE setlists SET name = ?, date = ?, description = ?, updated_at = NOW() WHERE id = ?");
         $stmt->execute([$name, $date, $description, $id]);
 
@@ -709,8 +716,14 @@ class SetlistController {
     }
 
     public static function destroy(int $id): void {
-        $user = requireAuth();
         $pdo = DB::getConnection();
+        $stmtCheck = $pdo->prepare("SELECT group_id FROM setlists WHERE id = ? LIMIT 1");
+        $stmtCheck->execute([$id]);
+        $setlist = $stmtCheck->fetch();
+        if (!$setlist) {
+            jsonResponse(['message' => 'Repertorio no encontrado.'], 404);
+        }
+        $user = requireLeaderOrAdmin((int)$setlist['group_id']);
 
         $pdo->prepare("DELETE FROM setlist_song WHERE setlist_id = ?")->execute([$id]);
         $pdo->prepare("DELETE FROM setlists WHERE id = ?")->execute([$id]);

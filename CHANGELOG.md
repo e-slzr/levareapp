@@ -8,6 +8,15 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased] - Próximamente
 
+### Fixed
+- **Nacimiento estricto como Miembro y saneamiento de instrumento**: Corrección en `AuthController` para que los nuevos usuarios registrados nazcan siempre con rol `member` e instrumento musical `NULL` en `group_user`, evitando que se les otorguen facultades de líder indebidamente al registrarse sin banda o unirse mediante código.
+- **Sincronización automática de perfil y permisos (`syncCurrentUserProfile`)**: Implementada sincronización en tiempo real del perfil (`/user/profile`) en `app.js` al iniciar la app y en eventos `visibilitychange`, actualizando `currentUser` en `localStorage` sin requerir cierre de sesión manual cuando un líder promueve o degrada integrantes.
+- **Desbloqueo de edición de roles en modal de integrantes**: En `members.js`, se eliminó el bloqueo que impedía a los líderes degradar usuarios con permisos de líder a miembros de lectura, protegiendo únicamente la auto-degradación accidental y al creador original de la banda.
+- **Blindaje y autorización en backend (`requireLeaderOrAdmin`)**: Implementado ayudante de seguridad estricto en `response.php` que bloquea con `403 Forbidden` cualquier intento de usuarios no líderes de crear, modificar o eliminar repertorios (`SetlistController`), eventos (`EventController`), integrantes y roles musicales (`MemberController`), y regeneración de códigos de invitación (`GroupController`).
+
+### Added
+- **Migración de normalización de roles (`20261020_normalize_member_roles_and_permissions.sql`)**: Establece por defecto a nivel DDL `account_type = 'member'` y limpia roles residuales con valor `'Líder'` en la columna de instrumentos `group_user.role`.
+
 ### Planned
 - Metrónomo interactivo con BPM asociado por canción.
 - Afinador cromático en tiempo real (Web Audio API).

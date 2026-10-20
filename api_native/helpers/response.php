@@ -77,6 +77,28 @@ function requireAuth(): array {
     return $user;
 }
 
+function requireLeaderOrAdmin(?int $groupId = null): array {
+    $user = requireAuth();
+    if (($user['account_type'] ?? '') === 'superadmin') {
+        return $user;
+    }
+
+    if (($user['account_type'] ?? '') !== 'leader') {
+        jsonResponse(['message' => 'Acceso denegado. Se requieren permisos de Líder.'], 403);
+    }
+
+    if ($groupId !== null && $groupId > 0) {
+        $pdo = DB::getConnection();
+        $stmt = $pdo->prepare("SELECT 1 FROM group_user WHERE user_id = ? AND group_id = ? LIMIT 1");
+        $stmt->execute([$user['id'], $groupId]);
+        if (!$stmt->fetch()) {
+            jsonResponse(['message' => 'Acceso denegado. No perteneces a este grupo.'], 403);
+        }
+    }
+
+    return $user;
+}
+
 function getGroupIdHeader(): ?int {
     if (isset($_SERVER['HTTP_X_GROUP_ID'])) {
         return (int)$_SERVER['HTTP_X_GROUP_ID'];

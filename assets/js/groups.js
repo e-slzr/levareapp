@@ -220,6 +220,14 @@ async function handleJoinGroupSubmit(e) {
         currentGroupId = data.group.id;
         setData('currentGroupId', currentGroupId);
 
+        if (data.user && data.user.account_type && currentUser) {
+            currentUser.account_type = data.user.account_type;
+            setData('currentUser', currentUser);
+        } else if (currentUser && currentUser.account_type !== 'superadmin') {
+            currentUser.account_type = 'member';
+            setData('currentUser', currentUser);
+        }
+
         await updateShellVisibility();
         window.location.hash = '#dashboard';
         navigateTo('dashboard');

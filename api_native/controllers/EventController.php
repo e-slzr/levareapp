@@ -55,8 +55,8 @@ class EventController {
     }
 
     public static function store(): void {
-        $user = requireAuth();
         $groupId = getGroupIdHeader();
+        $user = requireLeaderOrAdmin($groupId);
 
         $pdo = DB::getConnection();
         if (!$groupId) {
@@ -124,8 +124,14 @@ class EventController {
     }
 
     public static function destroy(int $id): void {
-        $user = requireAuth();
         $pdo = DB::getConnection();
+        $stmtCheck = $pdo->prepare("SELECT group_id FROM events WHERE id = ? LIMIT 1");
+        $stmtCheck->execute([$id]);
+        $ev = $stmtCheck->fetch();
+        if (!$ev) {
+            jsonResponse(['message' => 'Evento no encontrado.'], 404);
+        }
+        $user = requireLeaderOrAdmin((int)$ev['group_id']);
 
         $pdo->prepare("DELETE FROM event_musicians WHERE event_id = ?")->execute([$id]);
         $pdo->prepare("DELETE FROM events WHERE id = ?")->execute([$id]);

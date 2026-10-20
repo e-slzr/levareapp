@@ -42,11 +42,11 @@ class MemberController {
     }
 
     public static function addRole(): void {
-        $user = requireAuth();
         $groupId = getGroupIdHeader();
         if (!$groupId) {
             jsonResponse(['message' => 'Grupo no especificado.'], 400);
         }
+        $user = requireLeaderOrAdmin($groupId);
 
         $rawInput = file_get_contents('php://input');
         if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
@@ -74,11 +74,11 @@ class MemberController {
     }
 
     public static function deleteRole(string $roleName): void {
-        $user = requireAuth();
         $groupId = getGroupIdHeader();
         if (!$groupId) {
             jsonResponse(['message' => 'Grupo no especificado.'], 400);
         }
+        $user = requireLeaderOrAdmin($groupId);
 
         $roleName = urldecode($roleName);
 
@@ -90,11 +90,11 @@ class MemberController {
     }
 
     public static function update(int $userId): void {
-        $user = requireAuth();
         $groupId = getGroupIdHeader();
         if (!$groupId) {
             jsonResponse(['message' => 'Grupo no especificado.'], 400);
         }
+        $user = requireLeaderOrAdmin($groupId);
 
         $rawInput = file_get_contents('php://input');
         if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
@@ -107,12 +107,21 @@ class MemberController {
 
         $pdo = DB::getConnection();
 
+        // Check target belongs to group
         $stmtCheck = $pdo->prepare("SELECT * FROM group_user WHERE user_id = ? AND group_id = ? LIMIT 1");
         $stmtCheck->execute([$userId, $groupId]);
         $gu = $stmtCheck->fetch();
 
         if (!$gu) {
             jsonResponse(['message' => 'El integrante no pertenece a este grupo.'], 404);
+        }
+
+        // Protect group creator from being demoted by another leader
+        $stmtG = $pdo->prepare("SELECT created_by FROM groups WHERE id = ? LIMIT 1");
+        $stmtG->execute([$groupId]);
+        $groupCreatorId = (int)$stmtG->fetchColumn();
+        if ($userId === $groupCreatorId && $systemRole !== 'leader' && $systemRole !== 'superadmin') {
+            jsonResponse(['message' => 'No es posible degradar al creador original de la banda.'], 422);
         }
 
         // Update musical role in group_user
@@ -129,11 +138,11 @@ class MemberController {
     }
 
     public static function store(): void {
-        $user = requireAuth();
         $groupId = getGroupIdHeader();
         if (!$groupId) {
             jsonResponse(['message' => 'Grupo no especificado.'], 400);
         }
+        $user = requireLeaderOrAdmin($groupId);
 
         $rawInput = file_get_contents('php://input');
         if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
@@ -183,13 +192,22 @@ class MemberController {
     }
 
     public static function destroy(int $userId): void {
-        $user = requireAuth();
         $groupId = getGroupIdHeader();
         if (!$groupId) {
             jsonResponse(['message' => 'Grupo no especificado.'], 400);
         }
+        $user = requireLeaderOrAdmin($groupId);
 
         $pdo = DB::getConnection();
+
+        // Protect group creator from being deleted from group
+        $stmtG = $pdo->prepare("SELECT created_by FROM groups WHERE id = ? LIMIT 1");
+        $stmtG->execute([$groupId]);
+        $groupCreatorId = (int)$stmtG->fetchColumn();
+        if ($userId === $groupCreatorId) {
+            jsonResponse(['message' => 'No es posible eliminar al creador original de la banda.'], 422);
+        }
+
         $stmt = $pdo->prepare("DELETE FROM group_user WHERE user_id = ? AND group_id = ?");
         $stmt->execute([$userId, $groupId]);
 
@@ -197,7 +215,12 @@ class MemberController {
     }
 
     public static function resetPassword(int $userId): void {
-        $user = requireAuth();
+        $groupId = getGroupIdHeader();
+        if (!$groupId) {
+            jsonResponse(['message' => 'Grupo no especificado.'], 400);
+        }
+        $user = requireLeaderOrAdmin($groupId);
+
         $pdo = DB::getConnection();
 
         $tempPassword = substr(bin2hex(random_bytes(6)), 0, 8);

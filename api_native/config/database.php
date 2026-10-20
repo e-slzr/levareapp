@@ -2,19 +2,20 @@
 /**
  * DB Connection Manager (Native PDO)
  */
+require_once __DIR__ . '/../helpers/env.php';
+loadEnv();
+
 class DB {
     private static ?PDO $instance = null;
 
     public static function getConnection(): PDO {
         if (self::$instance === null) {
-            $host = '192.168.1.100';
-            //$host = 'localhost';
-            $port = '3306';
-            $db   = 'levareapp_dev';
-            $user = 'root';
-            $pass = '9050';
-            //$pass = '';
-            $charset = 'utf8mb4';
+            $host    = env('DB_HOST', '192.168.1.100');
+            $port    = env('DB_PORT', '3306');
+            $db      = env('DB_DATABASE', 'levareapp_dev');
+            $user    = env('DB_USERNAME', 'root');
+            $pass    = env('DB_PASSWORD', '9050');
+            $charset = env('DB_CHARSET', 'utf8mb4');
 
             $dsn = "mysql:host={$host};port={$port};dbname={$db};charset={$charset}";
             $options = [

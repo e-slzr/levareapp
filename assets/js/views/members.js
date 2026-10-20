@@ -408,13 +408,18 @@ async function openEditMemberModal(userId) {
     // Select system permission role
     const systemRoleSelect = document.getElementById('member-form-system-role');
     const systemRole = u.account_type || (u.role === 'Líder' ? 'leader' : 'member');
-    systemRoleSelect.value = systemRole;
+    systemRoleSelect.value = (systemRole === 'leader' || systemRole === 'superadmin') ? 'leader' : 'member';
     
-    // Don't allow changing Líder permissions to member
-    if (u.role === 'Líder' || u.account_type === 'leader') {
+    // Protect self-demotion or modifying superadmin from the member modal
+    if (currentUser && u.id == currentUser.id) {
         systemRoleSelect.disabled = true;
+        systemRoleSelect.title = "No puedes cambiar tu propio rol de sistema.";
+    } else if (u.account_type === 'superadmin') {
+        systemRoleSelect.disabled = true;
+        systemRoleSelect.title = "El Super Admin no puede ser modificado aquí.";
     } else {
         systemRoleSelect.disabled = false;
+        systemRoleSelect.title = "";
     }
 
     // Hide password fields when editing existing members

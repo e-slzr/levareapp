@@ -46,7 +46,7 @@ window.installAppPWA = installAppPWA;
 // Registro del Service Worker con soporte de Web Push y actualización transparente
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=2.0.7')
+        navigator.serviceWorker.register('sw.js?v=2.0.8')
             .then(reg => {
                 console.log('PWA ServiceWorker activo:', reg.scope);
                 if (typeof reg.update === 'function') {
