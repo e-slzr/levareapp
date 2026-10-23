@@ -108,21 +108,21 @@
             </button>
             <div class="min-w-0 flex-1">
                 <h2 id="wizard-view-title" class="font-serif font-bold text-base md:text-lg text-zinc-900 dark:text-zinc-100 truncate">Agregar Canción</h2>
-                <p id="wizard-view-subtitle" class="text-xs text-zinc-500 dark:text-zinc-400">Paso 1 de 2: Información general</p>
+                <p id="wizard-view-subtitle" class="text-xs text-zinc-500 dark:text-zinc-400">Paso 1 de 2: Letra y acordes</p>
             </div>
         </div>
 
         <!-- Progress Steps Indicator -->
         <div class="flex items-center gap-2 w-full md:w-auto flex-shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-zinc-200/60 dark:border-zinc-800/60">
-            <span id="step-indicator-1" class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+            <button type="button" id="step-indicator-1" class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm cursor-pointer transition">
                 <span class="w-4 h-4 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 inline-flex items-center justify-center text-[9px] font-bold">1</span>
-                Información
-            </span>
-            <i class="fa-solid fa-chevron-right text-[10px] text-zinc-400"></i>
-            <span id="step-indicator-2" class="text-xs font-medium text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-transparent">
-                <span class="w-4 h-4 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 inline-flex items-center justify-center text-[9px] font-bold">2</span>
                 Letra y Acordes
-            </span>
+            </button>
+            <i class="fa-solid fa-chevron-right text-[10px] text-zinc-400"></i>
+            <button type="button" id="step-indicator-2" class="text-xs font-medium text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-transparent cursor-pointer transition">
+                <span class="w-4 h-4 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 inline-flex items-center justify-center text-[9px] font-bold">2</span>
+                Información
+            </button>
         </div>
     </div>
 
@@ -134,8 +134,65 @@
             <input type="hidden" id="song-form-content">
             <input type="hidden" id="song-form-key" value="C">
 
-            <!-- ================= PASO 1: IDENTIDAD ================= -->
-            <div id="wizard-step-1" class="space-y-4">
+            <!-- ================= PASO 1: CONSTRUCTOR Y VISTA PREVIA ================= -->
+            <div id="wizard-step-1" class="space-y-5">
+                <!-- Botones de Acción del Paso 1 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button type="button" id="btn-open-chord-builder" class="w-full py-3 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+                        <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                        <span>Editor Interactivo</span>
+                    </button>
+                    <button type="button" id="btn-open-import-chords" class="w-full py-3 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200 text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-paste text-xs"></i>
+                        <span>Pegar desde Internet</span>
+                    </button>
+                </div>
+
+                <!-- Pestañas de Modo: Vista Previa vs Editor de Texto Plano -->
+                <div class="space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                            <button type="button" id="tab-step2-preview" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-eye text-[11px]"></i>
+                                <span>Vista Previa</span>
+                            </button>
+                            <button type="button" id="tab-step2-raw" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-font text-[11px]"></i>
+                                <span>Texto Plano</span>
+                            </button>
+                        </div>
+                        <span id="preview-sections-count" class="text-[10px] text-zinc-400 font-semibold">0 secciones</span>
+                    </div>
+
+                    <!-- Contenedor 1: Vista Previa Renderizada -->
+                    <div id="wizard-live-preview-box" class="p-4 sm:p-5 md:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/80 h-[42vh] sm:h-[48vh] md:h-[52vh] min-h-[300px] md:min-h-[380px] max-h-[58vh] overflow-y-auto font-mono text-xs leading-relaxed">
+                        <div id="wizard-preview-content" class="text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap">
+                            <div class="text-center py-12 text-zinc-400 dark:text-zinc-500 text-xs font-sans">
+                                Aún no has agregado la letra con acordes.<br>
+                                Haz clic en <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Editor Interactivo"</strong> o <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Pegar desde Internet"</strong> para comenzar.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor 2: Editor en Texto Plano (ChordPro) -->
+                    <div id="wizard-raw-editor-box" class="hidden space-y-1.5">
+                        <textarea id="song-form-raw-editor" rows="15" placeholder="{TÍTULO CANCIÓN}&#10;&#10;[INTRO]&#10;#[G] [D] [Em] [C]&#10;&#10;[VERSO 1]&#10;[G]Espíritu [D]Santo bienvenido a [Em]este lugar&#10;[C]Jesucristo..." class="w-full p-4 sm:p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-mono text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 leading-relaxed h-[42vh] sm:h-[48vh] md:h-[52vh] min-h-[300px] md:min-h-[380px] max-h-[58vh] resize-y"></textarea>
+                        <p class="text-[11px] text-zinc-400 dark:text-zinc-500">Usa corchetes <code>[G]</code> para acordes y <code>[VERSO 1]</code> para secciones. Para nombrar temas en Medleys, usa <code>{Título}</code> o <code>= Título =</code>.</p>
+                    </div>
+                </div>
+
+                <!-- Botones de Navegación Paso 1 -->
+                <div class="flex items-center justify-between pt-3 pb-2 border-t border-zinc-100 dark:border-zinc-800">
+                    <button type="button" id="btn-wizard-cancel-1" class="px-5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition cursor-pointer">Cancelar</button>
+                    <button type="button" id="btn-wizard-next" class="px-6 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center gap-2 cursor-pointer shadow-sm">
+                        <span>Siguiente</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= PASO 2: INFORMACIÓN GENERAL ================= -->
+            <div id="wizard-step-2" class="space-y-4 hidden">
                 <!-- Título -->
                 <div class="space-y-1.5">
                     <label for="song-form-title" class="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">Título de la Canción / Obra <span class="text-red-500">*</span></label>
@@ -221,66 +278,9 @@
                     <input type="url" id="song-form-url" placeholder="https://youtube.com/watch?v=..." class="w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400" />
                 </div>
 
-                <!-- Botones Paso 1 -->
-                <div class="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                    <button type="button" id="btn-wizard-cancel-1" class="px-5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition">Cancelar</button>
-                    <button type="button" id="btn-wizard-next" class="px-6 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center gap-2">
-                        <span>Siguiente</span>
-                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- ================= PASO 2: CONSTRUCTOR Y VISTA PREVIA ================= -->
-            <div id="wizard-step-2" class="space-y-5 hidden">
-                <!-- Botones de Acción del Paso 2 -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button type="button" id="btn-open-chord-builder" class="w-full py-3 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition flex items-center justify-center gap-2 shadow-sm cursor-pointer">
-                        <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                        <span>Editor Interactivo</span>
-                    </button>
-                    <button type="button" id="btn-open-import-chords" class="w-full py-3 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200 text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer">
-                        <i class="fa-solid fa-paste text-xs"></i>
-                        <span>Pegar desde Internet</span>
-                    </button>
-                </div>
-
-                <!-- Pestañas de Modo: Vista Previa vs Editor de Texto Plano -->
-                <div class="space-y-2.5">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-1 p-1 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                            <button type="button" id="tab-step2-preview" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm flex items-center gap-1.5 cursor-pointer">
-                                <i class="fa-solid fa-eye text-[11px]"></i>
-                                <span>Vista Previa</span>
-                            </button>
-                            <button type="button" id="tab-step2-raw" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 cursor-pointer">
-                                <i class="fa-solid fa-font text-[11px]"></i>
-                                <span>Texto Plano</span>
-                            </button>
-                        </div>
-                        <span id="preview-sections-count" class="text-[10px] text-zinc-400 font-semibold">0 secciones</span>
-                    </div>
-
-                    <!-- Contenedor 1: Vista Previa Renderizada -->
-                    <div id="wizard-live-preview-box" class="p-4 sm:p-5 md:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/80 h-[42vh] sm:h-[48vh] md:h-[52vh] min-h-[300px] md:min-h-[380px] max-h-[58vh] overflow-y-auto font-mono text-xs leading-relaxed">
-                        <div id="wizard-preview-content" class="text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap">
-                            <div class="text-center py-12 text-zinc-400 dark:text-zinc-500 text-xs font-sans">
-                                Aún no has agregado la letra con acordes.<br>
-                                Haz clic en <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Editor Interactivo"</strong> o <strong class="text-zinc-700 dark:text-zinc-300 font-semibold">"Pegar desde Internet"</strong> para comenzar.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contenedor 2: Editor en Texto Plano (ChordPro) -->
-                    <div id="wizard-raw-editor-box" class="hidden space-y-1.5">
-                        <textarea id="song-form-raw-editor" rows="15" placeholder="[INTRO]&#10;#[G] [D] [Em] [C]&#10;&#10;[VERSO 1]&#10;[G]Espíritu [D]Santo bienvenido a [Em]este lugar&#10;[C]Jesucristo..." class="w-full p-4 sm:p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-mono text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 leading-relaxed h-[42vh] sm:h-[48vh] md:h-[52vh] min-h-[300px] md:min-h-[380px] max-h-[58vh] resize-y"></textarea>
-                        <p class="text-[11px] text-zinc-400 dark:text-zinc-500">Edita directamente la letra con acordes entre corchetes <code>[G]</code> o secciones como <code>[VERSO 1]</code>, <code>[CORO]</code>, <code>[INTRO]</code>.</p>
-                    </div>
-                </div>
-
                 <!-- Botones de Navegación Paso 2 -->
-                <div class="flex items-center justify-between pt-3 pb-2 border-t border-zinc-100 dark:border-zinc-800">
-                    <button type="button" id="btn-delete-song" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline hidden">Eliminar Canción</button>
+                <div class="flex items-center justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                    <button type="button" id="btn-delete-song" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline hidden cursor-pointer">Eliminar Canción</button>
                     <div class="flex items-center gap-2.5 ml-auto">
                         <button type="button" id="btn-wizard-prev" class="px-5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition flex items-center gap-1.5 cursor-pointer">
                             <i class="fa-solid fa-arrow-left text-[10px]"></i>
@@ -601,6 +601,14 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2.5">
+            <!-- TÍTULO DE CANCIÓN (MEDLEY) -->
+            <button type="button" class="btn-insert-section col-span-2 p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-bold text-amber-600 dark:text-amber-400 transition flex items-center justify-between group cursor-pointer" data-section="TÍTULO">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-music text-xs"></i>
+                    <span>[TÍTULO DE CANCIÓN]</span>
+                </div>
+                <span class="text-[10px] opacity-80 font-normal">Separador para Medleys</span>
+            </button>
             <!-- INTRO -->
             <button type="button" class="btn-insert-section p-3 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/15 text-xs font-bold text-purple-600 dark:text-purple-400 transition flex items-center justify-between group cursor-pointer" data-section="INTRO">
                 <span>[INTRO]</span>

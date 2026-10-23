@@ -260,6 +260,50 @@
     white-space: nowrap; /* Avoid automatic breaking that desynchronizes chords */
 }
 
+/* ==========================================================================
+   Títulos de Canción Individuales (Medleys y Subtítulos)
+   ========================================================================== */
+.lyrics-song-title-wrap {
+    display: flex;
+    align-items: center;
+    margin-top: 32px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color, #27272a);
+    width: 100%;
+}
+
+.lyrics-song-title-wrap:first-child {
+    margin-top: 8px;
+}
+
+.lyrics-song-title-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.lyrics-song-title-text {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-main, #18181b);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin: 0;
+}
+
+.dark .lyrics-song-title-text {
+    color: #f4f4f5;
+}
+
+@media (min-width: 640px) {
+    .lyrics-song-title-text {
+        font-size: 1.65rem;
+    }
+}
+
 .lyrics-section-header-wrap {
     display: flex;
     align-items: center;
@@ -1170,6 +1214,27 @@
     pointer-events: none;
     z-index: 20;
     transition: left 0.04s ease;
+}
+
+/* ==========================================================================
+   Modo Solo Letra (Vocalistas) - Ocultamiento limpio de acordes y notas instrumentales
+   ========================================================================== */
+.lyrics-only-mode .chord-el {
+    display: none !important;
+}
+
+.lyrics-only-mode .instrumental-line {
+    display: none !important;
+}
+
+.lyrics-only-mode .chord-segment {
+    line-height: 1.8 !important;
+    vertical-align: baseline !important;
+}
+
+.lyrics-only-mode .lyric-el {
+    font-size: 1.05rem !important;
+    letter-spacing: 0.01em;
 }
 
 

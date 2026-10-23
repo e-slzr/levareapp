@@ -101,8 +101,15 @@ function renderAnnouncementsFullList() {
         const matchesText = !textQ || titleStr.includes(textQ) || contentStr.includes(textQ) || textStr.includes(textQ);
         let matchesDate = true;
         if (dateQ && a.created_at) {
-            const itemDate = a.created_at.substring(0, 10);
-            matchesDate = (itemDate === dateQ);
+            const d = typeof parseUtcDate === 'function' ? parseUtcDate(a.created_at) : new Date(a.created_at);
+            if (d && !isNaN(d.getTime())) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                matchesDate = (`${y}-${m}-${day}` === dateQ);
+            } else {
+                matchesDate = false;
+            }
         }
         return matchesText && matchesDate;
     });
@@ -138,12 +145,9 @@ function renderAnnouncementsFullList() {
         const iconContainer = `<div class="w-9 h-9 rounded-xl ${iconConfig.badgeClass} flex items-center justify-center flex-shrink-0 mt-0.5">${iconConfig.iconHtml}</div>`;
 
         // Format created date & time
-        let formattedDateStr = '';
-        let timeStr = '';
+        let formattedDateTime = '';
         if (a.created_at) {
-            const d = new Date(a.created_at);
-            formattedDateStr = d.toLocaleDateString('es-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-            timeStr = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + ' hs';
+            formattedDateTime = typeof formatShortDateTime === 'function' ? formatShortDateTime(a.created_at) : a.created_at;
         }
 
         card.onclick = () => openAnnouncementDetailModal(a);
@@ -155,11 +159,8 @@ function renderAnnouncementsFullList() {
                 ${meta.content && meta.title ? `<p class="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">${meta.content}</p>` : ''}
                 <div class="flex items-center gap-2 text-[11px] text-zinc-400 dark:text-zinc-500 flex-wrap">
                     <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${categoryChipClass} uppercase">${iconConfig.categoryLabel}</span>
-                    ${hasImage ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700 flex items-center gap-1"><i class="fa-solid fa-image text-[9px]"></i> Foto</span>' : ''}
-                    <span>•</span>
-                    <span>${formattedDateStr}</span>
-                    <span>•</span>
-                    <span>${timeStr}</span>
+                    ${hasImage ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700 flex items-center gap-1"><i class="fa-solid fa-image text-[9px]"></i> Foto</span><span>•</span>' : ''}
+                    <span>${formattedDateTime}</span>
                 </div>
             </div>
             <i class="fa-solid fa-chevron-right text-[10px] text-zinc-400 self-center"></i>

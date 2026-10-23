@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS `group_user` (
     `user_id` BIGINT UNSIGNED NOT NULL,
     `group_id` BIGINT UNSIGNED NOT NULL,
     `role` VARCHAR(255) NULL DEFAULT NULL,
+    `roles` TEXT NULL DEFAULT NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`user_id`, `group_id`),
     INDEX `group_user_group_id_foreign` (`group_id`),

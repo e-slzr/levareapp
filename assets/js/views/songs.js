@@ -181,21 +181,23 @@ function initSongsView(forceRefresh = true, openCommunity = false) {
     }
 
     const btnWizardNext = document.getElementById('btn-wizard-next');
-    if (btnWizardNext) {
-        btnWizardNext.onclick = () => {
-            const titleInput = document.getElementById('song-form-title');
-            if (!titleInput.value.trim()) {
-                titleInput.focus();
-                showToast("Por favor ingresa el título de la canción", "danger");
-                return;
-            }
-            if (typeof goToWizardStep === 'function') goToWizardStep(2);
-        };
+    if (btnWizardNext && typeof goToWizardStep === 'function') {
+        btnWizardNext.onclick = () => goToWizardStep(2);
     }
 
     const btnWizardPrev = document.getElementById('btn-wizard-prev');
     if (btnWizardPrev && typeof goToWizardStep === 'function') {
         btnWizardPrev.onclick = () => goToWizardStep(1);
+    }
+
+    const stepIndicator1 = document.getElementById('step-indicator-1');
+    if (stepIndicator1 && typeof goToWizardStep === 'function') {
+        stepIndicator1.onclick = () => goToWizardStep(1);
+    }
+
+    const stepIndicator2 = document.getElementById('step-indicator-2');
+    if (stepIndicator2 && typeof goToWizardStep === 'function') {
+        stepIndicator2.onclick = () => goToWizardStep(2);
     }
 
     const wizardForm = document.getElementById('song-wizard-form');
@@ -377,10 +379,12 @@ async function renderSongsCatalog(forceRefresh = false) {
         // Caso 2: Canción activa y disponible
         card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition flex items-center justify-between cursor-pointer group';
         
-        const medleyBadge = s.is_medley ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mr-1.5">Medley</span>` : '';
+        const isMedley = s.is_medley == 1 || s.is_medley === true;
+        const medleyBadge = isMedley ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mr-1.5">Medley</span>` : '';
         const albumText = s.album ? ` • ${s.album}` : '';
         const isAuthor = s.is_author == 1 || s.is_author === true;
         const communityBadge = !isAuthor ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 mr-1.5">Comunidad</span>` : '';
+        const keyBadge = isMedley ? '' : `<span class="px-2.5 py-1 rounded-xl text-xs font-bold font-mono bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30">${s.key || 'C'}</span>`;
 
         card.innerHTML = `
             <div class="space-y-0.5 min-w-0 flex-1 pr-2">
@@ -388,7 +392,7 @@ async function renderSongsCatalog(forceRefresh = false) {
                 <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">${communityBadge}${medleyBadge}${s.artist || 'Desconocido'}${albumText}</p>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
-                <span class="px-2.5 py-1 rounded-xl text-xs font-bold font-mono bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30">${s.is_medley ? 'Medley' : (s.key || 'C')}</span>
+                ${keyBadge}
                 ${editAllowed ? `
                     ${isAuthor ? `
                     <button type="button" class="btn-edit-song-trigger p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer" data-id="${s.id}" title="Editar">

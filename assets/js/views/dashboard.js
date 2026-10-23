@@ -157,8 +157,7 @@ async function loadSuperadminDashboardData(forceRefresh = false) {
 
                 let dateStr = '';
                 if (a.created_at) {
-                    const d = new Date(a.created_at);
-                    dateStr = d.toLocaleDateString('es-ES', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' hs';
+                    dateStr = typeof formatShortDateTime === 'function' ? formatShortDateTime(a.created_at) : a.created_at;
                 }
 
                 card.innerHTML = `
@@ -237,8 +236,8 @@ async function loadRegularUserDashboardData() {
                 const iconConfig = getAnnouncementIconConfig(a);
                 const categoryChipClass = iconConfig.chipClass || 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700';
 
-                // Formatear hora de creación
-                const timeStr = a.created_at ? new Date(a.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + ' hs' : '';
+                // Formatear fecha y hora corta de creación (ej. "vie 23 de oct - 1:44 am")
+                const dateTimeStr = typeof formatShortDateTime === 'function' ? formatShortDateTime(a.created_at) : '';
                 const meta = a.meta || {};
                 const displayTitle = meta.title || a.text;
                 
@@ -255,7 +254,7 @@ async function loadRegularUserDashboardData() {
                         <div class="flex items-center gap-2 text-[11px] text-zinc-400 dark:text-zinc-500 flex-wrap">
                             <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${categoryChipClass} uppercase">${iconConfig.categoryLabel}</span>
                             ${meta.image_url ? '<span class="text-[10px] text-zinc-400 flex items-center gap-1"><i class="fa-solid fa-image text-[9px]"></i> Foto</span><span>•</span>' : ''}
-                            <span>${timeStr}</span>
+                            <span>${dateTimeStr}</span>
                         </div>
                     </div>
                     <i class="fa-solid fa-chevron-right text-[10px] text-zinc-400 self-center"></i>

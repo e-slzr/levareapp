@@ -179,10 +179,12 @@ function renderCommunityCatalog(isAppend = false, newBatch = []) {
         const card = document.createElement('div');
         card.className = 'p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition flex flex-col justify-between gap-3 cursor-pointer group';
 
-        const medleyBadge = s.is_medley ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mr-1.5">Medley</span>` : '';
+        const isMedley = s.is_medley == 1 || s.is_medley === true;
+        const medleyBadge = isMedley ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mr-1.5">Medley</span>` : '';
         const albumText = s.album ? ` • ${s.album}` : '';
         const creatorName = s.creator_name ? `${s.creator_name}${s.creator_lastname ? ' ' + s.creator_lastname : ''}` : 'Usuario Levare';
         const canAdminSong = isSuperadmin || (currentUser && s.created_by == currentUser.id);
+        const keyBadge = isMedley ? '' : `<span class="px-2.5 py-1 rounded-xl text-xs font-bold font-mono bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30 flex-shrink-0">${s.key || 'C'}</span>`;
 
         card.innerHTML = `
             <div class="space-y-1">
@@ -191,7 +193,7 @@ function renderCommunityCatalog(isAppend = false, newBatch = []) {
                         <h4 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-700 dark:group-hover:text-white transition truncate">${s.title}</h4>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">${medleyBadge}${s.artist || 'Desconocido'}${albumText}</p>
                     </div>
-                    <span class="px-2.5 py-1 rounded-xl text-xs font-bold font-mono bg-blue-500/10 text-blue-600 border border-blue-500/20 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30 flex-shrink-0">${s.is_medley ? 'Medley' : (s.key || 'C')}</span>
+                    ${keyBadge}
                 </div>
 
                 <div class="flex items-center gap-1.5 text-[11px] text-zinc-400 dark:text-zinc-500 pt-0.5">
@@ -300,7 +302,14 @@ function openCommunitySongPreview(songId) {
     
     const keyBadge = document.getElementById('comm-preview-key-badge');
     const medleyBadge = document.getElementById('comm-preview-medley-badge');
-    if (keyBadge) keyBadge.textContent = song.is_medley ? 'Medley' : (song.key || 'C');
+    if (keyBadge) {
+        if (song.is_medley) {
+            keyBadge.classList.add('hidden');
+        } else {
+            keyBadge.classList.remove('hidden');
+            keyBadge.textContent = song.key || 'C';
+        }
+    }
     if (medleyBadge) {
         if (song.is_medley) medleyBadge.classList.remove('hidden');
         else medleyBadge.classList.add('hidden');
@@ -447,6 +456,9 @@ window.toggleCommunitySongLike = toggleCommunitySongLike;
  * @param {number|string} songId
  */
 async function importCommunitySong(songId) {
+    if (typeof showLoadingOverlay === 'function') {
+        showLoadingOverlay('Agregando canción a la banda...');
+    }
     try {
         await apiFetch(`/songs/${songId}/import`, { method: 'POST' });
         showToast("Canción agregada al catálogo de tu banda con éxito");
@@ -469,6 +481,10 @@ async function importCommunitySong(songId) {
         renderCommunityCatalog();
     } catch (e) {
         showToast(e.message || "Error al agregar canción", "danger");
+    } finally {
+        if (typeof hideLoadingOverlay === 'function') {
+            hideLoadingOverlay();
+        }
     }
 }
 window.importCommunitySong = importCommunitySong;

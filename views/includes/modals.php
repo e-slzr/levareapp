@@ -250,6 +250,15 @@
     </div>
 </div>
 
+<!-- 9. Global Loading Overlay -->
+<div id="global-loading-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm hidden px-4 select-none">
+    <div class="px-6 py-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl flex items-center gap-3.5 screen-fade">
+        <i class="fa-solid fa-circle-notch fa-spin text-zinc-900 dark:text-zinc-100 text-lg"></i>
+        <span id="global-loading-overlay-text" class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Guardando...</span>
+    </div>
+</div>
+
+
 
 
 

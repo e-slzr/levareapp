@@ -16,6 +16,8 @@ let presIsScrolling = false;
 let presScrollInterval = null;
 let directPresentationSetlistId = null;
 let setlistIdToDelete = null;
+let presIsLyricsOnly = false;
+let setlistModalCurrentStep = 1;
 
 function initSetlistsView() {
     const currentUser = getData('currentUser');
@@ -110,6 +112,22 @@ function initSetlistsView() {
 
     const btnPresToggleSongs = document.getElementById('btn-toggle-presentation-songs');
     if (btnPresToggleSongs) btnPresToggleSongs.onclick = openMobileSongsModal;
+
+    // Solo Letra mode switch (Vocalistas)
+    const btnPresLyricsMode = document.getElementById('btn-pres-toggle-lyrics-mode');
+    if (btnPresLyricsMode) {
+        btnPresLyricsMode.onclick = togglePresLyricsMode;
+    }
+
+    // Wizard navigation triggers for Setlist Modal
+    const btnSetlistNext = document.getElementById('btn-setlist-step-next');
+    if (btnSetlistNext) {
+        btnSetlistNext.onclick = () => goToSetlistModalStep(2);
+    }
+    const btnSetlistBack = document.getElementById('btn-setlist-step-back');
+    if (btnSetlistBack) {
+        btnSetlistBack.onclick = () => goToSetlistModalStep(1);
+    }
 
     // Form submit
     document.getElementById('setlist-form').onsubmit = handleSetlistFormSubmit;
@@ -364,6 +382,111 @@ function closeSetlistPresentation() {
 
     currentPresentationSetlist = null;
     currentPresentationSong = null;
+
+    // Reset Solo Letra mode
+    if (presIsLyricsOnly) {
+        togglePresLyricsMode();
+    }
+}
+
+function togglePresLyricsMode() {
+    presIsLyricsOnly = !presIsLyricsOnly;
+    const container = document.getElementById('pres-lyrics-container');
+    const btn = document.getElementById('btn-pres-toggle-lyrics-mode');
+    const text = document.getElementById('btn-pres-lyrics-mode-text');
+    const tonalityGroup = document.getElementById('pres-tonality-control-group');
+
+    if (container) {
+        container.classList.toggle('lyrics-only-mode', presIsLyricsOnly);
+    }
+
+    if (btn && text) {
+        if (presIsLyricsOnly) {
+            btn.className = 'px-2.5 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-500 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm';
+            btn.title = 'Modo Solo Letra activado. Toca para ver los acordes';
+            if (tonalityGroup) tonalityGroup.classList.add('opacity-30', 'pointer-events-none');
+            showToast("Modo Solo Letra activado (acordes ocultos)", "info");
+        } else {
+            btn.className = 'px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 transition cursor-pointer';
+            btn.title = 'Modo Solo Letra: oculta los acordes para mayor comodidad de los cantantes';
+            if (tonalityGroup) tonalityGroup.classList.remove('opacity-30', 'pointer-events-none');
+        }
+    }
+}
+
+function goToSetlistModalStep(step) {
+    const step1El = document.getElementById('setlist-modal-step-1');
+    const step2El = document.getElementById('setlist-modal-step-2');
+    const badge1 = document.getElementById('setlist-step-badge-1');
+    const badge2 = document.getElementById('setlist-step-badge-2');
+    const btnCancel = document.getElementById('btn-close-setlist-modal');
+    const btnBack = document.getElementById('btn-setlist-step-back');
+    const btnNext = document.getElementById('btn-setlist-step-next');
+    const btnSubmit = document.getElementById('btn-submit-setlist');
+
+    if (step === 2) {
+        const nameInput = document.getElementById('setlist-form-name');
+        const descInput = document.getElementById('setlist-form-desc');
+
+        if (!nameInput.value.trim()) {
+            nameInput.focus();
+            showToast("Por favor ingresa el nombre del repertorio.", "warning");
+            return;
+        }
+
+        // Actualizar resumen del paso 2
+        const summaryTitle = document.getElementById('setlist-step-summary-title');
+        const summaryDesc = document.getElementById('setlist-step-summary-desc');
+        const countBadge = document.getElementById('setlist-songs-count-badge');
+
+        if (summaryTitle) summaryTitle.textContent = nameInput.value.trim();
+        if (summaryDesc) summaryDesc.textContent = descInput.value.trim() || 'Sin notas adicionales';
+        if (countBadge) {
+            const count = selectedSongIds.length;
+            countBadge.textContent = count === 1 ? '1 canción' : `${count} canciones`;
+        }
+
+        // Conmutar vistas
+        if (step1El) step1El.classList.add('hidden');
+        if (step2El) step2El.classList.remove('hidden');
+
+        // Actualizar badges del header
+        if (badge1) {
+            badge1.className = 'px-2 py-0.5 rounded-md text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition';
+        }
+        if (badge2) {
+            badge2.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition';
+        }
+
+        // Botones footer
+        if (btnCancel) btnCancel.classList.add('hidden');
+        if (btnBack) btnBack.classList.remove('hidden');
+        if (btnNext) btnNext.classList.add('hidden');
+        if (btnSubmit) btnSubmit.classList.remove('hidden');
+
+        setlistModalCurrentStep = 2;
+
+        const searchInput = document.getElementById('setlist-song-search');
+        if (searchInput) searchInput.focus();
+    } else {
+        // Volver al paso 1
+        if (step1El) step1El.classList.remove('hidden');
+        if (step2El) step2El.classList.add('hidden');
+
+        if (badge1) {
+            badge1.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition';
+        }
+        if (badge2) {
+            badge2.className = 'px-2 py-0.5 rounded-md text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition';
+        }
+
+        if (btnCancel) btnCancel.classList.remove('hidden');
+        if (btnBack) btnBack.classList.add('hidden');
+        if (btnNext) btnNext.classList.remove('hidden');
+        if (btnSubmit) btnSubmit.classList.add('hidden');
+
+        setlistModalCurrentStep = 1;
+    }
 }
 
 function openMobileSongsModal() {
@@ -505,7 +628,7 @@ function togglePresentationSongsSidebar() {
 async function openCreateSetlistModal() {
     document.getElementById('setlist-form-id').value = "";
     document.getElementById('setlist-modal-title').textContent = "Crear Nuevo Repertorio";
-    document.getElementById('btn-submit-setlist').textContent = "Guardar";
+    document.getElementById('btn-submit-setlist').textContent = "Guardar Repertorio";
     document.getElementById('btn-delete-setlist').style.display = "none";
     document.getElementById('setlist-form').reset();
 
@@ -514,6 +637,7 @@ async function openCreateSetlistModal() {
     const searchInput = document.getElementById('setlist-song-search');
     if (searchInput) searchInput.value = "";
 
+    goToSetlistModalStep(1);
     await loadAllSongsForModal();
 }
 
@@ -523,7 +647,7 @@ async function openEditSetlistModal(setlistId) {
 
     document.getElementById('setlist-form-id').value = setlist.id;
     document.getElementById('setlist-modal-title').textContent = "Editar Repertorio";
-    document.getElementById('btn-submit-setlist').textContent = "Guardar";
+    document.getElementById('btn-submit-setlist').textContent = "Guardar Repertorio";
 
     // Show delete button
     const deleteBtn = document.getElementById('btn-delete-setlist');
@@ -540,6 +664,7 @@ async function openEditSetlistModal(setlistId) {
     const searchInput = document.getElementById('setlist-song-search');
     if (searchInput) searchInput.value = "";
 
+    goToSetlistModalStep(1);
     await loadAllSongsForModal();
 }
 
@@ -565,34 +690,10 @@ function renderModalSongsSelection() {
     const query = setlistSearchSongQuery.toLowerCase().trim();
 
     if (query.length < 3) {
-        // Show message requesting 3 chars
         const msg = document.createElement('div');
-        msg.style.padding = '8px 4px 12px 4px';
-        msg.style.color = 'var(--text-muted)';
-        msg.style.fontSize = '0.85rem';
-        msg.style.fontStyle = 'italic';
-        msg.textContent = 'Escribe al menos 3 caracteres para buscar canciones...';
+        msg.className = 'p-3 text-center text-xs text-zinc-400 dark:text-zinc-500 italic';
+        msg.textContent = 'Escribe al menos 3 letras del título o artista para buscar...';
         songsSelect.appendChild(msg);
-
-        // Render already selected songs so the user can see them and uncheck them
-        if (selectedSongIds.length > 0) {
-            const heading = document.createElement('div');
-            heading.style.fontSize = '0.75rem';
-            heading.style.fontWeight = '600';
-            heading.style.textTransform = 'uppercase';
-            heading.style.color = 'var(--primary)';
-            heading.style.marginBottom = '6px';
-            heading.textContent = 'Canciones Seleccionadas:';
-            songsSelect.appendChild(heading);
-
-            selectedSongIds.forEach(id => {
-                const s = allSongs.find(song => song.id == id);
-                if (s) {
-                    const label = createSongCheckboxItem(s);
-                    songsSelect.appendChild(label);
-                }
-            });
-        }
         return;
     }
 
@@ -604,9 +705,7 @@ function renderModalSongsSelection() {
 
     if (filtered.length === 0) {
         const noResults = document.createElement('div');
-        noResults.style.padding = '10px';
-        noResults.style.color = 'var(--text-muted)';
-        noResults.style.fontSize = '0.85rem';
+        noResults.className = 'p-3 text-center text-xs text-zinc-400 dark:text-zinc-500 italic';
         noResults.textContent = 'No se encontraron canciones en el catálogo.';
         songsSelect.appendChild(noResults);
         return;
@@ -723,6 +822,12 @@ function removeSongFromOrder(songId) {
 }
 
 function renderSelectedSongsOrder() {
+    const countBadge = document.getElementById('setlist-songs-count-badge');
+    if (countBadge) {
+        const count = selectedSongIds.length;
+        countBadge.textContent = count === 1 ? '1 canción' : `${count} canciones`;
+    }
+
     const orderContainer = document.getElementById('setlist-form-songs-order');
     if (!orderContainer) return;
     
@@ -810,6 +915,16 @@ async function handleSetlistFormSubmit(e) {
         return;
     }
 
+    const submitBtn = document.getElementById('btn-submit-setlist');
+    const originalText = submitBtn ? submitBtn.textContent : 'Guardar';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Guardando...';
+    }
+    if (typeof showLoadingOverlay === 'function') {
+        showLoadingOverlay(id ? 'Actualizando repertorio...' : 'Guardando repertorio...');
+    }
+
     try {
         if (id) {
             // Edit setlist
@@ -831,6 +946,14 @@ async function handleSetlistFormSubmit(e) {
         await renderSetlists(true); // force reload
     } catch (err) {
         showToast(err.message, "danger");
+    } finally {
+        if (typeof hideLoadingOverlay === 'function') {
+            hideLoadingOverlay();
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
     }
 }
 

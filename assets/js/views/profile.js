@@ -52,7 +52,10 @@ function initProfileView() {
     const userGroups = getData('userGroups') || [];
     const activeGroup = userGroups.find(g => g.id == currentGroupId);
     const activeGroupName = activeGroup ? activeGroup.name : 'Sin Banda';
-    const activeRole = activeGroup && activeGroup.role ? activeGroup.role : 'Sin rol musical';
+    let activeRoleDisplay = activeGroup && activeGroup.role ? activeGroup.role : 'Sin rol musical';
+    if (activeGroup && Array.isArray(activeGroup.roles) && activeGroup.roles.length > 0) {
+        activeRoleDisplay = activeGroup.roles.join(', ');
+    }
 
     // Role-specific sections visibility
     const bandSection = document.getElementById('profile-band-management-section');
@@ -68,7 +71,7 @@ function initProfileView() {
         if (bandSection) bandSection.classList.remove('hidden');
         if (bandMembersRow) bandMembersRow.classList.remove('hidden');
         if (feedbackRow) feedbackRow.classList.remove('hidden');
-        if (profileDetailsElem) profileDetailsElem.textContent = `Banda ${activeGroupName} • Rol: ${activeRole}`;
+        if (profileDetailsElem) profileDetailsElem.textContent = `Banda ${activeGroupName} • Rol: ${activeRoleDisplay}`;
     }
 
     // Render avatar photo / initials

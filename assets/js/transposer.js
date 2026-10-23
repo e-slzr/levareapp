@@ -65,6 +65,23 @@ function parseChordsToHTML(text, semitones = 0) {
             return;
         }
 
+        // 1.5. Song Title / Medley Header (e.g. {Tú Harás}, = Tú Harás =, -- Tú Harás --, [TÍTULO: Tú Harás])
+        let songTitle = null;
+        if (typeof extractSongTitle === 'function') {
+            songTitle = extractSongTitle(line);
+        } else if (typeof window !== 'undefined' && typeof window.extractSongTitle === 'function') {
+            songTitle = window.extractSongTitle(line);
+        }
+
+        if (songTitle) {
+            html += `<div class="lyrics-song-title-wrap">
+                <div class="lyrics-song-title-inner">
+                    <h2 class="lyrics-song-title-text">${escapeHtml(songTitle)}</h2>
+                </div>
+            </div>`;
+            return;
+        }
+
         // 2. Section Headers (e.g., [Intro], [Verso 1], [Coro])
         const sectionMatch = trimmed.match(/^\[([^\]]+)\]$/);
         if (sectionMatch) {

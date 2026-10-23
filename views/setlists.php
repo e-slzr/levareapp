@@ -64,28 +64,34 @@
                     </button>
                 </div>
 
-                <!-- Row 2: Tonality (Left) + Autoscroll (Right) -->
-                <div class="flex items-center justify-between md:justify-end gap-2.5 w-full md:w-auto flex-shrink-0 pt-1.5 md:pt-0 border-t md:border-t-0 border-zinc-200/60 dark:border-zinc-800/60">
+                <!-- Row 2: Controls (Tonality, Lyrics Mode & Autoscroll) -->
+                <div class="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto flex-shrink-0 pt-1.5 md:pt-0 border-t md:border-t-0 border-zinc-200/60 dark:border-zinc-800/60 flex-wrap">
                     <!-- Tonality control widget -->
-                    <div class="flex items-center gap-1.5">
+                    <div id="pres-tonality-control-group" class="flex items-center gap-1.5 transition">
                         <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Tono:</span>
                         <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
-                            <button type="button" id="btn-pres-transpose-down" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm">-</button>
+                            <button type="button" id="btn-pres-transpose-down" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm cursor-pointer">-</button>
                             <span id="pres-song-current-key" class="px-1.5 font-bold text-zinc-900 dark:text-zinc-100 min-w-[24px] text-center text-sm">C</span>
-                            <button type="button" id="btn-pres-transpose-up" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm">+</button>
+                            <button type="button" id="btn-pres-transpose-up" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm cursor-pointer">+</button>
                         </div>
-                        <button type="button" id="btn-pres-transpose-reset" class="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition">
+                        <button type="button" id="btn-pres-transpose-reset" class="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">
                             Rest.
                         </button>
                     </div>
 
+                    <!-- Solo Letra Mode Switch (Vocalistas) -->
+                    <button type="button" id="btn-pres-toggle-lyrics-mode" class="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 transition cursor-pointer" title="Modo Solo Letra: oculta los acordes para mayor comodidad de los cantantes">
+                        <i class="fa-solid fa-align-left text-xs pointer-events-none"></i>
+                        <span id="btn-pres-lyrics-mode-text" class="pointer-events-none">Solo Letra</span>
+                    </button>
+
                     <!-- Autoscroll widget -->
                     <div class="flex items-center gap-1.5">
                         <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Scroll:</span>
-                        <button type="button" id="btn-pres-scroll-toggle" class="w-8 h-8 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 transition" style="width: 100px;">
+                        <button type="button" id="btn-pres-scroll-toggle" class="w-8 h-8 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 transition cursor-pointer" style="width: 100px;">
                             <i class="fa-solid fa-play text-[10px]"></i>
                         </button>
-                        <select id="pres-scroll-speed-select" class="px-2 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs text-zinc-900 dark:text-zinc-100 font-semibold focus:outline-none">
+                        <select id="pres-scroll-speed-select" class="px-2 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs text-zinc-900 dark:text-zinc-100 font-semibold focus:outline-none cursor-pointer">
                             <option value="1">x1</option>
                             <option value="2" selected>x2</option>
                             <option value="3">x3</option>
@@ -108,59 +114,96 @@
 
 <!-- ================= MODALS SECTION ================= -->
 
-<!-- MODAL: Crear / Editar Repertorio -->
+<!-- MODAL: Crear / Editar Repertorio (Wizard 2 Pasos) -->
 <div id="modal-setlist" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm hidden px-4">
     <div class="w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden screen-fade flex flex-col max-h-[90vh]">
+        <!-- Header con indicador dinámico de pasos -->
         <div class="p-5 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between flex-shrink-0">
-            <h3 id="setlist-modal-title" class="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100">Crear Nuevo Repertorio</h3>
+            <div>
+                <h3 id="setlist-modal-title" class="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100">Crear Nuevo Repertorio</h3>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="setlist-step-badge-1" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition">1. Información</span>
+                    <i class="fa-solid fa-chevron-right text-[8px] text-zinc-400"></i>
+                    <span id="setlist-step-badge-2" class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition">2. Canciones</span>
+                </div>
+            </div>
             <button type="button" id="btn-close-setlist-modal-x" class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center text-sm font-bold transition btn-close-modal">&times;</button>
         </div>
 
-        <form id="setlist-form" class="overflow-y-auto flex-1 p-5 space-y-4">
+        <form id="setlist-form" class="overflow-y-auto flex-1 p-5">
             <input type="hidden" id="setlist-form-id" />
 
-            <div class="space-y-1.5">
-                <label for="setlist-form-name" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Nombre del Repertorio</label>
-                <input type="text" id="setlist-form-name" placeholder="Ej. Repertorio de Concierto" required
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
-            </div>
+            <!-- PASO 1: INFORMACIÓN GENERAL -->
+            <div id="setlist-modal-step-1" class="space-y-4">
+                <div class="space-y-1.5">
+                    <label for="setlist-form-name" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Nombre del Repertorio</label>
+                    <input type="text" id="setlist-form-name" placeholder="Ej. Repertorio de Concierto / Culto Dominical" required
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                </div>
 
-            <div class="space-y-1.5">
-                <label for="setlist-form-desc" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Notas o Descripción</label>
-                <input type="text" id="setlist-form-desc" placeholder="Ej. Ensayo general el sábado previo a las 6 PM"
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
-            </div>
-
-            <div class="space-y-2">
-                <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Buscar Canciones en el Catálogo</label>
-                <input type="text" id="setlist-song-search" placeholder="Escribe al menos 3 letras del título o artista..."
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
-            </div>
-
-            <div class="space-y-1.5">
-                <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Seleccionar Canciones (Marca las que deseas incluir)</label>
-                <div id="setlist-form-songs-selection" class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 overflow-y-auto max-h-44 divide-y divide-zinc-100 dark:divide-zinc-800">
-                    <!-- Populated dynamically with songs -->
+                <div class="space-y-1.5">
+                    <label for="setlist-form-desc" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Notas o Descripción</label>
+                    <textarea id="setlist-form-desc" rows="4" placeholder="Notas sobre el repertorio, indicaciones de orden, dinámicas, etc..."
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition"></textarea>
                 </div>
             </div>
 
-            <div class="space-y-1.5">
-                <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Orden del Repertorio (Arrastra o usa las flechas)</label>
-                <div id="setlist-form-songs-order" class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 min-h-[52px] p-2 flex flex-col gap-1">
-                    <div class="no-songs-msg text-xs text-zinc-400 italic p-2">No has seleccionado ninguna canción todavía.</div>
+            <!-- PASO 2: SELECCIÓN Y ORDEN DE CANCIONES -->
+            <div id="setlist-modal-step-2" class="space-y-4 hidden screen-fade">
+                <!-- Resumen breve del paso 1 -->
+                <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
+                    <div class="min-w-0 pr-2">
+                        <h4 id="setlist-step-summary-title" class="font-bold text-zinc-900 dark:text-zinc-100 truncate">Repertorio</h4>
+                        <p id="setlist-step-summary-desc" class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5">Sin notas</p>
+                    </div>
+                    <span id="setlist-songs-count-badge" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 uppercase flex-shrink-0">0 canciones</span>
+                </div>
+
+                <!-- Buscador de canciones -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Buscar Canciones en el Catálogo</label>
+                    <input type="text" id="setlist-song-search" placeholder="Escribe al menos 3 letras del título o artista..."
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                </div>
+
+                <!-- Resultados de búsqueda -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Resultados de Búsqueda</label>
+                    <div id="setlist-form-songs-selection" class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 overflow-y-auto max-h-40 divide-y divide-zinc-100 dark:divide-zinc-800 p-1">
+                        <!-- Populated dynamically with songs -->
+                    </div>
+                </div>
+
+                <!-- Orden del repertorio -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Orden del Repertorio</label>
+                        <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-normal">Arrastra o usa las flechas</span>
+                    </div>
+                    <div id="setlist-form-songs-order" class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 min-h-[56px] max-h-56 overflow-y-auto p-2 flex flex-col gap-1">
+                        <div class="no-songs-msg text-xs text-zinc-400 italic p-2">No has seleccionado ninguna canción todavía.</div>
+                    </div>
                 </div>
             </div>
         </form>
 
         <div class="p-4 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between gap-2 flex-shrink-0">
-            <button type="button" id="btn-delete-setlist" class="px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/40 transition" style="display: none;">
+            <button type="button" id="btn-delete-setlist" class="px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/40 transition cursor-pointer" style="display: none;">
                 <i class="fa-solid fa-trash-can mr-1"></i>Eliminar
             </button>
-            <div class="flex items-center gap-2 ml-auto">
-                <button type="button" id="btn-close-setlist-modal" class="btn-close-modal px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">Cancelar</button>
-                <button type="submit" form="setlist-form" id="btn-submit-setlist" class="px-4 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition">Guardar</button>
-            </div>
+
+            <button type="button" id="btn-setlist-step-back" class="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition hidden cursor-pointer">
+                <i class="fa-solid fa-arrow-left mr-1.5"></i>Atrás
+            </button>
+            <button type="button" id="btn-close-setlist-modal" class="btn-close-modal px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer">Cancelar</button>
+
+            <button type="button" id="btn-setlist-step-next" class="px-4 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition ml-auto cursor-pointer">
+                Continuar a Canciones<i class="fa-solid fa-arrow-right ml-1.5"></i>
+            </button>
+            <button type="submit" form="setlist-form" id="btn-submit-setlist" class="px-4 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition hidden ml-auto cursor-pointer">Guardar Repertorio</button>
         </div>
+    </div>
+</div>
     </div>
 </div>
 

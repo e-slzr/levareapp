@@ -692,7 +692,7 @@ function renderAdminFeedback() {
         }
 
         // 4. Formatted Date
-        const dateFormatted = report.created_at ? new Date(report.created_at).toLocaleString('es-ES', {
+        const dateFormatted = report.created_at ? (typeof parseUtcDate === 'function' ? parseUtcDate(report.created_at) : new Date(report.created_at)).toLocaleString('es-ES', {
             dateStyle: 'medium',
             timeStyle: 'short'
         }) : '';
@@ -744,7 +744,7 @@ function openFeedbackDetailModal(reportId) {
 
     const user = report.user || { name: 'Usuario', lastname: '', username: 'anon', email: '' };
     const fullName = `${user.name} ${user.lastname || ''}`.trim();
-    const dateFormatted = report.created_at ? new Date(report.created_at).toLocaleString('es-ES', {
+    const dateFormatted = report.created_at ? (typeof parseUtcDate === 'function' ? parseUtcDate(report.created_at) : new Date(report.created_at)).toLocaleString('es-ES', {
         dateStyle: 'medium',
         timeStyle: 'short'
     }) : '';

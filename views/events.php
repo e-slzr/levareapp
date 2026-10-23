@@ -70,65 +70,114 @@
 <!-- ================= MODALS SECTION ================= -->
 
 <!-- MODAL 1: Programar / Agregar Evento -->
+<!-- MODAL 1: Programar / Agregar Evento (Wizard 2 Pasos) -->
 <div id="modal-schedule-event" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm hidden px-4">
     <div class="w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden screen-fade flex flex-col max-h-[90vh]">
+        <!-- Header con indicador de pasos -->
         <div class="p-5 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between flex-shrink-0">
-            <h3 class="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100">Programar Nuevo Evento</h3>
+            <div>
+                <h3 class="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100">Programar Nuevo Evento</h3>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="event-step-badge-1" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition">1. Información</span>
+                    <i class="fa-solid fa-chevron-right text-[8px] text-zinc-400"></i>
+                    <span id="event-step-badge-2" class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition">2. Roster y Músicos</span>
+                </div>
+            </div>
             <button type="button" id="btn-close-schedule-event-modal-x" class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center text-sm font-bold transition btn-close-modal">&times;</button>
         </div>
 
-        <form id="event-schedule-form" class="overflow-y-auto flex-1 p-5 space-y-4">
-            <div class="space-y-1.5">
-                <label for="event-form-name" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Nombre del Evento</label>
-                <input type="text" id="event-form-name" placeholder="Ej. Servicio Dominical / Ensayo General" required
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
+        <form id="event-schedule-form" class="overflow-y-auto flex-1 p-5">
+            <!-- PASO 1: INFORMACIÓN GENERAL -->
+            <div id="event-modal-step-1" class="space-y-4">
                 <div class="space-y-1.5">
-                    <label for="event-form-date" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Fecha</label>
-                    <input type="date" id="event-form-date" required
+                    <label for="event-form-name" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Nombre del Evento</label>
+                    <input type="text" id="event-form-name" placeholder="Ej. Servicio Dominical / Ensayo General" required
                         class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
                 </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1.5">
+                        <label for="event-form-date" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Fecha</label>
+                        <input type="date" id="event-form-date" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="event-form-time" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Hora</label>
+                        <input type="time" id="event-form-time" required
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1.5">
+                        <label for="event-form-type" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tipo de Evento</label>
+                        <select id="event-form-type" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition">
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="event-form-setlist" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Repertorio Asignado</label>
+                        <select id="event-form-setlist" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition">
+                            <!-- Options populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
                 <div class="space-y-1.5">
-                    <label for="event-form-time" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Hora</label>
-                    <input type="time" id="event-form-time" required
-                        class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                    <label for="event-form-desc" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Notas / Descripción</label>
+                    <textarea id="event-form-desc" rows="3" placeholder="Notas sobre vestuario, orden especial, etc..."
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition"></textarea>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-                <div class="space-y-1.5">
-                    <label for="event-form-type" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tipo de Evento</label>
-                    <select id="event-form-type" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition">
-                        <!-- Options populated by JS -->
-                    </select>
+            <!-- PASO 2: ASIGNACIÓN DE ROLES Y MÚSICOS (ROSTER) -->
+            <div id="event-modal-step-2" class="space-y-4 hidden screen-fade">
+                <!-- Resumen breve del evento configurado en paso 1 -->
+                <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
+                    <div class="min-w-0 pr-2">
+                        <h4 id="event-step-summary-title" class="font-bold text-zinc-900 dark:text-zinc-100 truncate">Evento</h4>
+                        <p id="event-step-summary-meta" class="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Fecha y Hora</p>
+                    </div>
+                    <span id="event-step-summary-type" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 uppercase flex-shrink-0">Tipo</span>
                 </div>
+
+                <!-- Barra de selección rápida de roles -->
                 <div class="space-y-1.5">
-                    <label for="event-form-setlist" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Repertorio Asignado</label>
-                    <select id="event-form-setlist" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition">
-                        <!-- Options populated dynamically -->
-                    </select>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-zinc-400 dark:text-zinc-500">Roles Disponibles</span>
+                        <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-normal">Toca para agregar puestos</span>
+                    </div>
+                    <div id="event-quick-roles-bar" class="flex flex-wrap gap-1.5 pb-1 max-h-28 overflow-y-auto">
+                        <!-- Populated dynamically: [+ Voz Principal], [+ Coros], etc. -->
+                    </div>
                 </div>
-            </div>
 
-            <div class="space-y-1.5">
-                <label for="event-form-desc" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Notas / Descripción</label>
-                <textarea id="event-form-desc" rows="2" placeholder="Notas sobre vestuario, orden especial, etc..."
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition"></textarea>
-            </div>
-
-            <div class="space-y-1.5">
-                <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Asignar Músicos y Roles (Roster)</label>
-                <div id="event-form-roster-selection" class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-3 space-y-2 max-h-48 overflow-y-auto">
-                    <!-- Populated dynamically with roles & members select -->
+                <!-- Lista de puestos asignados -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-zinc-400 dark:text-zinc-500">Puestos en el Evento</span>
+                        <span id="event-roster-count" class="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">0 puestos</span>
+                    </div>
+                    <div id="event-form-roster-selection" class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-2.5 space-y-2 min-h-[140px] max-h-60 overflow-y-auto">
+                        <!-- Populated dynamically with roster slots -->
+                    </div>
                 </div>
             </div>
         </form>
 
-        <div class="p-4 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-end gap-2 flex-shrink-0">
-            <button type="button" class="btn-close-modal px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">Cancelar</button>
-            <button type="submit" form="event-schedule-form" class="px-4 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition">Programar Evento</button>
+        <!-- Footer dinámico según paso -->
+        <div class="p-4 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between gap-2 flex-shrink-0">
+            <button type="button" id="btn-event-step-back" class="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition hidden cursor-pointer">
+                <i class="fa-solid fa-arrow-left mr-1.5"></i>Atrás
+            </button>
+            <button type="button" id="btn-event-cancel" class="btn-close-modal px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer">Cancelar</button>
+
+            <button type="button" id="btn-event-step-next" class="px-4 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition ml-auto cursor-pointer">
+                Continuar a Roster<i class="fa-solid fa-arrow-right ml-1.5"></i>
+            </button>
+            <button type="submit" form="event-schedule-form" id="btn-submit-event" class="px-4 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-bold shadow hover:opacity-90 transition hidden ml-auto cursor-pointer">
+                Programar Evento
+            </button>
         </div>
     </div>
 </div>

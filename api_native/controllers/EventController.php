@@ -91,7 +91,7 @@ class EventController {
         // Save musicians
         foreach ($musicians as $m) {
             if (!empty($m['user_id']) && !empty($m['role'])) {
-                $stmtM = $pdo->prepare("INSERT INTO event_musicians (event_id, user_id, role) VALUES (?, ?, ?)");
+                $stmtM = $pdo->prepare("INSERT IGNORE INTO event_musicians (event_id, user_id, role) VALUES (?, ?, ?)");
                 $stmtM->execute([$eventId, (int)$m['user_id'], $m['role']]);
             }
         }

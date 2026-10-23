@@ -14,15 +14,23 @@ class MemberController {
         }
 
         $stmt = $pdo->prepare("
-            SELECT u.id, u.name, u.lastname, u.email, u.username, u.avatar, u.status, u.account_type, gu.role 
+            SELECT u.id, u.name, u.lastname, u.email, u.username, u.avatar, u.status, u.account_type, gu.role, gu.roles 
             FROM users u
             JOIN group_user gu ON gu.user_id = u.id
             WHERE gu.group_id = ?
             ORDER BY u.name ASC
         ");
         $stmt->execute([$groupId]);
-
-        jsonResponse($stmt->fetchAll());
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$r) {
+            if (!empty($r['roles']) && is_string($r['roles'])) {
+                $decoded = json_decode($r['roles'], true);
+                $r['roles'] = is_array($decoded) ? $decoded : (!empty($r['role']) ? [$r['role']] : []);
+            } else {
+                $r['roles'] = !empty($r['role']) ? [$r['role']] : [];
+            }
+        }
+        jsonResponse($rows);
     }
 
     public static function roles(): void {
@@ -102,7 +110,29 @@ class MemberController {
         }
         $input = json_decode($rawInput, true) ?? $_POST;
 
-        $role = isset($input['role']) && trim($input['role']) !== '' ? trim($input['role']) : null;
+        // Parse musical roles array
+        $rolesInput = $input['roles'] ?? null;
+        if (is_array($rolesInput)) {
+            $rolesList = array_values(array_filter(array_map('trim', $rolesInput)));
+        } elseif (is_string($rolesInput)) {
+            $decoded = json_decode($rolesInput, true);
+            $rolesList = is_array($decoded) ? array_values(array_filter(array_map('trim', $decoded))) : [];
+        } else {
+            $rolesList = [];
+        }
+
+        // Primary role logic: if provided and in rolesList, use it; otherwise default to first role
+        $primaryRole = isset($input['role']) && trim($input['role']) !== '' ? trim($input['role']) : null;
+        if (!empty($rolesList)) {
+            if (!$primaryRole || !in_array($primaryRole, $rolesList)) {
+                $primaryRole = $rolesList[0];
+            }
+            $rolesList = array_values(array_unique(array_merge([$primaryRole], $rolesList)));
+        } else {
+            $primaryRole = null;
+        }
+
+        $rolesJson = !empty($rolesList) ? json_encode($rolesList, JSON_UNESCAPED_UNICODE) : null;
         $systemRole = trim($input['system_role'] ?? 'member');
 
         $pdo = DB::getConnection();
@@ -124,9 +154,9 @@ class MemberController {
             jsonResponse(['message' => 'No es posible degradar al creador original de la banda.'], 422);
         }
 
-        // Update musical role in group_user
-        $stmtGU = $pdo->prepare("UPDATE group_user SET role = ? WHERE user_id = ? AND group_id = ?");
-        $stmtGU->execute([$role, $userId, $groupId]);
+        // Update musical roles in group_user
+        $stmtGU = $pdo->prepare("UPDATE group_user SET role = ?, roles = ? WHERE user_id = ? AND group_id = ?");
+        $stmtGU->execute([$primaryRole, $rolesJson, $userId, $groupId]);
 
         // Update system role in users table if valid
         if (in_array($systemRole, ['leader', 'member', 'superadmin'])) {
@@ -155,7 +185,29 @@ class MemberController {
         $email = strtolower(trim($input['email'] ?? ''));
         $username = trim($input['username'] ?? '');
         $password = $input['password'] ?? '';
-        $role = isset($input['role']) && trim($input['role']) !== '' ? trim($input['role']) : null;
+
+        // Parse musical roles array
+        $rolesInput = $input['roles'] ?? null;
+        if (is_array($rolesInput)) {
+            $rolesList = array_values(array_filter(array_map('trim', $rolesInput)));
+        } elseif (is_string($rolesInput)) {
+            $decoded = json_decode($rolesInput, true);
+            $rolesList = is_array($decoded) ? array_values(array_filter(array_map('trim', $decoded))) : [];
+        } else {
+            $rolesList = [];
+        }
+
+        $primaryRole = isset($input['role']) && trim($input['role']) !== '' ? trim($input['role']) : null;
+        if (!empty($rolesList)) {
+            if (!$primaryRole || !in_array($primaryRole, $rolesList)) {
+                $primaryRole = $rolesList[0];
+            }
+            $rolesList = array_values(array_unique(array_merge([$primaryRole], $rolesList)));
+        } else {
+            $primaryRole = null;
+        }
+
+        $rolesJson = !empty($rolesList) ? json_encode($rolesList, JSON_UNESCAPED_UNICODE) : null;
         $systemRole = trim($input['system_role'] ?? 'member');
 
         if (empty($name) || empty($password)) {
@@ -185,8 +237,8 @@ class MemberController {
         $stmtInsert->execute([$name, $lastname, $email ?: null, $username, $hashedPassword, $systemRole]);
         $newUserId = $pdo->lastInsertId();
 
-        $stmtGU = $pdo->prepare("INSERT INTO group_user (user_id, group_id, role, created_at) VALUES (?, ?, ?, NOW())");
-        $stmtGU->execute([$newUserId, $groupId, $role]);
+        $stmtGU = $pdo->prepare("INSERT INTO group_user (user_id, group_id, role, roles, created_at) VALUES (?, ?, ?, ?, NOW())");
+        $stmtGU->execute([$newUserId, $groupId, $primaryRole, $rolesJson]);
 
         jsonResponse(['message' => 'Integrante sumado con éxito.'], 201);
     }

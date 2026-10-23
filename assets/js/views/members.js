@@ -298,15 +298,37 @@ async function renderMembers(forceRefresh = false) {
         const loginHandle = u.email ? u.email : `@${u.username}`;
         const systemRoleBadge = isLeaderUser ? '<span class="inline-block ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase">Líder</span>' : '';
 
+        const primaryRole = u.role || (Array.isArray(u.roles) && u.roles.length > 0 ? u.roles[0] : '');
+        const secondaryRoles = (Array.isArray(u.roles) ? u.roles : []).filter(r => r !== primaryRole);
+
+        let rolesHTML = '';
+        if (primaryRole) {
+            const extraCount = secondaryRoles.length;
+            const extraBadge = extraCount > 0 
+                ? `<span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700/80 cursor-help flex-shrink-0" title="Roles adicionales: ${secondaryRoles.join(', ')}">+${extraCount}</span>` 
+                : '';
+            rolesHTML = `
+                <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="inline-flex items-center gap-1 text-amber-500 dark:text-amber-400 font-bold text-xs uppercase truncate max-w-[135px]" title="${primaryRole}">
+                        <i class="fa-solid fa-star text-[10px]"></i>
+                        <span>${primaryRole}</span>
+                    </span>
+                    ${extraBadge}
+                </div>
+            `;
+        } else {
+            rolesHTML = `<p style="color: var(--text-muted); font-weight:600; font-size:0.75rem; text-transform:uppercase; margin-top:2px;">Sin rol musical</p>`;
+        }
+
         card.innerHTML = `
             <div class="member-info-wrapper">
                 <div class="avatar" style="${avatarStyle}">${u.avatar ? '' : initials}</div>
                 <div class="member-details">
                     <div class="flex items-center gap-1.5">
-                        <h4 class="font-bold text-sm text-zinc-100">${nameStr}</h4>
+                        <h4 class="font-bold text-sm text-zinc-900 dark:text-zinc-100">${nameStr}</h4>
                         ${systemRoleBadge}
                     </div>
-                    <p style="color: var(--primary); font-weight:700; font-size:0.75rem; text-transform:uppercase;">${u.role ? u.role : 'Sin rol musical'}</p>
+                    ${rolesHTML}
                     <p style="font-size:0.7rem; color:var(--text-muted); opacity: 0.8; margin-top:2px;">${loginHandle}</p>
                 </div>
             </div>
@@ -326,35 +348,95 @@ async function renderMembers(forceRefresh = false) {
     });
 }
 
-async function populateRolesDropdown(selectId, selectedValue = '') {
-    const select = document.getElementById(selectId);
-    select.innerHTML = '<option value="" disabled selected>Cargando roles...</option>';
+let cachedGroupRoles = [];
+let modalSelectedRoles = [];
+let modalPrimaryRole = '';
 
-    try {
-        const roles = await apiFetch('/members/roles') || [];
-        select.innerHTML = '';
-
-        const defaultOpt = document.createElement('option');
-        defaultOpt.value = '';
-        defaultOpt.textContent = 'Sin rol musical asignado';
-        if (!selectedValue) {
-            defaultOpt.selected = true;
+async function loadGroupRoles(forceRefresh = false) {
+    if (forceRefresh || cachedGroupRoles.length === 0) {
+        try {
+            cachedGroupRoles = await apiFetch('/members/roles') || [];
+        } catch (e) {
+            console.error("Error loading group roles:", e);
+            cachedGroupRoles = [];
         }
-        select.appendChild(defaultOpt);
-
-        roles.forEach(r => {
-            const opt = document.createElement('option');
-            opt.value = r;
-            opt.textContent = r;
-            if (selectedValue === r) {
-                opt.selected = true;
-            }
-            select.appendChild(opt);
-        });
-    } catch (e) {
-        console.error("Error loading dropdown roles:", e);
-        select.innerHTML = '<option value="">Sin rol musical asignado</option>';
     }
+    return cachedGroupRoles;
+}
+
+function renderMemberRolesSelector() {
+    const container = document.getElementById('member-roles-selector-container');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (cachedGroupRoles.length === 0) {
+        container.innerHTML = `<span class="text-xs text-zinc-400 italic">No hay roles musicales creados en esta banda. Ve a "Gestionar Roles" para crearlos.</span>`;
+        return;
+    }
+
+    cachedGroupRoles.forEach(r => {
+        const isSelected = modalSelectedRoles.includes(r);
+        const isPrimary = isSelected && modalPrimaryRole === r;
+
+        if (!isSelected) {
+            // Chip no seleccionado
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'px-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 text-xs font-medium hover:border-zinc-300 dark:hover:border-zinc-700 transition flex items-center gap-1.5 cursor-pointer';
+            btn.innerHTML = `<i class="fa-solid fa-plus text-[10px] text-zinc-400"></i> <span>${r}</span>`;
+            btn.onclick = () => {
+                modalSelectedRoles.push(r);
+                if (!modalPrimaryRole) {
+                    modalPrimaryRole = r;
+                }
+                renderMemberRolesSelector();
+            };
+            container.appendChild(btn);
+        } else if (isPrimary) {
+            // Chip seleccionado y marcado como principal
+            const chip = document.createElement('div');
+            chip.className = 'px-2.5 py-1 rounded-xl border border-amber-500/50 bg-amber-500/10 text-amber-500 dark:text-amber-300 text-xs font-bold transition flex items-center gap-1.5 shadow-sm';
+            chip.innerHTML = `
+                <i class="fa-solid fa-star text-amber-400 text-[11px]" title="Rol Principal"></i>
+                <span>${r}</span>
+                <span class="text-[9px] uppercase px-1 py-0.5 rounded bg-amber-500/20 text-amber-500 dark:text-amber-400 font-extrabold tracking-wider">Principal</span>
+                <button type="button" class="btn-remove-role ml-1 text-zinc-400 hover:text-red-500 transition text-sm font-bold leading-none cursor-pointer" title="Quitar rol">&times;</button>
+            `;
+            chip.querySelector('.btn-remove-role').onclick = (e) => {
+                e.stopPropagation();
+                modalSelectedRoles = modalSelectedRoles.filter(x => x !== r);
+                modalPrimaryRole = modalSelectedRoles.length > 0 ? modalSelectedRoles[0] : '';
+                renderMemberRolesSelector();
+            };
+            container.appendChild(chip);
+        } else {
+            // Chip seleccionado secundario
+            const chip = document.createElement('div');
+            chip.className = 'px-2.5 py-1 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-200/80 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-semibold transition flex items-center gap-1.5';
+            chip.innerHTML = `
+                <button type="button" class="btn-make-primary text-zinc-400 hover:text-amber-400 transition cursor-pointer" title="Marcar como rol principal">
+                    <i class="fa-regular fa-star text-[11px]"></i>
+                </button>
+                <span>${r}</span>
+                <button type="button" class="btn-remove-role ml-1 text-zinc-400 hover:text-red-500 transition text-sm font-bold leading-none cursor-pointer" title="Quitar rol">&times;</button>
+            `;
+            chip.querySelector('.btn-make-primary').onclick = (e) => {
+                e.stopPropagation();
+                modalPrimaryRole = r;
+                renderMemberRolesSelector();
+            };
+            chip.querySelector('.btn-remove-role').onclick = (e) => {
+                e.stopPropagation();
+                modalSelectedRoles = modalSelectedRoles.filter(x => x !== r);
+                if (modalPrimaryRole === r) {
+                    modalPrimaryRole = modalSelectedRoles.length > 0 ? modalSelectedRoles[0] : '';
+                }
+                renderMemberRolesSelector();
+            };
+            container.appendChild(chip);
+        }
+    });
 }
 
 async function openAddMemberModal() {
@@ -373,7 +455,10 @@ async function openAddMemberModal() {
     document.getElementById('member-form-email').disabled = false;
     document.getElementById('member-form-username').disabled = false;
 
-    await populateRolesDropdown('member-form-role');
+    modalSelectedRoles = [];
+    modalPrimaryRole = '';
+    await loadGroupRoles(true);
+    renderMemberRolesSelector();
 
     // Reset username validation feedback
     const memberFeedback = document.getElementById('member-username-feedback');
@@ -402,8 +487,17 @@ async function openEditMemberModal(userId) {
     document.getElementById('member-form-email').disabled = true;
     document.getElementById('member-form-username').disabled = true;
 
-    // Select role inside group
-    await populateRolesDropdown('member-form-role', u.role);
+    // Load roles & populate selector
+    modalPrimaryRole = u.role || '';
+    modalSelectedRoles = Array.isArray(u.roles) ? [...u.roles] : (u.role ? [u.role] : []);
+    if (modalPrimaryRole && !modalSelectedRoles.includes(modalPrimaryRole)) {
+        modalSelectedRoles.unshift(modalPrimaryRole);
+    }
+    if (!modalPrimaryRole && modalSelectedRoles.length > 0) {
+        modalPrimaryRole = modalSelectedRoles[0];
+    }
+    await loadGroupRoles(true);
+    renderMemberRolesSelector();
 
     // Select system permission role
     const systemRoleSelect = document.getElementById('member-form-system-role');
@@ -444,25 +538,27 @@ async function handleMemberFormSubmit(e) {
     const emailInput = document.getElementById('member-form-email').value.trim();
     const email = emailInput || null;
     const username = document.getElementById('member-form-username').value.trim().toLowerCase().replace('@', '');
-    const role = document.getElementById('member-form-role').value;
     const system_role = document.getElementById('member-form-system-role').value;
+
+    const primaryRole = modalPrimaryRole || (modalSelectedRoles.length > 0 ? modalSelectedRoles[0] : null);
+    const roles = modalSelectedRoles;
 
     try {
         if (id) {
             // Update member
             await apiFetch(`/members/${id}`, {
                 method: 'PUT',
-                body: { name, lastname, email, username, role, system_role }
+                body: { name, lastname, email, username, role: primaryRole, roles, system_role }
             });
-            showToast("Integrante actualizado correctamente");
+            showToast("Integrante actualizado correctamente", "success");
         } else {
             // Add new member
             const password = document.getElementById('member-form-password').value;
             await apiFetch('/members', {
                 method: 'POST',
-                body: { name, lastname, email, username, role, system_role, password }
+                body: { name, lastname, email, username, role: primaryRole, roles, system_role, password }
             });
-            showToast("Integrante sumado con éxito");
+            showToast("Integrante sumado con éxito", "success");
         }
 
         document.getElementById('modal-member').classList.add('hidden');

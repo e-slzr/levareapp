@@ -184,27 +184,40 @@ function goToWizardStep(step) {
     if (step === 1) {
         step1?.classList.remove('hidden');
         step2?.classList.add('hidden');
-        if (subtitle) subtitle.textContent = "Paso 1 de 2: Información general";
+        if (subtitle) subtitle.textContent = "Paso 1 de 2: Letra y acordes";
         
         if (indicator1) {
-            indicator1.className = "text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm";
+            indicator1.className = "text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm cursor-pointer transition";
+            const num1 = indicator1.querySelector('span');
+            if (num1) num1.className = "w-4 h-4 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 inline-flex items-center justify-center text-[9px] font-bold";
         }
         if (indicator2) {
-            indicator2.className = "text-xs font-medium text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-transparent";
-        }
-    } else if (step === 2) {
-        step1?.classList.add('hidden');
-        step2?.classList.remove('hidden');
-        if (subtitle) subtitle.textContent = "Paso 2 de 2: Letra y acordes";
-
-        if (indicator1) {
-            indicator1.className = "text-xs font-medium text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-transparent";
-        }
-        if (indicator2) {
-            indicator2.className = "text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm";
+            indicator2.className = "text-xs font-medium text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-transparent cursor-pointer transition";
+            const num2 = indicator2.querySelector('span');
+            if (num2) num2.className = "w-4 h-4 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 inline-flex items-center justify-center text-[9px] font-bold";
         }
 
         renderWizardLivePreview();
+    } else if (step === 2) {
+        step1?.classList.add('hidden');
+        step2?.classList.remove('hidden');
+        if (subtitle) subtitle.textContent = "Paso 2 de 2: Información general";
+
+        if (indicator1) {
+            indicator1.className = "text-xs font-medium text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-950/50 border border-transparent cursor-pointer transition";
+            const num1 = indicator1.querySelector('span');
+            if (num1) num1.className = "w-4 h-4 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 inline-flex items-center justify-center text-[9px] font-bold";
+        }
+        if (indicator2) {
+            indicator2.className = "text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm cursor-pointer transition";
+            const num2 = indicator2.querySelector('span');
+            if (num2) num2.className = "w-4 h-4 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 inline-flex items-center justify-center text-[9px] font-bold";
+        }
+
+        const titleInput = document.getElementById('song-form-title');
+        if (titleInput && !titleInput.value.trim()) {
+            setTimeout(() => titleInput.focus(), 50);
+        }
     }
 }
 window.goToWizardStep = goToWizardStep;
@@ -394,6 +407,9 @@ async function handleSongWizardSubmit(e) {
 
     if (!title) {
         showToast("El título de la canción es obligatorio", "danger");
+        goToWizardStep(2);
+        const titleInput = document.getElementById('song-form-title');
+        if (titleInput) titleInput.focus();
         return;
     }
 
@@ -416,6 +432,9 @@ async function handleSongWizardSubmit(e) {
     if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Guardando...';
+    }
+    if (typeof showLoadingOverlay === 'function') {
+        showLoadingOverlay(id ? 'Actualizando canción...' : 'Guardando canción...');
     }
 
     try {
@@ -454,6 +473,9 @@ async function handleSongWizardSubmit(e) {
     } catch (err) {
         showToast(err.message, "danger");
     } finally {
+        if (typeof hideLoadingOverlay === 'function') {
+            hideLoadingOverlay();
+        }
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Guardar Canción';
@@ -589,6 +611,106 @@ function renderSectionCards() {
     container.innerHTML = '';
 
     currentEditorSections.forEach((sec, secIdx) => {
+        if (sec.isSongTitle) {
+            const card = document.createElement('div');
+            card.className = 'section-card-block song-title-card-block group';
+            card.setAttribute('data-section-id', sec.id);
+
+            const header = document.createElement('div');
+            header.className = 'section-card-header bg-amber-500/5 dark:bg-amber-500/10 border-b border-amber-500/20';
+            header.innerHTML = `
+                <div class="section-card-header-drag-zone flex-1 flex items-center gap-2 cursor-grab select-none touch-none py-1" title="Arrastrar para reordenar canción en el medley">
+                    <span class="section-drag-handle">
+                        <i class="fa-solid fa-grip-vertical text-xs"></i>
+                    </span>
+                    <span class="px-2 py-0.5 rounded-md text-xs font-bold font-serif border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-music text-[10px]"></i>
+                        <span>TÍTULO<span class="song-title-header-text">${sec.title ? `: ${escapeHtmlText(sec.title)}` : ''}</span></span>
+                    </span>
+                    <span class="text-[10px] text-zinc-400 hidden sm:inline">(Separador de Medley)</span>
+                </div>
+                <div class="flex items-center gap-1 flex-shrink-0">
+                    <button type="button" class="btn-move-section-up p-1.5 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs transition cursor-pointer ${secIdx === 0 ? 'opacity-25 pointer-events-none' : ''}" title="Subir sección">
+                        <i class="fa-solid fa-arrow-up text-xs"></i>
+                    </button>
+                    <button type="button" class="btn-move-section-down p-1.5 rounded-lg text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs transition cursor-pointer ${secIdx === currentEditorSections.length - 1 ? 'opacity-25 pointer-events-none' : ''}" title="Bajar sección">
+                        <i class="fa-solid fa-arrow-down text-xs"></i>
+                    </button>
+                    <button type="button" class="btn-delete-section p-1.5 rounded-lg text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 text-xs transition cursor-pointer" title="Eliminar título">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `;
+
+            const body = document.createElement('div');
+            body.className = 'section-card-body p-3';
+            body.innerHTML = `
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <label class="text-xs font-semibold text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5 whitespace-nowrap">
+                        <i class="fa-solid fa-heading text-xs text-amber-500"></i>
+                        <span>Nombre de la canción:</span>
+                    </label>
+                    <input type="text" class="song-title-section-input flex-1 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-serif font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-amber-500/40" value="${escapeHtmlText(sec.title || (sec.lines && sec.lines[0]) || '')}" placeholder="Ej. Tú Harás">
+                </div>
+            `;
+
+            card.appendChild(header);
+            card.appendChild(body);
+
+            const input = body.querySelector('.song-title-section-input');
+            const headerTitleText = header.querySelector('.song-title-header-text');
+            if (input) {
+                input.oninput = () => {
+                    sec.title = input.value;
+                    sec.lines = [input.value];
+                    if (headerTitleText) {
+                        headerTitleText.textContent = input.value.trim() ? `: ${input.value.trim()}` : '';
+                    }
+                };
+            }
+
+            const btnUp = header.querySelector('.btn-move-section-up');
+            if (btnUp) {
+                btnUp.onclick = (e) => {
+                    e.stopPropagation();
+                    syncCurrentEditorDOMToSections();
+                    moveSectionPosition(secIdx, secIdx - 1);
+                };
+            }
+
+            const btnDown = header.querySelector('.btn-move-section-down');
+            if (btnDown) {
+                btnDown.onclick = (e) => {
+                    e.stopPropagation();
+                    syncCurrentEditorDOMToSections();
+                    moveSectionPosition(secIdx, secIdx + 1);
+                };
+            }
+
+            const btnDeleteSec = header.querySelector('.btn-delete-section');
+            if (btnDeleteSec) {
+                btnDeleteSec.onclick = (e) => {
+                    e.stopPropagation();
+                    syncCurrentEditorDOMToSections();
+                    currentEditorSections = currentEditorSections.filter(s => s.id !== sec.id);
+                    if (currentEditorSections.length === 0) {
+                        currentEditorSections.push({
+                            id: 'sec_' + Date.now(),
+                            type: 'VERSO 1',
+                            isInstrumental: false,
+                            chords: [],
+                            lines: ['']
+                        });
+                    }
+                    renderSectionCards();
+                };
+            }
+
+            setupSectionCardDragAndDrop(card, sec.id);
+            container.appendChild(card);
+            return;
+        }
+
         const theme = getSectionTheme(sec.type);
         const card = document.createElement('div');
         card.className = 'section-card-block group';
@@ -1694,6 +1816,35 @@ window.setupSectionPickerEvents = setupSectionPickerEvents;
 function insertSectionIntoEditor(sectionKey) {
     syncCurrentEditorDOMToSections();
 
+    if (sectionKey === 'TÍTULO' || sectionKey === 'TITULO' || sectionKey === 'CANCIÓN' || sectionKey === 'CANCION') {
+        const newSection = {
+            id: 'sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+            type: 'CANCIÓN',
+            title: '',
+            isSongTitle: true,
+            isInstrumental: false,
+            chords: [],
+            instrumentalLines: [],
+            lines: ['']
+        };
+
+        currentEditorSections.push(newSection);
+        renderSectionCards();
+
+        setTimeout(() => {
+            const container = document.getElementById('section-cards-container');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+                const newCard = container.querySelector(`[data-section-id="${newSection.id}"]`);
+                if (newCard) {
+                    const input = newCard.querySelector('.song-title-section-input');
+                    if (input) input.focus();
+                }
+            }
+        }, 50);
+        return;
+    }
+
     let secName = formatSectionHeader(sectionKey);
     if (secName === 'VERSO') {
         const currentText = sectionsToChordPro(currentEditorSections);
@@ -1733,7 +1884,14 @@ function syncCurrentEditorDOMToSections() {
         const existing = currentEditorSections.find(s => s.id === secId);
         if (!existing) return;
 
-        if (existing.isInstrumental) {
+        if (existing.isSongTitle) {
+            const input = card.querySelector('.song-title-section-input');
+            if (input) {
+                existing.title = input.value.trim();
+                existing.lines = [existing.title];
+            }
+            updated.push(existing);
+        } else if (existing.isInstrumental) {
             updated.push(existing);
         } else {
             const inputs = card.querySelectorAll('.stacked-lyrics-input');
@@ -1813,7 +1971,10 @@ function setupImportChordsEvents() {
                         if (artistInput && res.artist) artistInput.value = res.artist;
 
                         const keySelect = document.getElementById('song-form-key');
-                        if (keySelect && res.key) keySelect.value = res.key;
+                        if (keySelect && res.key) {
+                            keySelect.value = res.key;
+                            if (typeof updateBaseKeyDisplay === 'function') updateBaseKeyDisplay(res.key);
+                        }
 
                         const formUrl = document.getElementById('song-form-url');
                         if (formUrl && res.url) formUrl.value = res.url;

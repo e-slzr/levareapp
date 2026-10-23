@@ -40,6 +40,73 @@ function formatDate(dateStr, short = false) {
     return date.toLocaleDateString('es-ES', options);
 }
 
+/**
+ * Parsea una fecha/hora proveniente de la base de datos (guardada en UTC) a un objeto Date local.
+ * Si el string no incluye indicador de zona horaria (ej: "2026-10-23 07:44:42"),
+ * se le anexa 'Z' para asegurar que JavaScript lo interprete en UTC y no en hora local.
+ * @param {string|Date} dateInput
+ * @returns {Date|null}
+ */
+function parseUtcDate(dateInput) {
+    if (!dateInput) return null;
+    if (dateInput instanceof Date) return dateInput;
+    if (typeof dateInput !== 'string') return new Date(dateInput);
+    const trimmed = dateInput.trim();
+    if (!trimmed) return null;
+    if (trimmed.includes('Z') || /[+-]\d{2}:\d{2}$/.test(trimmed)) {
+        return new Date(trimmed);
+    }
+    const isoStr = trimmed.replace(' ', 'T') + 'Z';
+    return new Date(isoStr);
+}
+
+/**
+ * Formatea una fecha/hora UTC a una cadena compacta en español.
+ * Ejemplo: "vie 23 de oct - 1:44 am"
+ * @param {string|Date} dateInput
+ * @returns {string}
+ */
+function formatShortDateTime(dateInput) {
+    const d = parseUtcDate(dateInput);
+    if (!d || isNaN(d.getTime())) return '';
+
+    const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace(/\./g, '');
+    const day = d.getDate();
+    const month = d.toLocaleDateString('es-ES', { month: 'short' }).replace(/\./g, '');
+
+    let timeStr = d.toLocaleTimeString('es-ES', { hour: 'numeric', minute: '2-digit', hour12: true });
+    // Normalizar a formato "1:44 am" / "3:53 pm"
+    timeStr = timeStr.toLowerCase().replace(/\./g, '').replace(/\s*([ap])[\s\u00a0]*m\b/i, ' $1m').replace(/\s+/g, ' ').trim();
+
+    return `${weekday} ${day} de ${month} - ${timeStr}`;
+}
+
+window.parseUtcDate = parseUtcDate;
+window.formatShortDateTime = formatShortDateTime;
+
+/**
+ * Muestra el overlay global de carga con un mensaje personalizable.
+ * @param {string} message Texto descriptivo (ej: 'Guardando...', 'Procesando...')
+ */
+function showLoadingOverlay(message = 'Guardando...') {
+    const overlay = document.getElementById('global-loading-overlay');
+    const textEl = document.getElementById('global-loading-overlay-text');
+    if (textEl) textEl.textContent = message;
+    if (overlay) overlay.classList.remove('hidden');
+}
+
+/**
+ * Oculta el overlay global de carga.
+ */
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('global-loading-overlay');
+    if (overlay) overlay.classList.add('hidden');
+}
+
+window.showLoadingOverlay = showLoadingOverlay;
+window.hideLoadingOverlay = hideLoadingOverlay;
+
+
 // Generate random color from string (for colored avatars)
 function getAvatarBgColor(name) {
     let hash = 0;
@@ -321,10 +388,15 @@ function openAnnouncementDetailModal(announcement) {
     // Date & Time
     const dateElem = document.getElementById('announcement-detail-date');
     if (dateElem && announcement.created_at) {
-        const d = new Date(announcement.created_at);
-        const formattedDate = d.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        const formattedTime = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + ' hs';
-        dateElem.textContent = `${formattedDate} • ${formattedTime}`;
+        const d = parseUtcDate(announcement.created_at);
+        if (d && !isNaN(d.getTime())) {
+            const formattedDate = d.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            let formattedTime = d.toLocaleTimeString('es-ES', { hour: 'numeric', minute: '2-digit', hour12: true });
+            formattedTime = formattedTime.toLowerCase().replace(/\./g, '').replace(/\s*([ap])[\s\u00a0]*m\b/i, ' $1m').replace(/\s+/g, ' ').trim();
+            dateElem.textContent = `${formattedDate} • ${formattedTime}`;
+        } else {
+            dateElem.textContent = '';
+        }
     } else if (dateElem) {
         dateElem.textContent = '';
     }

@@ -138,6 +138,16 @@ function initEventsView() {
         });
     }
 
+    // Wizard navigation triggers for Schedule Event Modal
+    const btnEventNext = document.getElementById('btn-event-step-next');
+    if (btnEventNext) {
+        btnEventNext.onclick = () => goToEventModalStep(2);
+    }
+    const btnEventBack = document.getElementById('btn-event-step-back');
+    if (btnEventBack) {
+        btnEventBack.onclick = () => goToEventModalStep(1);
+    }
+
     // Form submit
     const scheduleForm = document.getElementById('event-schedule-form');
     if (scheduleForm) {
@@ -185,13 +195,26 @@ async function renderEvents(forceRefresh = false) {
 
         let rosterTagsHTML = '';
         if (ev.musicians && ev.musicians.length > 0) {
-            ev.musicians.forEach(mus => {
+            const maxVisible = 2;
+            const visibleMusicians = ev.musicians.slice(0, maxVisible);
+            const hiddenMusicians = ev.musicians.slice(maxVisible);
+
+            visibleMusicians.forEach(mus => {
                 rosterTagsHTML += `
-                    <span class="px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                    <span class="px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 truncate max-w-[160px] flex-shrink-0" title="${mus.pivot.role}: ${mus.name}">
                         ${mus.pivot.role}: <strong class="text-zinc-900 dark:text-white">${mus.name}</strong>
                     </span>
                 `;
             });
+
+            if (hiddenMusicians.length > 0) {
+                const hiddenTitle = hiddenMusicians.map(m => `${m.pivot.role}: ${m.name}`).join(', ');
+                rosterTagsHTML += `
+                    <span class="px-2 py-1 rounded-xl text-[11px] font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 cursor-help flex-shrink-0" title="Convocados adicionales: ${hiddenTitle}">
+                        +${hiddenMusicians.length}
+                    </span>
+                `;
+            }
         }
 
         const typeBadgeHTML = getEventTypeBadgeHTML(ev.type);
@@ -204,14 +227,14 @@ async function renderEvents(forceRefresh = false) {
                 </div>
                 ${typeBadgeHTML}
             </div>
-            <p class="text-xs text-zinc-600 dark:text-zinc-400">${ev.description || 'Sin notas adicionales'}</p>
+            <p class="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2">${ev.description || 'Sin notas adicionales'}</p>
             <div class="text-xs text-zinc-500 dark:text-zinc-400">
                 <span class="font-semibold text-zinc-700 dark:text-zinc-300">Repertorio:</span> 
                 <a href="#setlists" class="view-setlist-link font-bold text-zinc-900 dark:text-zinc-100 hover:underline" data-id="${ev.setlist_id || ''}">${setlistName}</a>
             </div>
             <div class="pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
                 <h5 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-1.5">Músicos Asignados</h5>
-                <div class="flex flex-wrap gap-1.5">
+                <div class="flex items-center gap-1.5 overflow-hidden flex-nowrap">
                     ${rosterTagsHTML || '<span class="text-xs text-zinc-400 italic">Nadie asignado todavía.</span>'}
                 </div>
             </div>
@@ -488,16 +511,194 @@ function viewDayEventsDetails(dateStr, dayEvents) {
     document.getElementById('modal-event-detail').classList.remove('hidden');
 }
 
+let eventGroupRoles = [];
+let eventGroupMembers = [];
+let eventModalCurrentStep = 1;
+
+function goToEventModalStep(step) {
+    const step1El = document.getElementById('event-modal-step-1');
+    const step2El = document.getElementById('event-modal-step-2');
+    const badge1 = document.getElementById('event-step-badge-1');
+    const badge2 = document.getElementById('event-step-badge-2');
+    const btnCancel = document.getElementById('btn-event-cancel');
+    const btnBack = document.getElementById('btn-event-step-back');
+    const btnNext = document.getElementById('btn-event-step-next');
+    const btnSubmit = document.getElementById('btn-submit-event');
+
+    if (step === 2) {
+        // Validar campos obligatorios del paso 1
+        const nameInput = document.getElementById('event-form-name');
+        const dateInput = document.getElementById('event-form-date');
+        const timeInput = document.getElementById('event-form-time');
+
+        if (!nameInput.value.trim()) {
+            nameInput.focus();
+            showToast("Por favor ingresa el nombre del evento.", "warning");
+            return;
+        }
+        if (!dateInput.value) {
+            dateInput.focus();
+            showToast("Por favor selecciona la fecha del evento.", "warning");
+            return;
+        }
+
+        // Poblar resumen del paso 2
+        const typeSelect = document.getElementById('event-form-type');
+        const selectedTypeObj = EVENT_TYPES.find(t => t.value === typeSelect.value);
+        const typeLabel = selectedTypeObj ? selectedTypeObj.label : typeSelect.value;
+
+        const summaryTitle = document.getElementById('event-step-summary-title');
+        const summaryMeta = document.getElementById('event-step-summary-meta');
+        const summaryType = document.getElementById('event-step-summary-type');
+
+        if (summaryTitle) summaryTitle.textContent = nameInput.value.trim();
+        if (summaryMeta) {
+            const dateStr = typeof formatDate === 'function' ? formatDate(dateInput.value, true) : dateInput.value;
+            const timeStr = timeInput.value ? `${timeInput.value.substring(0, 5)} hs` : '18:00 hs';
+            summaryMeta.textContent = `${dateStr} • ${timeStr}`;
+        }
+        if (summaryType) summaryType.textContent = typeLabel;
+
+        // Cambiar vistas de paso
+        if (step1El) step1El.classList.add('hidden');
+        if (step2El) step2El.classList.remove('hidden');
+
+        // Actualizar badges del header
+        if (badge1) {
+            badge1.className = 'px-2 py-0.5 rounded-md text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition';
+        }
+        if (badge2) {
+            badge2.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition';
+        }
+
+        // Botones footer
+        if (btnCancel) btnCancel.classList.add('hidden');
+        if (btnBack) btnBack.classList.remove('hidden');
+        if (btnNext) btnNext.classList.add('hidden');
+        if (btnSubmit) btnSubmit.classList.remove('hidden');
+
+        eventModalCurrentStep = 2;
+    } else {
+        // Volver al paso 1
+        if (step1El) step1El.classList.remove('hidden');
+        if (step2El) step2El.classList.add('hidden');
+
+        if (badge1) {
+            badge1.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition';
+        }
+        if (badge2) {
+            badge2.className = 'px-2 py-0.5 rounded-md text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition';
+        }
+
+        if (btnCancel) btnCancel.classList.remove('hidden');
+        if (btnBack) btnBack.classList.add('hidden');
+        if (btnNext) btnNext.classList.remove('hidden');
+        if (btnSubmit) btnSubmit.classList.add('hidden');
+
+        eventModalCurrentStep = 1;
+    }
+}
+
+function updateEventRosterCount() {
+    const rosterSection = document.getElementById('event-form-roster-selection');
+    const countEl = document.getElementById('event-roster-count');
+    if (!rosterSection) return;
+
+    const slots = rosterSection.querySelectorAll('.roster-slot');
+    const count = slots.length;
+
+    if (countEl) {
+        countEl.textContent = count === 1 ? '1 puesto' : `${count} puestos`;
+    }
+
+    const placeholder = document.getElementById('event-roster-empty-placeholder');
+    if (count === 0) {
+        if (!placeholder) {
+            rosterSection.innerHTML = `
+                <div id="event-roster-empty-placeholder" class="text-center py-6 px-4 text-xs text-zinc-400 dark:text-zinc-500 italic">
+                    No hay puestos agregados todavía. Haz clic en los roles de arriba para armar el equipo de este evento.
+                </div>
+            `;
+        }
+    } else if (placeholder) {
+        placeholder.remove();
+    }
+}
+
+function addEventRosterSlot(roleName, preselectedUserId = null) {
+    const rosterSection = document.getElementById('event-form-roster-selection');
+    if (!rosterSection) return;
+
+    const placeholder = document.getElementById('event-roster-empty-placeholder');
+    if (placeholder) placeholder.remove();
+
+    // Filtrar estrictamente miembros que tengan asignado este rol/instrumento
+    const normalizedRole = (roleName || '').trim().toLowerCase();
+    const eligibleMembers = eventGroupMembers.filter(u => {
+        const userPrimary = (u.role || '').trim().toLowerCase();
+        if (userPrimary === normalizedRole) return true;
+        if (Array.isArray(u.roles)) {
+            return u.roles.some(r => (r || '').trim().toLowerCase() === normalizedRole);
+        }
+        if (normalizedRole === 'líder' || normalizedRole === 'lider') {
+            return u.account_type === 'leader' || u.account_type === 'superadmin';
+        }
+        return false;
+    });
+
+    let optionsHTML = '<option value="">-- Seleccionar Músico --</option>';
+    if (eligibleMembers.length === 0) {
+        optionsHTML = '<option value="" disabled selected>No hay integrantes con este rol</option>';
+    } else {
+        eligibleMembers.forEach(u => {
+            const isSel = preselectedUserId && u.id == preselectedUserId ? 'selected' : '';
+            optionsHTML += `<option value="${u.id}" ${isSel}>${u.name} ${u.lastname || ''}</option>`;
+        });
+    }
+
+    const slot = document.createElement('div');
+    slot.className = 'roster-slot flex items-center justify-between gap-2 p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs shadow-sm';
+    slot.dataset.role = roleName;
+
+    slot.innerHTML = `
+        <div class="flex items-center gap-1.5 min-w-[110px] max-w-[140px]">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+            <span class="font-bold text-zinc-800 dark:text-zinc-200 truncate" title="${roleName}">${roleName}</span>
+        </div>
+        <select class="roster-slot-select flex-1 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-400">
+            ${optionsHTML}
+        </select>
+        <button type="button" class="btn-duplicate-slot w-7 h-7 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center justify-center text-xs transition cursor-pointer" title="Agregar otro puesto de ${roleName}">
+            <i class="fa-solid fa-plus pointer-events-none"></i>
+        </button>
+        <button type="button" class="btn-remove-slot w-7 h-7 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 text-red-500 hover:text-red-700 dark:hover:text-red-400 flex items-center justify-center text-xs transition cursor-pointer" title="Quitar este puesto">
+            <i class="fa-solid fa-xmark pointer-events-none"></i>
+        </button>
+    `;
+
+    slot.querySelector('.btn-duplicate-slot').onclick = () => addEventRosterSlot(roleName);
+    slot.querySelector('.btn-remove-slot').onclick = () => {
+        slot.remove();
+        updateEventRosterCount();
+    };
+
+    rosterSection.appendChild(slot);
+    updateEventRosterCount();
+}
+
 async function openScheduleEventModal(prefilledDate = null) {
     // Fill setlists options
     const setlistSelect = document.getElementById('event-form-setlist');
     setlistSelect.innerHTML = '<option value="" disabled selected>Cargando repertorios...</option>';
     
-    // Populate roster dropdown lists dynamically according to roles of the active group
+    const quickRolesBar = document.getElementById('event-quick-roles-bar');
     const rosterSection = document.getElementById('event-form-roster-selection');
-    rosterSection.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding: 10px;">Cargando roster...</div>';
+    
+    if (quickRolesBar) quickRolesBar.innerHTML = '<span class="text-xs text-zinc-400 italic">Cargando roles...</span>';
+    if (rosterSection) rosterSection.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding: 10px;">Cargando...</div>';
 
     document.getElementById('event-schedule-form').reset();
+    goToEventModalStep(1);
 
     try {
         const setlists = await apiFetch('/setlists') || [];
@@ -513,31 +714,30 @@ async function openScheduleEventModal(prefilledDate = null) {
         // Load roles and group members
         const roles = await apiFetch('/members/roles') || [];
         const members = await apiFetch('/members') || [];
-        
-        rosterSection.innerHTML = '';
 
-        const rolesToAssign = roles.length > 0 ? roles : ["Líder", "Voz Principal", "Coros", "Guitarra Acústica", "Teclado", "Bajo", "Batería"];
+        eventGroupRoles = roles.length > 0 ? roles : ["Líder", "Voz Principal", "Coros", "Guitarra Acústica", "Teclado", "Bajo", "Batería"];
+        // Ordenar alfabéticamente
+        eventGroupRoles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+        eventGroupMembers = members;
 
-        rolesToAssign.forEach(role => {
-            const div = document.createElement('div');
-            div.className = 'flex items-center justify-between gap-2 p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs';
-            
-            let optionsHTML = '<option value="">-- No Asignado --</option>';
-            members.forEach(u => {
-                const userRole = u.role || '';
-                const isMatch = userRole.toLowerCase().includes(role.toLowerCase()) || (role === "Líder" && userRole === "Líder");
-                optionsHTML += `<option value="${u.id}">${u.name} ${u.lastname || ''} ${isMatch ? '(Recomendado)' : ''}</option>`;
+        // Render quick role buttons con diseño ámbar translúcido
+        if (quickRolesBar) {
+            quickRolesBar.innerHTML = '';
+            eventGroupRoles.forEach(role => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-semibold hover:bg-amber-500/20 hover:border-amber-500/50 transition flex items-center gap-1.5 cursor-pointer shadow-sm';
+                btn.innerHTML = `<i class="fa-solid fa-plus text-[10px] text-amber-500 dark:text-amber-400 font-bold"></i> <span>${role}</span>`;
+                btn.onclick = () => addEventRosterSlot(role);
+                quickRolesBar.appendChild(btn);
             });
+        }
 
-            div.innerHTML = `
-                <span class="font-bold text-zinc-700 dark:text-zinc-300 min-w-[110px] truncate">${role}</span>
-                <select name="roster-role-${role}" class="flex-1 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none">
-                    ${optionsHTML}
-                </select>
-            `;
-            rosterSection.appendChild(div);
-        });
-
+        // Initialize empty roster slots
+        if (rosterSection) {
+            rosterSection.innerHTML = '';
+            updateEventRosterCount();
+        }
 
         // Date pre-fill
         if (prefilledDate) {
@@ -568,12 +768,13 @@ async function handleEventScheduleFormSubmit(e) {
     const setlistVal = document.getElementById('event-form-setlist').value;
     const setlistId = setlistVal ? parseInt(setlistVal) : null;
 
-    // Build roster array for the API: [{ user_id, role }, ...]
+    // Build roster array for the API: [{ user_id, role }, ...] from dynamic slots
     const musicians = [];
-    const selects = document.querySelectorAll('#event-form-roster-selection select');
-    selects.forEach(sel => {
-        const role = sel.getAttribute('name').replace('roster-role-', '');
-        const val = sel.value;
+    const slots = document.querySelectorAll('#event-form-roster-selection .roster-slot');
+    slots.forEach(slot => {
+        const role = slot.dataset.role;
+        const select = slot.querySelector('.roster-slot-select');
+        const val = select ? select.value : null;
         if (val) {
             musicians.push({
                 user_id: parseInt(val),
@@ -581,6 +782,16 @@ async function handleEventScheduleFormSubmit(e) {
             });
         }
     });
+
+    const submitBtn = document.getElementById('btn-submit-event');
+    const originalText = submitBtn ? submitBtn.textContent : 'Programar Evento';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Guardando...';
+    }
+    if (typeof showLoadingOverlay === 'function') {
+        showLoadingOverlay('Programando evento...');
+    }
 
     try {
         await apiFetch('/events', {
@@ -601,6 +812,14 @@ async function handleEventScheduleFormSubmit(e) {
         await renderEvents(true); // force reload
     } catch (err) {
         showToast(err.message, "danger");
+    } finally {
+        if (typeof hideLoadingOverlay === 'function') {
+            hideLoadingOverlay();
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
     }
 }
 

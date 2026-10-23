@@ -118,20 +118,24 @@
                 <div id="member-username-feedback" class="field-feedback"></div>
                 <small class="form-help">Utilizado para iniciar sesión. Caracteres alfanuméricos simples.</small>
             </div>
-            <div class="form-row">
-                <div class="form-group col-6">
-                    <label for="member-form-role">Rol Musical / Instrumento</label>
-                    <select id="member-form-role" required>
-                        <!-- Populated dynamically with group_roles -->
-                    </select>
+            <div class="form-group">
+                <label for="member-form-system-role">Rol de Sistema (Permisos)</label>
+                <select id="member-form-system-role" required>
+                    <option value="member">Miembro (Lectura)</option>
+                    <option value="leader">Líder (Control total)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Instrumentos / Roles Musicales</label>
+                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-normal">
+                        <i class="fa-solid fa-star text-amber-400 mr-0.5"></i> Haz clic en la estrella para definir el Principal
+                    </span>
                 </div>
-                <div class="form-group col-6">
-                    <label for="member-form-system-role">Rol de Sistema (Permisos)</label>
-                    <select id="member-form-system-role" required>
-                        <option value="member">Miembro (Lectura)</option>
-                        <option value="leader">Líder (Control total)</option>
-                    </select>
+                <div id="member-roles-selector-container" class="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 min-h-[56px] flex flex-wrap gap-2 items-center">
+                    <!-- Populated dynamically with selectable chips -->
                 </div>
+                <small class="form-help text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 block">Puedes asignar más de un instrumento. El rol con la estrella será el rol principal en su perfil.</small>
             </div>
             <div class="form-group" id="member-form-password-group">
                 <label for="member-form-password">Contraseña Temporal</label>

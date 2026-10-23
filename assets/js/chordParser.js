@@ -178,6 +178,14 @@ function parseInternetLyricsToChordPro(rawText) {
             continue;
         }
 
+        // 1.5. Detección de Título de Canción (para Medleys)
+        const songTitle = extractSongTitle(rawLine);
+        if (songTitle) {
+            outputLines.push(`{${songTitle}}`);
+            currentSectionType = null;
+            continue;
+        }
+
         // 2. Detección de encabezados de sección
         const section = detectSectionHeader(rawLine);
         if (section) {
@@ -522,6 +530,15 @@ function getSectionTheme(sectionType) {
             dotColor: '#10b981'
         };
     }
+    if (clean.includes('CANCIÓN') || clean.includes('CANCION') || clean.includes('TÍTULO') || clean.includes('TITULO')) {
+        return {
+            name: 'CANCIÓN',
+            headerColor: 'text-amber-500 dark:text-amber-400',
+            badgeBg: 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20',
+            borderColor: 'border-amber-500/30 dark:border-amber-500/20',
+            dotColor: '#f59e0b'
+        };
+    }
     return {
         name: 'SECCIÓN',
         headerColor: 'text-zinc-500 dark:text-zinc-400',
@@ -537,6 +554,68 @@ function getSectionTheme(sectionType) {
 function isInstrumentalSectionType(type) {
     const clean = (type || '').toUpperCase();
     return /^(INTRO|SOLO|INTERLUDIO|INSTRUMENTAL|OUTRO)/i.test(clean);
+}
+
+/**
+ * Detecta y extrae el título de una canción individual (usado especialmente en Medleys o subtítulos).
+ * Admite múltiples sintaxis intuitivas:
+ * 1. Directivas entre llaves: {Tú Harás}, {title: Tú Harás}, {t: Tú Harás}, {cancion: Tú Harás}
+ * 2. Prefijo o envoltorio con signo igual: = Tú Harás, = Tú Harás =, == Tú Harás ==
+ * 3. Encabezados Markdown: ## Tú Harás, ### Tú Harás
+ * 4. Guiones: -- Tú Harás --, -- Tú Harás
+ * 5. Asteriscos: ** Tú Harás **, * Tú Harás *
+ * 6. Corchetes explícitos: [TÍTULO: Tú Harás], [CANCIÓN: Tú Harás]
+ * @param {string} lineStr
+ * @returns {string|null} Título extraído o null si no es un título
+ */
+function extractSongTitle(lineStr) {
+    if (!lineStr) return null;
+    const trimmed = lineStr.trim();
+    if (!trimmed) return null;
+
+    // 1. Directivas entre llaves: {Tú Harás}, {title: Tú Harás}, {t: Tú Harás}, etc.
+    const braceMatch = trimmed.match(/^\{(?:(?:title|t|cancion|canci[oó]n|sub|subtitle|t[ií]tulo)\s*:\s*)?([^}]+)\}$/i);
+    if (braceMatch) {
+        const val = braceMatch[1].trim();
+        if (val) return val;
+    }
+
+    // 2. Prefijo o envoltorio con signo igual: = Tú Harás =, = Tú Harás, == Tú Harás ==
+    const equalMatch = trimmed.match(/^={1,3}\s*([^=]+?)\s*={0,3}$/);
+    if (equalMatch) {
+        const val = equalMatch[1].trim();
+        if (val) return val;
+    }
+
+    // 3. Encabezados estilo Markdown: ## Tú Harás, ### Tú Harás
+    const mdMatch = trimmed.match(/^#{2,3}\s+([^#\n]+)$/);
+    if (mdMatch) {
+        const val = mdMatch[1].trim();
+        if (val) return val;
+    }
+
+    // 4. Guiones dobles: -- Tú Harás -- o -- Tú Harás
+    const dashMatch = trimmed.match(/^--\s*([^-]+?)\s*(?:--)?$/);
+    if (dashMatch) {
+        const val = dashMatch[1].trim();
+        if (val) return val;
+    }
+
+    // 5. Asteriscos: ** Tú Harás ** o * Tú Harás *
+    const starMatch = trimmed.match(/^\*{1,2}\s*([^*]+?)\s*\*{1,2}$/);
+    if (starMatch) {
+        const val = starMatch[1].trim();
+        if (val) return val;
+    }
+
+    // 6. Corchete explícito de título o canción: [TÍTULO: Tú Harás] o [CANCIÓN: Tú Harás]
+    const bracketMatch = trimmed.match(/^\[(?:t[ií]tulo|canci[oó]n|subt[ií]tulo)\s*:\s*([^\]]+)\]$/i);
+    if (bracketMatch) {
+        const val = bracketMatch[1].trim();
+        if (val) return val;
+    }
+
+    return null;
 }
 
 /**
@@ -557,6 +636,12 @@ function chordProToSections(chordProText) {
 
     const finalizeSection = () => {
         if (!currentSection) return;
+
+        if (currentSection.isSongTitle) {
+            sections.push(currentSection);
+            currentSection = null;
+            return;
+        }
 
         // Determinar si es instrumental
         const nonEmptyLines = currentSection.lines.filter(l => l.trim() !== '');
@@ -605,6 +690,24 @@ function chordProToSections(chordProText) {
 
     lines.forEach(line => {
         const trimmed = line.trim();
+
+        // 0. Detección de Título de Canción / Medley
+        const songTitle = extractSongTitle(line);
+        if (songTitle) {
+            finalizeSection();
+            currentSection = {
+                id: 'sec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+                type: 'CANCIÓN',
+                title: songTitle,
+                isSongTitle: true,
+                isInstrumental: false,
+                chords: [],
+                instrumentalLines: [],
+                lines: [songTitle]
+            };
+            finalizeSection();
+            return;
+        }
 
         // Detección de encabezado de sección [INTRO], [VERSO 1], etc.
         const sectionMatch = trimmed.match(/^\[([^\]]+)\]$/);
@@ -680,6 +783,15 @@ function sectionsToChordPro(sections) {
     const result = [];
 
     sections.forEach((sec, idx) => {
+        if (sec.isSongTitle) {
+            const title = sec.title || (sec.lines && sec.lines[0]) || 'Canción';
+            result.push(`{${title}}`);
+            if (idx < sections.length - 1) {
+                result.push('');
+            }
+            return;
+        }
+
         const type = formatSectionHeader(sec.type || 'VERSO');
         result.push(`[${type}]`);
 
@@ -783,5 +895,6 @@ window.chordProToSections = chordProToSections;
 window.sectionsToChordPro = sectionsToChordPro;
 window.parseLineChordPro = parseLineChordPro;
 window.formatLineChordPro = formatLineChordPro;
+window.extractSongTitle = extractSongTitle;
 
 

@@ -14,14 +14,23 @@ class GroupController {
         }
 
         $stmt = $pdo->prepare("
-            SELECT g.*, gu.role 
+            SELECT g.*, gu.role, gu.roles 
             FROM groups g
             JOIN group_user gu ON gu.group_id = g.id
             WHERE gu.user_id = ?
             ORDER BY g.name ASC
         ");
         $stmt->execute([$user['id']]);
-        jsonResponse($stmt->fetchAll());
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$r) {
+            if (!empty($r['roles']) && is_string($r['roles'])) {
+                $decoded = json_decode($r['roles'], true);
+                $r['roles'] = is_array($decoded) ? $decoded : (!empty($r['role']) ? [$r['role']] : []);
+            } else {
+                $r['roles'] = !empty($r['role']) ? [$r['role']] : [];
+            }
+        }
+        jsonResponse($rows);
     }
 
     public static function store(): void {
