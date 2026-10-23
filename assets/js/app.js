@@ -399,6 +399,11 @@ async function handleHashRouting() {
 
     const container = document.getElementById(`panel-${panelViewId}`);
     if (container) {
+        // Si el contenedor ya fue hidratado por el servidor en index.php o cargado previamente, marcarlo como cargado
+        if (container.children.length > 0) {
+            container.dataset.loaded = 'true';
+        }
+
         if (container.dataset.loaded !== 'true') {
             try {
                 const response = await fetch(`views/${panelViewId}.php?t=${Date.now()}`);
@@ -406,9 +411,12 @@ async function handleHashRouting() {
                 container.innerHTML = await response.text();
                 container.dataset.loaded = 'true';
             } catch (err) {
-                container.innerHTML = `<div style="padding: 40px; text-align:center; color:var(--text-muted)">Fallo al cargar la vista modular. Asegúrate de correr la app desde un servidor local.</div>`;
-                container.classList.remove('hidden');
-                return;
+                // Solo mostrar mensaje de error si el contenedor realmente está vacío
+                if (container.children.length === 0) {
+                    container.innerHTML = `<div style="padding: 40px; text-align:center; color:var(--text-muted)">Fallo al cargar la vista modular. Asegúrate de correr la app desde un servidor local.</div>`;
+                    container.classList.remove('hidden');
+                    return;
+                }
             }
         }
         

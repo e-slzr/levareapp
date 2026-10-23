@@ -54,34 +54,34 @@ require_once __DIR__ . '/views/includes/header.php';
     <!-- MAIN APP CONTAINER (Responsive Desktop & Mobile Layout) -->
     <div id="main-container" class="main-container hidden w-full max-w-4xl mx-auto min-h-screen flex flex-col relative pb-36 md:pb-20 px-4 md:px-8">
         <main id="main-content" class="flex-1 screen-fade w-full pt-4">
-            <div id="panel-dashboard" class="content-view hidden">
+            <div id="panel-dashboard" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/dashboard.php'; ?>
             </div>
-            <div id="panel-songs" class="content-view hidden">
+            <div id="panel-songs" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/songs.php'; ?>
             </div>
-            <div id="panel-setlists" class="content-view hidden">
+            <div id="panel-setlists" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/setlists.php'; ?>
             </div>
-            <div id="panel-events" class="content-view hidden">
+            <div id="panel-events" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/events.php'; ?>
             </div>
-            <div id="panel-profile" class="content-view hidden">
+            <div id="panel-profile" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/profile.php'; ?>
             </div>
-            <div id="panel-feedback" class="content-view hidden">
+            <div id="panel-feedback" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/feedback.php'; ?>
             </div>
-            <div id="panel-members" class="content-view hidden">
+            <div id="panel-members" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/members.php'; ?>
             </div>
-            <div id="panel-suggestions" class="content-view hidden">
+            <div id="panel-suggestions" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/suggestions.php'; ?>
             </div>
-            <div id="panel-announcements" class="content-view hidden">
+            <div id="panel-announcements" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/announcements.php'; ?>
             </div>
-            <div id="panel-admin" class="content-view hidden">
+            <div id="panel-admin" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/admin.php'; ?>
             </div>
         </main>

@@ -8,6 +8,14 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased] - Próximamente
 
+- **Corrección de resolución canónica de URLs en notificaciones Web Push**:
+  - En `sw.js` (evento `notificationclick`), se corrigió la resolución de la URL objetivo para que siempre se resuelva contra el ámbito raíz registrado de la aplicación (`self.registration.scope`) mediante `new URL(rawUrl, self.registration.scope).href` en lugar de resolver de forma relativa contra el script (`self.location.href`). Esto erradica el problema en navegadores móviles (iOS PWA) donde hacer clic en una notificación con destino `#suggestions`, `#events` o `#songs` resolvía a `https://dominio/sw.js#...` y abría el código fuente plano del Service Worker en pantalla completa.
+  - En `api_native/services/NotificationService.php` y controladores de eventos, canciones, sugerencias y anuncios, se normalizaron todas las URLs de retorno al formato canónico relativo `./#vista`.
+  - En `assets/js/push.js`, el receptor de mensajes `PUSH_NOTIFICATION_CLICKED` extrae de inmediato el hash destino para invocar `navigateTo(routeHash)` sin demoras.
+  - Se incrementó la versión del contenedor de caché PWA en `sw.js` a `levare-cache-v2.1.1` para forzar la actualización transparente e inmediata en todos los clientes.
+- **Protección contra fallo de carga modular («Fallo al cargar la vista modular»)**:
+  - En `index.php`, se marcó explícitamente cada contenedor de vista (`panel-dashboard`, `panel-songs`, etc.) con el atributo `data-loaded="true"` indicando que su contenido HTML ya fue pre-renderizado e inyectado por el servidor.
+  - En `assets/js/app.js` (`handleHashRouting`), se añadió una guardia que detecta si el contenedor ya cuenta con elementos hijos en el DOM (`container.children.length > 0`), suprimiendo cualquier intento de `fetch('views/...php')` redundante. Esto evita que ante micro-cortes de red o reanudaciones de la app desde segundo plano, una petición fetch fallida borre el contenido HTML de la pantalla y muestre el mensaje de error de carga local.
 - **Blindaje integral de Cache-Busting y entrega HTTP de la SPA**:
   - En `views/includes/header.php` y `.htaccess`, se agregaron cabeceras HTTP anti-caché estrictas (`Cache-Control: no-cache, no-store, must-revalidate, max-age=0`, `Pragma: no-cache`, `Expires: 0`) para asegurar que Cloudflare, proxies y navegadores jamás almacenen en caché el documento HTML principal (`index.php`), garantizando que siempre se entregue el HTML fresco con las referencias actualizadas de assets.
   - En el ayudante `asset_v()`, se implementó detección recursiva del `filemtime` para `assets/css/main.css` inspeccionando todos los submódulos importados (`songs.css`, `events.css`, etc.), invalidando la caché de estilos en Cloudflare y navegadores de inmediato cada vez que se modifique cualquier módulo secundario.

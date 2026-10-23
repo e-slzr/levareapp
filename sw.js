@@ -1,4 +1,4 @@
-const CACHE_NAME = "levare-cache-v2.1.0";
+const CACHE_NAME = "levare-cache-v2.1.1";
 const ASSETS = [
   "./",
   "./index.php",
@@ -98,7 +98,9 @@ self.addEventListener("push", (event) => {
     vibrate: [100, 50, 100],
     tag: data.tag || ("levare-notif-" + Date.now()),
     renotify: true,
-    data: data.data || { url: "./" }
+    data: Object.assign({}, data.data || {}, {
+      url: (data.data && data.data.url) || data.url || "./"
+    })
   };
 
   event.waitUntil(
@@ -106,18 +108,29 @@ self.addEventListener("push", (event) => {
   );
 });
 
-
-
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const notifData = event.notification.data || {};
-  const targetUrl = notifData.url || "./";
+  let rawUrl = notifData.url || "./";
+
+  // Si la ruta viene en formato hash (#vista), anteponer './' para que resuelva sobre el scope de la SPA
+  if (rawUrl.startsWith("#")) {
+    rawUrl = "./" + rawUrl;
+  }
+
+  // Resolver la URL SIEMPRE sobre el scope de la aplicación registrada (ej. https://dominio.com/),
+  // NUNCA sobre self.location (que apuntaría al archivo sw.js)
+  const targetUrl = new URL(rawUrl, self.registration.scope).href;
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      // If a window is already open, focus it and notify SPA router
+      // 1. Si ya existe una ventana abierta de la app, enfocarla y emitir mensaje interno al enrutador
       for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && "focus" in client) {
+        if (client.url.startsWith(self.registration.scope) && "focus" in client) {
+          // Si por error previo la ventana quedó atrapada en sw.js, redirigirla a la app
+          if (client.url.includes("sw.js") && "navigate" in client) {
+            return client.navigate(targetUrl).then(c => (c && "focus" in c ? c.focus() : null));
+          }
           client.focus();
           client.postMessage({
             type: "PUSH_NOTIFICATION_CLICKED",
@@ -127,7 +140,8 @@ self.addEventListener("notificationclick", (event) => {
           return;
         }
       }
-      // If no window is currently open, open a new window
+
+      // 2. Si no hay ventana abierta, abrir una nueva ventana con la URL canónica de la app
       if (self.clients.openWindow) {
         return self.clients.openWindow(targetUrl);
       }

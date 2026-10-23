@@ -82,7 +82,7 @@ class SuggestionController {
             'body'     => "{$user['name']} sugirió \"{$title}\" de {$artist}.",
             'text'     => "{$user['name']} sugirió la canción: \"{$title}\" de {$artist}.",
             'category' => 'suggestions',
-            'url'      => '#suggestions',
+            'url'      => './#suggestions',
             'meta'     => [
                 'suggestion_id' => $id,
                 'song_title'    => $title,

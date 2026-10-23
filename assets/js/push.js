@@ -250,6 +250,16 @@ if ('serviceWorker' in navigator) {
             const notifData = event.data.data || {};
             const category = notifData.category || '';
             const meta = notifData.meta || {};
+            const targetUrl = event.data.targetUrl || notifData.url || '';
+
+            // Si la notificación contiene un hash directo (#suggestions, #events, etc.), navegar de inmediato
+            if (targetUrl && targetUrl.includes('#')) {
+                const routeHash = targetUrl.split('#')[1];
+                if (routeHash && typeof navigateTo === 'function') {
+                    navigateTo(routeHash);
+                    return;
+                }
+            }
 
             if (category === 'community' || meta.source === 'community') {
                 if (typeof navigateTo === 'function') navigateTo('announcements');

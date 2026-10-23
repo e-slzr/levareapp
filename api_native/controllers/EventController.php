@@ -108,7 +108,7 @@ class EventController {
             'body'     => "{$user['name']} programó \"{$name}\" para el {$date} ({$time} hs).",
             'text'     => "{$user['name']} programó el evento: \"{$name}\" para el {$date} ({$time} hs).",
             'category' => 'events',
-            'url'      => '#events',
+            'url'      => './#events',
             'meta'     => [
                 'event_id'   => (int)$eventId,
                 'event_name' => $name,

@@ -132,7 +132,7 @@ class SongController {
             'body'     => "{$user['name']} añadió \"{$title}\" de {$artist} al catálogo.",
             'text'     => "{$user['name']} añadió una nueva canción: \"{$title}\" de {$artist}.",
             'category' => 'songs',
-            'url'      => '#songs',
+            'url'      => './#songs',
             'meta'     => [
                 'song_id'    => $id,
                 'song_title' => $title,
@@ -395,7 +395,7 @@ class SongController {
                     'body'     => "A {$user['name']} le ha gustado tu canción \"{$song['title']}\".",
                     'text'     => "A {$user['name']} le ha gustado tu canción \"{$song['title']}\".",
                     'category' => 'community',
-                    'url'      => '#announcements',
+                    'url'      => './#announcements',
                     'meta'     => [
                         'song_id'    => (int)$id,
                         'song_title' => $song['title'],
@@ -455,7 +455,7 @@ class SongController {
             'body'     => "{$user['name']} añadió \"{$title}\" de {$artist} (desde la comunidad).",
             'text'     => "{$user['name']} añadió al catálogo de la banda: \"{$title}\" de {$artist} (desde la comunidad).",
             'category' => 'songs',
-            'url'      => '#songs',
+            'url'      => './#songs',
             'meta'     => [
                 'song_id'    => $id,
                 'song_title' => $title,
@@ -663,7 +663,7 @@ class SetlistController {
             'body'     => "{$user['name']} creó el repertorio \"{$name}\".",
             'text'     => "{$user['name']} creó el repertorio: \"{$name}\".",
             'category' => 'setlists',
-            'url'      => '#setlists',
+            'url'      => './#setlists',
             'meta'     => [
                 'setlist_id'   => (int)$setlistId,
                 'setlist_name' => $name,

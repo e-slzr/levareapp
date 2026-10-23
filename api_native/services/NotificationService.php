@@ -62,13 +62,18 @@ class NotificationService {
             $subscriptions = $stmtSubs->fetchAll();
 
             if (!empty($subscriptions)) {
+                $targetUrl = $data['url'] ?? './';
+                if (is_string($targetUrl) && str_starts_with($targetUrl, '#')) {
+                    $targetUrl = './' . $targetUrl;
+                }
+
                 $pushPayload = [
                     'title' => $data['title'] ?? 'Levare',
                     'body'  => $data['body'] ?? $text,
                     'icon'  => './icon-levareapp.svg?v=2.0.1',
                     'badge' => './icon-levareapp.svg?v=2.0.1',
                     'data'  => [
-                        'url'      => $data['url'] ?? './',
+                        'url'      => $targetUrl,
                         'groupId'  => $groupId,
                         'category' => $data['category'] ?? 'group',
                         'meta'     => $data['meta'] ?? []
@@ -129,13 +134,18 @@ class NotificationService {
             $subscriptions = $stmtSubs->fetchAll();
 
             if (!empty($subscriptions)) {
+                $targetUrl = $data['url'] ?? './';
+                if (is_string($targetUrl) && str_starts_with($targetUrl, '#')) {
+                    $targetUrl = './' . $targetUrl;
+                }
+
                 $pushPayload = [
                     'title' => $data['title'] ?? 'Levare • Comunidad',
                     'body'  => $data['body'] ?? $text,
                     'icon'  => './icon-levareapp.svg?v=2.0.1',
                     'badge' => './icon-levareapp.svg?v=2.0.1',
                     'data'  => [
-                        'url'      => $data['url'] ?? './',
+                        'url'      => $targetUrl,
                         'category' => 'community',
                         'meta'     => $data['meta'] ?? []
                     ]
@@ -188,13 +198,18 @@ class NotificationService {
                 $subscriptions = $stmtSubs ? $stmtSubs->fetchAll() : [];
 
                 if (!empty($subscriptions)) {
+                    $targetUrl = $data['url'] ?? '#announcements';
+                    if (is_string($targetUrl) && str_starts_with($targetUrl, '#')) {
+                        $targetUrl = './' . $targetUrl;
+                    }
+
                     $pushPayload = [
                         'title' => $data['title'] ?? 'Levare • Anuncio',
                         'body'  => $data['body'] ?? $text,
                         'icon'  => './icon-levareapp.svg?v=2.0.1',
                         'badge' => './icon-levareapp.svg?v=2.0.1',
                         'data'  => [
-                            'url'      => $data['url'] ?? '#announcements',
+                            'url'      => $targetUrl,
                             'category' => 'system',
                             'announcement_id' => $announcementId,
                             'meta'     => $data['meta'] ?? []

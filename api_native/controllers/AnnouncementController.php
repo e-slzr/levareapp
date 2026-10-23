@@ -146,7 +146,7 @@ class AnnouncementController {
             'title'     => $title,
             'text'      => $shortText,
             'body'      => !empty($content) ? (mb_strlen($content) > 120 ? mb_substr($content, 0, 117) . '...' : $content) : $title,
-            'url'       => '#announcements',
+            'url'       => './#announcements',
             'meta'      => $meta,
             'send_push' => $sendPush
         ]);
