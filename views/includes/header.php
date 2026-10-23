@@ -1,10 +1,28 @@
 <?php
+// Prevenir que Cloudflare o proxies/navegadores almacenen en caché el cascarón HTML de la SPA
+if (!headers_sent()) {
+    header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+}
+
 if (!function_exists('asset_v')) {
     function asset_v($relativePath) {
         $cleanPath = ltrim(explode('?', $relativePath)[0], '/');
         $fullPath = __DIR__ . '/../../' . $cleanPath;
         if (file_exists($fullPath)) {
-            return $cleanPath . '?v=' . filemtime($fullPath);
+            $mtime = filemtime($fullPath);
+            // Si es main.css, considerar las modificaciones de los submódulos CSS importados (@import)
+            if ($cleanPath === 'assets/css/main.css') {
+                $cssDir = dirname($fullPath);
+                $subFiles = glob($cssDir . '/*.css');
+                if ($subFiles) {
+                    foreach ($subFiles as $sub) {
+                        $mtime = max($mtime, filemtime($sub));
+                    }
+                }
+            }
+            return $cleanPath . '?v=' . $mtime;
         }
         return $relativePath;
     }

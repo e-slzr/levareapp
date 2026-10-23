@@ -8,6 +8,7 @@
     <script src="<?= asset_v('assets/js/groups.js') ?>"></script>
     <script src="<?= asset_v('assets/js/app.js') ?>"></script>
     <script src="<?= asset_v('assets/js/push.js') ?>"></script>
+    <script>window.LEVARE_SW_URL = "<?= asset_v('sw.js') ?>";</script>
     <script src="<?= asset_v('assets/js/pwa.js') ?>"></script>
 
     <!-- View Controllers -->
