@@ -65,6 +65,11 @@ function openSongWizardView(prefilledData = null) {
     document.getElementById('song-form-id').value = "";
     document.getElementById('song-form-suggestion-id').value = "";
     document.getElementById('song-form-content').value = "";
+    const rawEditorEl = document.getElementById('song-form-raw-editor');
+    if (rawEditorEl) rawEditorEl.value = "";
+    currentEditorSections = [];
+    const cardsContainer = document.getElementById('section-cards-container');
+    if (cardsContainer) cardsContainer.innerHTML = '';
     if (deleteBtn) deleteBtn.classList.add('hidden');
 
     if (viewTitleEl) viewTitleEl.textContent = "Agregar Canción";
@@ -107,6 +112,8 @@ function openSongWizardView(prefilledData = null) {
 
         document.getElementById('song-form-url').value = prefilledData.url || '';
         document.getElementById('song-form-content').value = prefilledData.content || '';
+        if (rawEditorEl) rawEditorEl.value = prefilledData.content || '';
+        currentEditorSections = chordProToSections(prefilledData.content || '');
         
         if (prefilledData.suggestionId) {
             document.getElementById('song-form-suggestion-id').value = prefilledData.suggestionId;
@@ -259,6 +266,12 @@ function setupStep2Tabs() {
         boxPreview.classList.remove('hidden');
         boxRaw.classList.add('hidden');
 
+        // Sincronizar texto plano al estado y regenerar secciones internas
+        hiddenContent.value = rawEditor.value;
+        currentEditorSections = chordProToSections(rawEditor.value);
+        const container = document.getElementById('section-cards-container');
+        if (container) container.innerHTML = '';
+
         renderWizardLivePreview();
     };
 
@@ -269,18 +282,25 @@ function setupStep2Tabs() {
         boxRaw.classList.remove('hidden');
         boxPreview.classList.add('hidden');
 
+        // Sincronizar tarjetas del constructor visual al texto plano
+        syncEditorToFormContent();
         rawEditor.value = hiddenContent.value;
         rawEditor.focus();
     };
 
-    rawEditor.oninput = () => {
+    const syncRawToState = () => {
         hiddenContent.value = rawEditor.value;
+        currentEditorSections = chordProToSections(rawEditor.value);
         const countEl = document.getElementById('preview-sections-count');
         const sectionMatches = rawEditor.value.match(/\[(INTRO|VERSO|PRE-CORO|CORO|PUENTE|SOLO|OUTRO)[^\]]*\]/gi) || [];
         if (countEl) {
             countEl.textContent = `${sectionMatches.length} ${sectionMatches.length === 1 ? 'sección' : 'secciones'}`;
         }
     };
+
+    rawEditor.oninput = syncRawToState;
+    rawEditor.onchange = syncRawToState;
+    rawEditor.onblur = syncRawToState;
 }
 window.setupStep2Tabs = setupStep2Tabs;
 
@@ -343,7 +363,21 @@ window.syncEditorToFormContent = syncEditorToFormContent;
  */
 async function handleSongWizardSubmit(e) {
     e.preventDefault();
-    syncEditorToFormContent();
+
+    const boxRaw = document.getElementById('wizard-raw-editor-box');
+    const rawEditor = document.getElementById('song-form-raw-editor');
+    const hiddenContent = document.getElementById('song-form-content');
+    const isRawActive = boxRaw && !boxRaw.classList.contains('hidden');
+
+    if (isRawActive && rawEditor) {
+        hiddenContent.value = rawEditor.value.trim();
+        currentEditorSections = chordProToSections(rawEditor.value);
+    } else {
+        syncEditorToFormContent();
+        if (rawEditor && hiddenContent) {
+            rawEditor.value = hiddenContent.value;
+        }
+    }
 
     const id = document.getElementById('song-form-id').value;
     const suggestionId = document.getElementById('song-form-suggestion-id').value;
@@ -436,7 +470,16 @@ window.handleSongWizardSubmit = handleSongWizardSubmit;
  * Abre el modal de pantalla completa del Constructor Visual de Acordes.
  */
 function openChordBuilderModal() {
-    const content = document.getElementById('song-form-content').value;
+    const rawEditor = document.getElementById('song-form-raw-editor');
+    const hiddenContent = document.getElementById('song-form-content');
+    const boxRaw = document.getElementById('wizard-raw-editor-box');
+    
+    // Si el usuario estaba editando en texto plano, sincronizar antes de abrir el constructor
+    if (boxRaw && !boxRaw.classList.contains('hidden') && rawEditor) {
+        hiddenContent.value = rawEditor.value;
+    }
+
+    const content = hiddenContent ? hiddenContent.value : '';
     const isMedley = document.getElementById('song-form-is-medley')?.checked;
     const baseKey = isMedley ? 'Medley' : (document.getElementById('song-form-key').value || 'C');
     const keyBadge = document.getElementById('builder-current-key-badge');
@@ -470,18 +513,22 @@ function setupChordBuilderEvents() {
     const btnAddSection = document.getElementById('btn-toolbar-add-section');
     const btnToggleReorder = document.getElementById('btn-toggle-reorder-mode');
 
+    const handleCloseAndSyncBuilder = () => {
+        syncEditorToFormContent();
+        const rawEditor = document.getElementById('song-form-raw-editor');
+        const hiddenContent = document.getElementById('song-form-content');
+        if (rawEditor && hiddenContent) {
+            rawEditor.value = hiddenContent.value;
+        }
+        document.getElementById('modal-chord-builder').classList.add('hidden');
+    };
+
     if (btnApply) {
-        btnApply.onclick = () => {
-            syncEditorToFormContent();
-            document.getElementById('modal-chord-builder').classList.add('hidden');
-        };
+        btnApply.onclick = handleCloseAndSyncBuilder;
     }
 
     if (btnCloseX) {
-        btnCloseX.onclick = () => {
-            syncEditorToFormContent();
-            document.getElementById('modal-chord-builder').classList.add('hidden');
-        };
+        btnCloseX.onclick = handleCloseAndSyncBuilder;
     }
 
     if (btnAddSection) {
@@ -1803,6 +1850,14 @@ function setupImportChordsEvents() {
 
             const chordPro = parseInternetLyricsToChordPro(raw);
             document.getElementById('song-form-content').value = chordPro;
+            
+            const rawEditor = document.getElementById('song-form-raw-editor');
+            if (rawEditor) rawEditor.value = chordPro;
+
+            currentEditorSections = chordProToSections(chordPro);
+            const container = document.getElementById('section-cards-container');
+            if (container) container.innerHTML = '';
+
             renderWizardLivePreview();
 
             document.getElementById('modal-import-chords').classList.add('hidden');

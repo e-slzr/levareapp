@@ -186,7 +186,8 @@ class PushService {
                 CURLOPT_POSTFIELDS => $encryptedBody,
                 CURLOPT_HTTPHEADER => $headers,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 10,
+                CURLOPT_TIMEOUT => 3,
+                CURLOPT_CONNECTTIMEOUT => 2,
                 CURLOPT_SSL_VERIFYPEER => true
             ]);
 
@@ -212,13 +213,111 @@ class PushService {
     }
 
     /**
-     * Dispatch WebPush notifications to multiple subscriptions in parallel
+     * Dispatch WebPush notifications to multiple subscriptions in parallel using curl_multi
      */
     public static function sendMultiple(array $subscriptions, array $payload): array {
-        $results = [];
-        foreach ($subscriptions as $sub) {
-            $results[] = self::sendNotification($sub, $payload);
+        if (empty($subscriptions)) {
+            return [];
         }
+
+        $payloadString = is_string($payload) ? $payload : json_encode($payload, JSON_UNESCAPED_UNICODE);
+        $mh = curl_multi_init();
+        $handles = [];
+        $metaByHandle = [];
+
+        foreach ($subscriptions as $sub) {
+            $endpoint = $sub['endpoint'] ?? '';
+            $p256dh = $sub['p256dh'] ?? '';
+            $auth = $sub['auth'] ?? '';
+
+            if (empty($endpoint) || empty($p256dh) || empty($auth)) {
+                continue;
+            }
+
+            try {
+                $encryptedBody = self::encryptPayload($payloadString, $p256dh, $auth);
+                $vapidHeaders = self::createVapidHeaders($endpoint);
+
+                $headers = array_merge($vapidHeaders, [
+                    'Content-Type: application/octet-stream',
+                    'Content-Encoding: aes128gcm',
+                    'TTL: 86400',
+                    'Urgency: normal'
+                ]);
+
+                $ch = curl_init();
+                curl_setopt_array($ch, [
+                    CURLOPT_URL => $endpoint,
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => $encryptedBody,
+                    CURLOPT_HTTPHEADER => $headers,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_TIMEOUT => 3,
+                    CURLOPT_CONNECTTIMEOUT => 2,
+                    CURLOPT_SSL_VERIFYPEER => true
+                ]);
+
+                curl_multi_add_handle($mh, $ch);
+                $hKey = (int)$ch;
+                $handles[$hKey] = $ch;
+                $metaByHandle[$hKey] = [
+                    'endpoint' => $endpoint,
+                    'sub' => $sub
+                ];
+            } catch (\Throwable $e) {
+                error_log("Error preparando notificación push para {$endpoint}: " . $e->getMessage());
+            }
+        }
+
+        if (empty($handles)) {
+            curl_multi_close($mh);
+            return [];
+        }
+
+        // Ejecución concurrente en paralelo no bloqueante
+        $running = null;
+        do {
+            $status = curl_multi_exec($mh, $running);
+            if ($running) {
+                curl_multi_select($mh, 0.05);
+            }
+        } while ($running > 0 && $status === CURLM_OK);
+
+        $results = [];
+        foreach ($handles as $hKey => $ch) {
+            $statusCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $response = curl_multi_getcontent($ch);
+            $curlError = curl_error($ch);
+            $endpoint = $metaByHandle[$hKey]['endpoint'] ?? '';
+
+            if ($statusCode === 404 || $statusCode === 410) {
+                self::pruneSubscription($endpoint);
+                $results[] = [
+                    'endpoint' => $endpoint,
+                    'success' => false,
+                    'statusCode' => $statusCode,
+                    'error' => 'Subscription expired or unregistered'
+                ];
+            } elseif ($statusCode >= 200 && $statusCode < 300) {
+                $results[] = [
+                    'endpoint' => $endpoint,
+                    'success' => true,
+                    'statusCode' => $statusCode
+                ];
+            } else {
+                $results[] = [
+                    'endpoint' => $endpoint,
+                    'success' => false,
+                    'statusCode' => $statusCode,
+                    'error' => $curlError ?: $response
+                ];
+            }
+
+            curl_multi_remove_handle($mh, $ch);
+            curl_close($ch);
+        }
+
+        curl_multi_close($mh);
         return $results;
     }
 
