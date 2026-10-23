@@ -24,7 +24,22 @@
     </header>
 
     <!-- WRAPPER 1: List View -->
-    <div id="events-list-wrapper" class="space-y-3">
+    <div id="events-list-wrapper" class="space-y-4">
+        <!-- Sub-selector Segmentado: Próximos vs Pasados -->
+        <div class="flex items-center justify-between gap-3">
+            <div class="inline-flex items-center p-1 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold">
+                <button type="button" id="tab-events-upcoming" class="px-3.5 py-1.5 rounded-lg transition flex items-center gap-2 cursor-pointer bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm font-bold">
+                    <span>Próximos</span>
+                    <span id="badge-count-upcoming" class="px-1.5 py-0.5 rounded-full text-[10px] bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold">0</span>
+                </button>
+                <button type="button" id="tab-events-past" class="px-3.5 py-1.5 rounded-lg transition flex items-center gap-2 cursor-pointer text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium">
+                    <span>Pasados</span>
+                    <span id="badge-count-past" class="px-1.5 py-0.5 rounded-full text-[10px] bg-zinc-200/60 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 font-bold">0</span>
+                </button>
+            </div>
+            <span id="events-filter-indicator" class="text-[11px] text-zinc-400 dark:text-zinc-500 hidden sm:inline">Eventos vigentes</span>
+        </div>
+
         <div id="events-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <!-- Dynamic Event Cards rendered by JS -->
         </div>

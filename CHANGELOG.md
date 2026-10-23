@@ -19,7 +19,12 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 - **Desbloqueo de edición de roles en modal de integrantes**: En `members.js`, se eliminó el bloqueo que impedía a los líderes degradar usuarios con permisos de líder a miembros de lectura, protegiendo únicamente la auto-degradación accidental y al creador original de la banda.
 - **Blindaje y autorización en backend (`requireLeaderOrAdmin`)**: Implementado ayudante de seguridad estricto en `response.php` que bloquea con `403 Forbidden` cualquier intento de usuarios no líderes de crear, modificar o eliminar repertorios (`SetlistController`), eventos (`EventController`), integrantes y roles musicales (`MemberController`), y regeneración de códigos de invitación (`GroupController`).
 
-- **Inversión y Agilización del Asistente de Canciones (Wizard en 2 Pasos)**:
+### Added
+- **Selector Segmentado de Eventos (Próximos vs Pasados) y Ordenamiento Cronológico**:
+  - En la vista de eventos (`views/events.php`, `assets/js/views/events.js`), se incorporó un selector segmentado sobrio y dual-mode con badges de conteo dinámico: `[ Próximos (N) ]` (eventos vigentes de hoy en adelante, activo por defecto) y `[ Pasados (N) ]` (historial de eventos concluidos).
+  - **Orden cronológico inverso del más nuevo hacia atrás**: En base de datos (`EventController.php`) y en frontend, los eventos se ordenan estrictamente por fecha y hora descendente (`date DESC, time DESC`), mostrando arriba el evento más nuevo en la línea de tiempo del calendario y descendiendo progresivamente.
+  - **Tratamiento estético de eventos pasados**: Las tarjetas de eventos concluidos se presentan con una atenuación sutil (`opacity-75 hover:opacity-100`) y badge neutral de estado `Finalizado`.
+  - **Protección de acciones en el pasado**: En la ficha de detalle del evento (`#modal-event-detail`), se suprimen automáticamente los botones de cancelación o edición cuando el evento ya pertenece al historial.
   - Se reestructuró el flujo de registro y edición de canciones (`views/songs.php`, `assets/js/views/songs-wizard.js`, `assets/js/views/songs.js`): ahora inicia directamente en el **Paso 1: Letra y Acordes**, permitiendo escribir o pegar desde internet (LaCuerda.net / CifraClub) de inmediato y sin bloqueos previos.
   - Al avanzar al **Paso 2: Información General**, los campos de título, artista, álbum, tono y enlace multimedia se encuentran ya precargados si se importó de la web, o listos para ingresarse de forma manual.
   - Indicadores superiores interactivos (`#step-indicator-1` y `#step-indicator-2`) que permiten alternar entre pasos con un solo toque (clave para editar canciones existentes rápidamente).

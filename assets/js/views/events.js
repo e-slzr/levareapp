@@ -8,6 +8,31 @@ let cachedEvents = [];
 let eventIdToDelete = null;
 let eventsVisibleLimit = 12;
 const EVENTS_PAGE_SIZE = 12;
+let currentEventsTab = 'upcoming'; // 'upcoming' | 'past'
+
+function updateEventsTabUI() {
+    const tabUpcoming = document.getElementById('tab-events-upcoming');
+    const tabPast = document.getElementById('tab-events-past');
+    const indicator = document.getElementById('events-filter-indicator');
+
+    if (currentEventsTab === 'upcoming') {
+        if (tabUpcoming) {
+            tabUpcoming.className = "px-3.5 py-1.5 rounded-lg transition flex items-center gap-2 cursor-pointer bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm font-bold";
+        }
+        if (tabPast) {
+            tabPast.className = "px-3.5 py-1.5 rounded-lg transition flex items-center gap-2 cursor-pointer text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium";
+        }
+        if (indicator) indicator.textContent = "Eventos vigentes";
+    } else {
+        if (tabUpcoming) {
+            tabUpcoming.className = "px-3.5 py-1.5 rounded-lg transition flex items-center gap-2 cursor-pointer text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium";
+        }
+        if (tabPast) {
+            tabPast.className = "px-3.5 py-1.5 rounded-lg transition flex items-center gap-2 cursor-pointer bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm font-bold";
+        }
+        if (indicator) indicator.textContent = "Historial de eventos pasados";
+    }
+}
 
 function getEventTypeBadgeHTML(typeStr) {
     const typeLower = (typeStr || '').toLowerCase();
@@ -57,6 +82,27 @@ function initEventsView() {
             calendarWrapper.classList.remove('hidden');
             listWrapper.classList.add('hidden');
             renderCalendar();
+        };
+    }
+
+    // Sub-pestañas del listado: Próximos vs Pasados
+    const tabUpcoming = document.getElementById('tab-events-upcoming');
+    const tabPast = document.getElementById('tab-events-past');
+    if (tabUpcoming && tabPast) {
+        tabUpcoming.onclick = () => {
+            if (currentEventsTab === 'upcoming') return;
+            currentEventsTab = 'upcoming';
+            updateEventsTabUI();
+            eventsVisibleLimit = EVENTS_PAGE_SIZE;
+            renderEventsListOnly();
+        };
+
+        tabPast.onclick = () => {
+            if (currentEventsTab === 'past') return;
+            currentEventsTab = 'past';
+            updateEventsTabUI();
+            eventsVisibleLimit = EVENTS_PAGE_SIZE;
+            renderEventsListOnly();
         };
     }
 
@@ -155,40 +201,66 @@ function initEventsView() {
     }
 
     eventsVisibleLimit = EVENTS_PAGE_SIZE;
+    updateEventsTabUI();
     renderEvents(true); // force first fetch
 }
 
-async function renderEvents(forceRefresh = false) {
+function getFilteredEvents() {
+    const todayStr = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+
+    // Ordenar del más nuevo en la línea de tiempo del calendario hacia atrás
+    cachedEvents.sort((a, b) => {
+        const cmp = (b.date || '').localeCompare(a.date || '');
+        if (cmp !== 0) return cmp;
+        return (b.time || '').localeCompare(a.time || '');
+    });
+
+    const upcomingEvents = cachedEvents.filter(ev => (ev.date || '') >= todayStr);
+    const pastEvents = cachedEvents.filter(ev => (ev.date || '') < todayStr);
+
+    const badgeUpcoming = document.getElementById('badge-count-upcoming');
+    if (badgeUpcoming) badgeUpcoming.textContent = upcomingEvents.length;
+
+    const badgePast = document.getElementById('badge-count-past');
+    if (badgePast) badgePast.textContent = pastEvents.length;
+
+    return {
+        upcoming: upcomingEvents,
+        past: pastEvents,
+        current: currentEventsTab === 'upcoming' ? upcomingEvents : pastEvents
+    };
+}
+
+function renderEventsListOnly() {
     const listContainer = document.getElementById('events-list-container');
     const loadMoreContainer = document.getElementById('events-load-more-container');
     const btnLoadMore = document.getElementById('btn-events-load-more');
     if (!listContainer) return;
 
-    if (forceRefresh || cachedEvents.length === 0) {
-        listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">Cargando eventos...</div>`;
-        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
-        try {
-            cachedEvents = await apiFetch('/events') || [];
-        } catch (e) {
-            console.error("Error loading events:", e);
-            listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-red-500">Fallo al conectar con el servidor de eventos.</div>`;
-            return;
-        }
-    }
-
     listContainer.innerHTML = '';
+    const { current: eventsToShow } = getFilteredEvents();
 
-    if (cachedEvents.length === 0) {
-        listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">No hay eventos programados.</div>`;
+    if (eventsToShow.length === 0) {
+        const emptyMsg = currentEventsTab === 'upcoming' 
+            ? 'No hay eventos próximos programados.' 
+            : 'No hay eventos pasados en el historial.';
+        listContainer.innerHTML = `<div class="col-span-full text-center py-12 text-xs text-zinc-500 dark:text-zinc-400">${emptyMsg}</div>`;
         if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
         return;
     }
 
-    const visibleEvents = cachedEvents.slice(0, eventsVisibleLimit);
+    const todayStr = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+    const visibleEvents = eventsToShow.slice(0, eventsVisibleLimit);
 
     visibleEvents.forEach(ev => {
         const card = document.createElement('div');
-        card.className = 'p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition cursor-pointer space-y-3';
+        const isPast = (ev.date || '') < todayStr;
+
+        if (isPast) {
+            card.className = 'p-5 rounded-2xl bg-white/70 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm opacity-75 hover:opacity-100 transition cursor-pointer space-y-3';
+        } else {
+            card.className = 'p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition cursor-pointer space-y-3';
+        }
         
         const setlistName = ev.setlist ? ev.setlist.name : 'Ninguno';
         const evDate = typeof formatDate === 'function' ? formatDate(ev.date) : ev.date;
@@ -218,6 +290,9 @@ async function renderEvents(forceRefresh = false) {
         }
 
         const typeBadgeHTML = getEventTypeBadgeHTML(ev.type);
+        const statusBadgeHTML = isPast 
+            ? `<span class="px-2 py-0.5 rounded-xl text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 flex-shrink-0">Finalizado</span>` 
+            : '';
 
         card.innerHTML = `
             <div class="flex items-start justify-between gap-2">
@@ -225,7 +300,10 @@ async function renderEvents(forceRefresh = false) {
                     <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100">${ev.name}</h3>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5"><i class="fa-regular fa-clock mr-1"></i>${evDate} • ${ev.time ? ev.time.substring(0, 5) : '18:00'} hs</p>
                 </div>
-                ${typeBadgeHTML}
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    ${statusBadgeHTML}
+                    ${typeBadgeHTML}
+                </div>
             </div>
             <p class="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2">${ev.description || 'Sin notas adicionales'}</p>
             <div class="text-xs text-zinc-500 dark:text-zinc-400">
@@ -266,16 +344,37 @@ async function renderEvents(forceRefresh = false) {
 
     // Controlar botón Cargar más
     if (loadMoreContainer && btnLoadMore) {
-        if (cachedEvents.length > eventsVisibleLimit) {
+        if (eventsToShow.length > eventsVisibleLimit) {
             loadMoreContainer.classList.remove('hidden');
             btnLoadMore.onclick = () => {
                 eventsVisibleLimit += EVENTS_PAGE_SIZE;
-                renderEvents(false);
+                renderEventsListOnly();
             };
         } else {
             loadMoreContainer.classList.add('hidden');
         }
     }
+}
+
+async function renderEvents(forceRefresh = false) {
+    const listContainer = document.getElementById('events-list-container');
+    const loadMoreContainer = document.getElementById('events-load-more-container');
+    if (!listContainer) return;
+
+    if (forceRefresh || cachedEvents.length === 0) {
+        listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-zinc-500 dark:text-zinc-400">Cargando eventos...</div>`;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
+        try {
+            cachedEvents = await apiFetch('/events') || [];
+        } catch (e) {
+            console.error("Error loading events:", e);
+            listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-xs text-red-500">Fallo al conectar con el servidor de eventos.</div>`;
+            return;
+        }
+    }
+
+    updateEventsTabUI();
+    renderEventsListOnly();
 
     const calendarWrapper = document.getElementById('events-calendar-wrapper');
     if (calendarWrapper && !calendarWrapper.classList.contains('hidden')) {
@@ -414,12 +513,17 @@ async function viewEventDetails(eventId) {
         });
     }
 
+    const todayStr = typeof getLocalDateString === 'function' ? getLocalDateString() : new Date().toISOString().split('T')[0];
+    const isPast = (ev.date || '') < todayStr;
     const typeBadgeHTML = getEventTypeBadgeHTML(ev.type);
+    const statusBadgeHTML = isPast 
+        ? `<span class="px-2.5 py-1 rounded-xl text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">Finalizado</span>` 
+        : '';
 
     body.innerHTML = `
         <div class="space-y-1">
             <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Tipo de Evento</span>
-            <div>${typeBadgeHTML}</div>
+            <div class="flex items-center gap-1.5">${statusBadgeHTML}${typeBadgeHTML}</div>
         </div>
         <div class="space-y-1">
             <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Fecha y Hora</span>
@@ -460,10 +564,10 @@ async function viewEventDetails(eventId) {
         }
     };
 
-    // Mostrar/ocultar botón de eliminar evento según permisos
+    // Mostrar/ocultar botón de eliminar evento según permisos (deshabilitado si es evento pasado)
     const deleteBtn = document.getElementById('btn-delete-event');
     if (deleteBtn) {
-        if (canEdit()) {
+        if (canEdit() && !isPast) {
             deleteBtn.style.display = 'inline-flex';
             deleteBtn.onclick = () => handleDeleteEvent(ev.id, ev.name);
         } else {

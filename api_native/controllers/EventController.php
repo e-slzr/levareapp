@@ -15,7 +15,7 @@ class EventController {
             jsonResponse([]);
         }
 
-        $stmt = $pdo->prepare("SELECT * FROM events WHERE group_id = ? ORDER BY date ASC, time ASC");
+        $stmt = $pdo->prepare("SELECT * FROM events WHERE group_id = ? ORDER BY date DESC, time DESC");
         $stmt->execute([$groupId]);
 
         $events = $stmt->fetchAll();
