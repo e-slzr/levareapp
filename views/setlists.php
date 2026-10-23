@@ -204,8 +204,6 @@
         </div>
     </div>
 </div>
-    </div>
-</div>
 
 <!-- MODAL: Confirmar Eliminar Repertorio -->
 <div id="modal-delete-setlist-confirm" class="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm hidden px-4">
