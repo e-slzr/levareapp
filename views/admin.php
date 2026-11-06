@@ -1,5 +1,5 @@
 <!-- Admin Panel: Gestión de Usuarios & Feedback Beta (Minimalist UI - Dual Light & Dark Mode) -->
-<div class="space-y-6 screen-fade max-w-4xl mx-auto pb-12">
+<div class="space-y-6 screen-fade max-w-4xl mx-auto">
 
     <!-- Top Section Nav Switcher -->
     <div class="flex items-center justify-between flex-wrap gap-3 pt-2">

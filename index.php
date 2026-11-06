@@ -52,8 +52,8 @@ require_once __DIR__ . '/views/includes/header.php';
 
 
     <!-- MAIN APP CONTAINER (Responsive Desktop & Mobile Layout) -->
-    <div id="main-container" class="main-container hidden w-full max-w-4xl mx-auto min-h-screen flex flex-col relative pb-36 md:pb-20 px-4 md:px-8">
-        <main id="main-content" class="flex-1 screen-fade w-full pt-4">
+    <div id="main-container" class="main-container hidden w-full max-w-4xl mx-auto min-h-screen flex flex-col relative px-4 md:px-8">
+        <main id="main-content" class="flex-1 screen-fade w-full pt-4 pb-28 md:pb-20">
             <div id="panel-dashboard" class="content-view hidden" data-loaded="true">
                 <?php include __DIR__ . '/views/dashboard.php'; ?>
             </div>

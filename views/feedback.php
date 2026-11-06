@@ -1,5 +1,5 @@
 <!-- Feedback & Bug Report Screen (Levare v1.0 Beta - Minimalist UI - Dual Light & Dark Mode) -->
-<div class="space-y-6 screen-fade max-w-2xl mx-auto pb-12">
+<div class="space-y-6 screen-fade max-w-2xl mx-auto">
     
     <!-- Top Back Navigation -->
     <div class="pt-2 flex items-center justify-between">

@@ -183,7 +183,7 @@
             </div>
 
             <!-- View All Announcements Button -->
-            <div id="announcements-view-all-container" class="pt-3 pb-24 text-center">
+            <div id="announcements-view-all-container" class="pt-3 pb-4 text-center">
                 <button type="button" onclick="navigateTo('announcements')" class="w-full py-3 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2 shadow-sm cursor-pointer">
                     <i class="fa-regular fa-newspaper text-sm"></i>
                     <span>Ver todas las novedades y anuncios</span>

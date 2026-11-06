@@ -1,5 +1,5 @@
 <!-- Announcements Screen (Novedades y Anuncios) -->
-<div class="space-y-5 screen-fade max-w-4xl mx-auto pb-24">
+<div class="space-y-5 screen-fade max-w-4xl mx-auto">
     <header class="flex items-center justify-between pt-2">
         <div>
             <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 mb-1">

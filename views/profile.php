@@ -1,5 +1,5 @@
 <!-- Profile & Settings Screen (Minimalist UI - Dual Light & Dark Mode) -->
-<div class="space-y-6 screen-fade max-w-2xl mx-auto pb-32 md:pb-24">
+<div class="space-y-6 screen-fade max-w-2xl mx-auto">
     <header class="pt-2">
         <h1 class="font-serif text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Perfil & Ajustes</h1>
         <p class="text-xs text-zinc-500 dark:text-zinc-400">Preferencias de cuenta y bandas musicales</p>
