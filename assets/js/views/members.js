@@ -751,6 +751,12 @@ async function openResetPasswordModal(userId) {
     document.getElementById('reset-password-user-id').value = u.id;
     document.getElementById('reset-password-user-name').textContent = `${u.name} ${u.lastname || ''}`;
     
+    const confirmBtn = document.getElementById('btn-confirm-reset-password');
+    if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Restablecer';
+    }
+
     // Switch steps
     document.getElementById('reset-password-confirm-step').classList.remove('hidden');
     document.getElementById('reset-password-success-step').classList.add('hidden');
@@ -782,7 +788,7 @@ async function handleResetPasswordSubmit() {
         showToast(err.message || "Error al restablecer contraseña.", "danger");
     } finally {
         btn.disabled = false;
-        btn.textContent = "Confirmar Restablecimiento";
+        btn.textContent = "Restablecer";
     }
 }
 

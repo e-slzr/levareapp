@@ -341,11 +341,9 @@
             <p style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;" id="reset-password-user-name">...</p>
             <p style="font-size: 0.85rem; color: var(--danger, #ef4444); margin-top: 12px;">Se activará la solicitud de cambio de contraseña obligatoria en su siguiente inicio de sesión.</p>
             
-            <div class="modal-footer" style="padding: 16px 0 0; margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
                 <button type="button" class="btn btn-outline btn-close-modal" id="btn-close-reset-password-modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="btn-confirm-reset-password">
-                    Confirmar Restablecimiento
-                </button>
+                <button type="button" class="btn btn-danger" id="btn-confirm-reset-password">Restablecer</button>
             </div>
         </div>
 

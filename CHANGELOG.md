@@ -8,6 +8,11 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased] - Próximamente
 
+- **Ajuste Ergonómico y Alineación en Modal de Restablecer Contraseña**:
+  - En `views/includes/modals.php`, se simplificó el texto del botón principal de acción a solo «Restablecer» (removiendo «Confirmar»), evitando que su extensión desalinee o comprima el botón «Cancelar» en pantallas móviles.
+  - Se homogeneizó el alineamiento vertical (`align-items: center`) y el espaciado flexible en el pie del modal (`#reset-password-confirm-step`).
+  - En `assets/js/views/members.js`, se sincronizó el texto del botón en `openResetPasswordModal` y en el estado final de `handleResetPasswordSubmit` para mantener «Restablecer».
+
 - **Transformación de Código de Invitación en Modal Popup y Botones Compactos de Cabecera**:
   - En `views/band.php`, se eliminó la tarjeta fija del código de invitación de la vista principal tanto en móvil como en escritorio, dejando un diseño mucho más limpio, fluido y directo hacia las pestañas de gestión.
   - Se implementó un nuevo botón compacto de compartir (solo icono `fa-share-nodes`, sin texto) en la cabecera de la banda junto a «Editar Información», que abre el popup interactivo `#modal-band-invite-code`.
