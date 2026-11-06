@@ -14,6 +14,7 @@ let currentPresentationSong = null;
 let presTransposeOffset = 0;
 let presIsScrolling = false;
 let presScrollInterval = null;
+let presScrollSpeed = 2; // 1 (120ms), 2 (70ms), 3 (35ms)
 let directPresentationSetlistId = null;
 let setlistIdToDelete = null;
 let presIsLyricsOnly = false;
@@ -100,15 +101,11 @@ function initSetlistsView() {
     const btnPresScroll = document.getElementById('btn-pres-scroll-toggle');
     if (btnPresScroll) btnPresScroll.onclick = togglePresScroll;
 
-    const selectPresSpeed = document.getElementById('pres-scroll-speed-select');
-    if (selectPresSpeed) {
-        selectPresSpeed.onchange = () => {
-            if (presIsScrolling) {
-                stopPresScroll();
-                startPresScroll();
-            }
-        };
-    }
+    const btnPresFabTuning = document.getElementById('btn-pres-fab-tuning');
+    if (btnPresFabTuning) btnPresFabTuning.onclick = () => togglePresAdjustments();
+
+    const btnPresFabSpeed = document.getElementById('btn-pres-fab-speed');
+    if (btnPresFabSpeed) btnPresFabSpeed.onclick = cyclePresScrollSpeed;
 
     const btnPresToggleSongs = document.getElementById('btn-toggle-presentation-songs');
     if (btnPresToggleSongs) btnPresToggleSongs.onclick = openMobileSongsModal;
@@ -217,12 +214,19 @@ async function renderSetlists(forceRefresh = false) {
 
         let songItemsHTML = '';
         if (s.songs && s.songs.length > 0) {
-            // Render only first 2 songs
+            // Garantizar orden estricto por posición (sort_order)
+            s.songs.sort((a, b) => {
+                const orderA = typeof a.sort_order !== 'undefined' ? parseInt(a.sort_order) : 0;
+                const orderB = typeof b.sort_order !== 'undefined' ? parseInt(b.sort_order) : 0;
+                return orderA - orderB;
+            });
+
+            // Render only first 2 songs with position number
             const firstTwoSongs = s.songs.slice(0, 2);
-            firstTwoSongs.forEach(song => {
+            firstTwoSongs.forEach((song, idx) => {
                 songItemsHTML += `
                     <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-xs">
-                        <span class="font-semibold text-zinc-800 dark:text-zinc-200 truncate">${song.title}</span>
+                        <span class="font-semibold text-zinc-800 dark:text-zinc-200 truncate">${idx + 1}. ${song.title}</span>
                         <span class="font-bold text-zinc-600 dark:text-zinc-400 ml-2">${song.key}</span>
                     </div>
                 `;
@@ -338,13 +342,16 @@ function openSetlistPresentation(setlist) {
     document.getElementById('presentation-setlist-title').textContent = setlist.name;
     document.getElementById('presentation-setlist-desc').textContent = setlist.description || 'Sin notas o descripción asociada.';
 
-    // Populate songs sidebar list, mobile modal list and compact rail badges
+    // Populate songs sidebar list, mobile modal list, compact vertical rail badges and mobile horizontal rail
     const sidebarList = document.getElementById('presentation-songs-list-container');
     if (sidebarList) sidebarList.innerHTML = '';
     
     const railList = document.getElementById('presentation-rail-songs-container');
     if (railList) railList.innerHTML = '';
     
+    const horizontalRail = document.getElementById('presentation-horizontal-songs-container');
+    if (horizontalRail) horizontalRail.innerHTML = '';
+
     const mobileList = document.getElementById('mobile-presentation-songs-container');
     if (mobileList) mobileList.innerHTML = '';
     
@@ -352,15 +359,22 @@ function openSetlistPresentation(setlist) {
     if (mobileTitle) mobileTitle.textContent = setlist.name;
 
     if (setlist.songs && setlist.songs.length > 0) {
+        // Garantizar orden estricto por posición (sort_order)
+        setlist.songs.sort((a, b) => {
+            const orderA = typeof a.sort_order !== 'undefined' ? parseInt(a.sort_order) : 0;
+            const orderB = typeof b.sort_order !== 'undefined' ? parseInt(b.sort_order) : 0;
+            return orderA - orderB;
+        });
+
         setlist.songs.forEach((song, index) => {
             if (sidebarList) {
                 const item = document.createElement('button');
                 item.className = 'presentation-song-item';
                 item.setAttribute('data-song-id', song.id);
                 item.innerHTML = `
-                    <div style="display:flex; flex-direction:column; gap:2px;">
-                        <span class="song-title">${song.title}</span>
-                        <span class="song-artist">${song.artist}</span>
+                    <div style="display:flex; flex-direction:column; gap:2px; min-width:0; flex:1;">
+                        <span class="song-title truncate">${index + 1}. ${song.title}</span>
+                        <span class="song-artist truncate">${song.artist}</span>
                     </div>
                     <span class="song-key">${song.key}</span>
                 `;
@@ -379,13 +393,24 @@ function openSetlistPresentation(setlist) {
                 railList.appendChild(railBadge);
             }
 
+            if (horizontalRail) {
+                const hBadge = document.createElement('button');
+                hBadge.type = 'button';
+                hBadge.className = 'presentation-rail-badge presentation-rail-badge-sm';
+                hBadge.setAttribute('data-song-id', song.id);
+                hBadge.title = `${index + 1}. ${song.title} (${song.key})`;
+                hBadge.textContent = String(index + 1);
+                hBadge.onclick = () => selectPresentationSong(song);
+                horizontalRail.appendChild(hBadge);
+            }
+
             if (mobileList) {
                 const mobileItem = document.createElement('button');
                 mobileItem.className = 'mobile-song-item w-full p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/80 text-left flex items-center justify-between transition flex-shrink-0';
                 mobileItem.setAttribute('data-song-id', song.id);
                 mobileItem.innerHTML = `
                     <div class="min-w-0 flex-1">
-                        <h4 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate">${song.title}</h4>
+                        <h4 class="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate">${index + 1}. ${song.title}</h4>
                         <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">${song.artist}</p>
                     </div>
                     <span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 ml-2 flex-shrink-0">${song.key}</span>
@@ -407,6 +432,7 @@ function openSetlistPresentation(setlist) {
     } else {
         if (sidebarList) sidebarList.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:20px;">Sin canciones en este repertorio.</div>';
         if (railList) railList.innerHTML = '';
+        if (horizontalRail) horizontalRail.innerHTML = '';
         if (mobileList) mobileList.innerHTML = '<div class="text-xs text-zinc-400 text-center p-4">Sin canciones en este repertorio.</div>';
 
         document.getElementById('pres-song-title').textContent = 'Sin canciones';
@@ -422,6 +448,7 @@ function openSetlistPresentation(setlist) {
 
 function closeSetlistPresentation() {
     stopPresScroll();
+    togglePresAdjustments(false);
     closeMobileSongsModal();
     document.body.classList.remove('setlist-presentation-mode');
     document.getElementById('subpanel-setlist-presentation').classList.add('hidden');
@@ -440,23 +467,27 @@ function togglePresLyricsMode() {
     presIsLyricsOnly = !presIsLyricsOnly;
     const container = document.getElementById('pres-lyrics-container');
     const btn = document.getElementById('btn-pres-toggle-lyrics-mode');
-    const text = document.getElementById('btn-pres-lyrics-mode-text');
-    const tonalityGroup = document.getElementById('pres-tonality-control-group');
+    const upBtn = document.getElementById('btn-pres-transpose-up');
+    const downBtn = document.getElementById('btn-pres-transpose-down');
+    const resetBtn = document.getElementById('btn-pres-transpose-reset');
 
     if (container) {
         container.classList.toggle('lyrics-only-mode', presIsLyricsOnly);
     }
 
-    if (btn && text) {
+    if (btn) {
+        btn.classList.toggle('is-active-lyrics', presIsLyricsOnly);
         if (presIsLyricsOnly) {
-            btn.className = 'px-2.5 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-500 dark:text-amber-400 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm';
             btn.title = 'Modo Solo Letra activado. Toca para ver los acordes';
-            if (tonalityGroup) tonalityGroup.classList.add('opacity-30', 'pointer-events-none');
+            if (upBtn) upBtn.classList.add('opacity-30', 'pointer-events-none');
+            if (downBtn) downBtn.classList.add('opacity-30', 'pointer-events-none');
+            if (resetBtn) resetBtn.classList.add('opacity-30', 'pointer-events-none');
             showToast("Modo Solo Letra activado (acordes ocultos)", "info");
         } else {
-            btn.className = 'px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 transition cursor-pointer';
             btn.title = 'Modo Solo Letra: oculta los acordes para mayor comodidad de los cantantes';
-            if (tonalityGroup) tonalityGroup.classList.remove('opacity-30', 'pointer-events-none');
+            if (upBtn) upBtn.classList.remove('opacity-30', 'pointer-events-none');
+            if (downBtn) downBtn.classList.remove('opacity-30', 'pointer-events-none');
+            if (resetBtn) resetBtn.classList.remove('opacity-30', 'pointer-events-none');
         }
     }
 }
@@ -567,6 +598,9 @@ function selectPresentationSong(song) {
     document.querySelectorAll('.presentation-rail-badge').forEach(badge => {
         if (badge.getAttribute('data-song-id') == song.id) {
             badge.classList.add('active');
+            if (badge.classList.contains('presentation-rail-badge-sm')) {
+                badge.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
         } else {
             badge.classList.remove('active');
         }
@@ -628,7 +662,7 @@ function togglePresentationSidebar(collapse) {
 function adjustPresViewerFontSize(delta) {
     const currentSize = parseInt(localStorage.getItem('worship_lyrics_font_size')) || 15;
     let newSize = currentSize + delta;
-    if (newSize < 11) newSize = 11;
+    if (newSize < 8) newSize = 8;
     if (newSize > 24) newSize = 24;
     applyPresViewerFontSize(newSize);
     if (typeof applyViewerFontSize === 'function') {
@@ -641,17 +675,61 @@ function applyPresViewerFontSize(size) {
     const contentEl = document.getElementById('pres-chords-lyrics-content');
     const indicatorEl = document.getElementById('pres-font-size-val');
     if (contentEl) {
-        contentEl.style.fontSize = `${size}px`;
+        contentEl.style.fontSize = `${size}pt`;
         contentEl.style.lineHeight = '1.7';
     }
     if (indicatorEl) {
-        indicatorEl.textContent = size;
+        indicatorEl.textContent = `${size} pt`;
     }
 }
 
-window.togglePresentationSidebar = togglePresentationSidebar;
-window.adjustPresViewerFontSize = adjustPresViewerFontSize;
-window.applyPresViewerFontSize = applyPresViewerFontSize;
+function togglePresAdjustments(forceState) {
+    const panel = document.getElementById('pres-viewer-fab-adjustments');
+    const icon = document.getElementById('pres-fab-tuning-icon');
+    const btn = document.getElementById('btn-pres-fab-tuning');
+    if (!panel) return;
+
+    const isCurrentlyOpen = !panel.classList.contains('hidden');
+    const willOpen = (typeof forceState === 'boolean') ? forceState : !isCurrentlyOpen;
+
+    if (willOpen) {
+        panel.classList.remove('hidden');
+        if (icon) {
+            icon.className = 'fa-solid fa-chevron-right text-sm pointer-events-none';
+        }
+        if (btn) {
+            btn.classList.add('is-expanded');
+        }
+    } else {
+        panel.classList.add('hidden');
+        if (icon) {
+            icon.className = 'fa-solid fa-chevron-left text-sm pointer-events-none';
+        }
+        if (btn) {
+            btn.classList.remove('is-expanded');
+        }
+    }
+}
+
+function cyclePresScrollSpeed() {
+    if (presScrollSpeed === 1) {
+        presScrollSpeed = 2;
+    } else if (presScrollSpeed === 2) {
+        presScrollSpeed = 3;
+    } else {
+        presScrollSpeed = 1;
+    }
+
+    const speedBadge = document.getElementById('pres-scroll-speed-val');
+    if (speedBadge) {
+        speedBadge.textContent = `${presScrollSpeed}x`;
+    }
+
+    if (presIsScrolling) {
+        stopPresScroll();
+        startPresScroll();
+    }
+}
 
 function transposePresSong(semitones) {
     if (!currentPresentationSong) return;
@@ -662,7 +740,8 @@ function transposePresSong(semitones) {
     if (typeof transposeChord === 'function') {
         resultingKey = transposeChord(currentPresentationSong.key, presTransposeOffset);
     }
-    document.getElementById('pres-song-current-key').textContent = resultingKey;
+    const keyEl = document.getElementById('pres-song-current-key');
+    if (keyEl) keyEl.textContent = resultingKey;
 
     renderPresTransposedLyrics();
 }
@@ -670,7 +749,8 @@ function transposePresSong(semitones) {
 function resetPresSongTranspose() {
     if (!currentPresentationSong) return;
     presTransposeOffset = 0;
-    document.getElementById('pres-song-current-key').textContent = currentPresentationSong.key;
+    const keyEl = document.getElementById('pres-song-current-key');
+    if (keyEl) keyEl.textContent = currentPresentationSong.key;
     renderPresTransposedLyrics();
 }
 
@@ -686,23 +766,19 @@ function startPresScroll() {
     if (!currentPresentationSong) return;
     presIsScrolling = true;
 
-    // Change scroll button to pause icon
-    const scrollBtn = document.getElementById('btn-pres-scroll-toggle');
-    if (scrollBtn) {
-        scrollBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
-        scrollBtn.style.color = 'var(--primary)';
-        scrollBtn.style.borderColor = 'var(--primary)';
+    // Cambiar icono a pause
+    const playIcon = document.getElementById('pres-scroll-play-icon');
+    if (playIcon) {
+        playIcon.className = 'fa-solid fa-pause text-sm pointer-events-none';
     }
 
-    const speedVal = parseInt(document.getElementById('pres-scroll-speed-select').value) || 2;
-    // Map speeds: x1 (120ms), x2 (70ms), x3 (35ms)
-    const intervalMs = speedVal === 1 ? 120 : speedVal === 3 ? 35 : 70;
-
+    // Mapeo de velocidades: 1x (120ms), 2x (70ms), 3x (35ms)
+    const intervalMs = presScrollSpeed === 1 ? 120 : presScrollSpeed === 3 ? 35 : 70;
     const container = document.getElementById('pres-lyrics-container');
 
     presScrollInterval = setInterval(() => {
         container.scrollTop += 1;
-        // Check if reached bottom
+        // Comprobar si llegó al final
         if (Math.ceil(container.scrollTop + container.clientHeight) >= container.scrollHeight) {
             stopPresScroll();
         }
@@ -716,14 +792,32 @@ function stopPresScroll() {
         presScrollInterval = null;
     }
 
-    // Change scroll button to play icon
-    const scrollBtn = document.getElementById('btn-pres-scroll-toggle');
-    if (scrollBtn) {
-        scrollBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
-        scrollBtn.style.color = '';
-        scrollBtn.style.borderColor = '';
+    // Cambiar icono a play
+    const playIcon = document.getElementById('pres-scroll-play-icon');
+    if (playIcon) {
+        playIcon.className = 'fa-solid fa-play text-sm pointer-events-none';
     }
 }
+
+// Cerrar menú flotante de ajustes al hacer clic fuera del contenedor en modo presentación
+document.addEventListener('click', (e) => {
+    const container = document.getElementById('pres-viewer-floating-container');
+    if (!container) return;
+    const panel = document.getElementById('pres-viewer-fab-adjustments');
+    if (panel && !panel.classList.contains('hidden') && !container.contains(e.target)) {
+        togglePresAdjustments(false);
+    }
+});
+
+window.togglePresentationSidebar = togglePresentationSidebar;
+window.adjustPresViewerFontSize = adjustPresViewerFontSize;
+window.applyPresViewerFontSize = applyPresViewerFontSize;
+window.togglePresAdjustments = togglePresAdjustments;
+window.cyclePresScrollSpeed = cyclePresScrollSpeed;
+window.togglePresScroll = togglePresScroll;
+window.togglePresLyricsMode = togglePresLyricsMode;
+window.transposePresSong = transposePresSong;
+window.resetPresSongTranspose = resetPresSongTranspose;
 
 function togglePresentationSongsSidebar() {
     openMobileSongsModal();

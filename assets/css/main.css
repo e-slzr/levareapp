@@ -1079,6 +1079,32 @@ body.setlist-presentation-mode .app-content {
     box-shadow: 0 0 12px var(--primary-soft);
 }
 
+.presentation-rail-badge.presentation-rail-badge-sm {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    min-height: 26px;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.presentation-rail-badge.presentation-rail-badge-sm.active {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+    border-color: var(--primary) !important;
+    font-weight: 800;
+    transform: scale(1.08);
+    box-shadow: 0 0 10px var(--primary-soft);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 .presentation-sidebar-header {
     padding: 20px;
     border-bottom: 1px solid var(--border-color);

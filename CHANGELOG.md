@@ -1,4 +1,4 @@
-# 📝 Historial de Cambios (CHANGELOG)
+# Historial de Cambios (CHANGELOG)
 
 Todos los cambios notables de este proyecto serán documentados en este archivo.
 
@@ -7,6 +7,26 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 ---
 
 ## [Unreleased] - Próximamente
+
+- **Unificación de controles flotantes (FAB) ergonómicos, riel horizontal móvil y cabecera minimalista en Modo Presentación de Repertorios**:
+  - En `views/setlists.php`, se despejó la cabecera superior del visor de presentación conservando el título de la canción y el artista, e incorporando justo debajo un riel horizontal de badges circulares numéricos compactos (`#presentation-horizontal-songs-container`), centrado por defecto en pantalla y con desplazamiento horizontal automático en caso de repertorios extensos, visible exclusivamente en dispositivos móviles (`md:hidden`).
+  - En `assets/css/main.css`, se definió `.presentation-rail-badge-sm` (`26px x 26px`) y la regla de estado activo sólido (`.active` con `--primary` y texto blanco puro), manteniendo los badges inactivos con estilo translúcido adaptativo (`--primary-soft`), junto con la utilidad `.no-scrollbar` para preservar la estética táctil limpia.
+  - En `assets/js/views/setlists.js`, se validó y garantizó la ordenación posicional estricta por `sort_order` de todas las canciones tanto en la presentación (sidebar, riel vertical de badges, riel horizontal móvil y modal) como en las tarjetas generales de repertorios, asegurando que los badges numéricos coincidan con el orden definido por el usuario al crear o editar el repertorio.
+  - Se configuró la columna vertical de 5 botones FAB principales a la derecha centrados en pantalla (`top-1/2 -translate-y-1/2`): «Ver Canciones» (`fa-list-ul`), «Modo Solo Letra» (`fa-align-left`), desplegador de ajustes (`fa-chevron-left`), selector circular de velocidad 1x/2x/3x y botón circular de reproducción de autoscroll.
+  - Al pulsar el botón de ajustes, se despliega a la izquierda con animación fluida (`.animate-slide-in-left`) la columna vertical exclusiva de afinación y zoom: subir tono (`+`), restablecer tono original (`fa-rotate-left`), bajar tono (`-`), aumentar tamaño de letra (`A+`) y disminuir tamaño de letra (`A-` con indicador en `pt`).
+  - En `assets/js/views/setlists.js`, se integraron las funciones `togglePresAdjustments`, `cyclePresScrollSpeed`, alternancia de chevrons y cierre automático al hacer clic fuera del grupo.
+
+- **Rediseño minimalista de cabecera y controles flotantes (FAB) Speed Dial en Visor de Canciones**:
+  - En `views/songs.php`, se despejó la cabecera superior del visor de canciones dejándola en una única fila compacta con el botón de regreso, título y artista, y el botón de enlace de audio/video simplificado exclusivamente a un ícono sin texto.
+  - Se sustituyó el menú emergente popover por botones flotantes circulares individuales (Speed Dial FAB) organizados estrictamente en columna vertical a la derecha en el orden solicitado: subir tono (`+`), restablecer tono (`fa-rotate-left`), bajar tono (`-`), aumentar tipo (`A+`), y disminuir tipo (`A-` con indicador en puntos `pt`).
+  - Se despojó al botón de restablecer tono de la nota y la etiqueta «Medley» para una visualización sobria, limpia y simétrica.
+  - Se implementó estilo badge circular traslúcido (`.viewer-fab-badge`) en los botones flotantes e indicador tipográfico, adaptándose dinámicamente al color de énfasis activo del perfil del usuario (`--primary` y `--primary-soft`) con desenfoque de fondo y borde satinado, evitando que los controles se mimeticen con el fondo oscuro.
+  - Se reubicaron los 3 botones FAB principales (ajustes, velocidad y play) al centro vertical de la pantalla (`top-1/2 -translate-y-1/2`) para un alcance ergonómico óptimo con el pulgar.
+  - Se configuró la columna vertical de los 5 botones de ajuste (tono y letra) para desplegarse hacia la izquierda de los controles principales con animación fluida de derecha a izquierda (`.animate-slide-in-left`), actualizando los íconos de alternancia a flecha izquierda (`fa-chevron-left`) para expandir y flecha derecha (`fa-chevron-right`) para colapsar.
+- **Ajuste de tipografía a puntos (pt), medida mínima de 8pt y herencia tipográfica en acordes y letras**:
+  - En `assets/css/songs.css`, se sustituyeron los tamaños fijos en `rem` de `.chord-el`, `.lyric-el`, `.instrumental-viewer-badge` y `.lyrics-only-mode .lyric-el` por valores relativos en `em` (`1em` y `0.9em`), resolviendo el problema donde cambiar el número de tamaño solo alteraba el interlineado del contenedor pero dejaba la tipografía inalterada.
+  - En `assets/js/views/songs.js` y `assets/js/views/setlists.js`, se adoptó la escala en puntos tipográficos (`pt`) con rango expandido desde 8 pt como medida mínima hasta 24 pt, logrando que cada incremento o decremento numérico genere un cambio de tamaño de fuente notoriamente más visible y cómodo para el músico.
+
 
 - **Zoom tipográfico interactivo en Visor de Canciones y Modo Presentación de Repertorios**:
   - En `views/songs.php`, `views/setlists.php`, `assets/js/views/songs.js` y `assets/js/views/setlists.js`, se incorporó un widget minimalista de control de tamaño de letra (`[ A- 15 A+ ]`) con rango ajustable de 11px a 24px.

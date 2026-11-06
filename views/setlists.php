@@ -71,76 +71,90 @@
         </aside>
 
         <!-- Right Side: Song Viewer (Main Content Panel) -->
-        <section class="presentation-song-viewer flex-1 min-w-0 flex flex-col overflow-hidden h-full">
-            <!-- Controls bar -->
-            <div class="presentation-viewer-header p-3 border-b border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-2.5 bg-zinc-50 dark:bg-zinc-900/90 flex-shrink-0">
-                <!-- Row 1: Title & Artist (Left) + Ver Canciones Button (Right) -->
-                <div class="flex items-center justify-between gap-3 w-full md:w-auto min-w-0 flex-1">
-                    <div class="min-w-0 flex-1">
-                        <h2 id="pres-song-title" class="font-bold text-base md:text-lg text-zinc-900 dark:text-zinc-100 truncate">Cargando canción...</h2>
-                        <p id="pres-song-artist" class="text-xs text-zinc-500 dark:text-zinc-400 truncate">...</p>
-                    </div>
-                    <!-- Toggle list button (mobile only) -->
-                    <button type="button" id="btn-toggle-presentation-songs" onclick="openMobileSongsModal()" class="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-1.5 transition flex-shrink-0">
-                        <i class="fa-solid fa-list-ul text-xs"></i>
-                        <span id="btn-toggle-songs-text">Ver Canciones</span>
-                    </button>
+        <section class="presentation-song-viewer flex-1 min-w-0 flex flex-col overflow-hidden h-full relative">
+            <!-- Controls bar (Cabecera minimalista: Título, Artista y Riel horizontal de badges numéricos en móvil) -->
+            <div class="presentation-viewer-header px-3.5 py-2.5 sm:p-3 border-b border-zinc-200 dark:border-zinc-800 flex flex-col justify-center bg-zinc-50 dark:bg-zinc-900/90 flex-shrink-0">
+                <div class="min-w-0 w-full">
+                    <h2 id="pres-song-title" class="font-bold text-base md:text-lg text-zinc-900 dark:text-zinc-100 truncate">Cargando canción...</h2>
+                    <p id="pres-song-artist" class="text-xs text-zinc-500 dark:text-zinc-400 truncate">...</p>
                 </div>
-
-                <!-- Row 2: Controls (Tonality, Lyrics Mode, Zoom Letra & Autoscroll) -->
-                <div class="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto flex-shrink-0 pt-1.5 md:pt-0 border-t md:border-t-0 border-zinc-200/60 dark:border-zinc-800/60 flex-wrap">
-                    <!-- Tonality control widget -->
-                    <div id="pres-tonality-control-group" class="flex items-center gap-1.5 transition">
-                        <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Tono:</span>
-                        <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
-                            <button type="button" id="btn-pres-transpose-down" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm cursor-pointer">-</button>
-                            <span id="pres-song-current-key" class="px-1.5 font-bold text-zinc-900 dark:text-zinc-100 min-w-[24px] text-center text-sm">C</span>
-                            <button type="button" id="btn-pres-transpose-up" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm cursor-pointer">+</button>
-                        </div>
-                        <button type="button" id="btn-pres-transpose-reset" class="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">
-                            Rest.
-                        </button>
-                    </div>
-
-                    <!-- Text size zoom widget -->
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Letra:</span>
-                        <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
-                            <button type="button" id="btn-pres-font-decrease" onclick="adjustPresViewerFontSize(-1)" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-xs cursor-pointer" title="Reducir tamaño de letra">A-</button>
-                            <span id="pres-font-size-val" class="px-1 font-bold text-zinc-700 dark:text-zinc-300 min-w-[20px] text-center text-xs font-mono">15</span>
-                            <button type="button" id="btn-pres-font-increase" onclick="adjustPresViewerFontSize(1)" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-xs cursor-pointer" title="Aumentar tamaño de letra">A+</button>
-                        </div>
-                    </div>
-
-                    <!-- Solo Letra Mode Switch (Vocalistas) -->
-                    <button type="button" id="btn-pres-toggle-lyrics-mode" class="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 transition cursor-pointer" title="Modo Solo Letra: oculta los acordes para mayor comodidad de los cantantes">
-                        <i class="fa-solid fa-align-left text-xs pointer-events-none"></i>
-                        <span id="btn-pres-lyrics-mode-text" class="pointer-events-none">Solo Letra</span>
-                    </button>
-
-                    <!-- Autoscroll widget -->
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Scroll:</span>
-                        <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
-                            <button type="button" id="btn-pres-scroll-toggle" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100 transition cursor-pointer" title="Iniciar / Detener Scroll">
-                                <i class="fa-solid fa-play text-[10px]"></i>
-                            </button>
-                            <select id="pres-scroll-speed-select" class="px-2 py-1 rounded-lg bg-transparent text-xs text-zinc-900 dark:text-zinc-100 font-semibold focus:outline-none cursor-pointer border-0">
-                                <option value="1">x1</option>
-                                <option value="2" selected>x2</option>
-                                <option value="3">x3</option>
-                            </select>
-                        </div>
+                <!-- Riel horizontal de badges numéricos de canciones (Móvil / Pantallas compactas) -->
+                <div class="flex md:hidden w-full overflow-x-auto no-scrollbar pt-2">
+                    <div id="presentation-horizontal-songs-container" class="flex items-center gap-1.5 min-w-full w-max justify-center px-2">
+                        <!-- Populated dynamically with numbered badges 1, 2, 3... -->
                     </div>
                 </div>
             </div>
 
-
             <!-- Scrollable lyrics area -->
-            <div id="pres-lyrics-container" class="flex-1 overflow-y-auto overflow-x-auto p-6">
-                <pre id="pres-chords-lyrics-content" class="whitespace-pre-wrap font-mono text-sm md:text-base leading-loose text-zinc-800 dark:text-zinc-200">
+            <div id="pres-lyrics-container" class="flex-1 overflow-y-auto overflow-x-auto p-4 sm:p-6 pb-32 sm:pb-28">
+                <pre id="pres-chords-lyrics-content" class="whitespace-pre-wrap font-mono text-sm md:text-base leading-loose text-zinc-800 dark:text-zinc-200 pb-20">
                     <!-- Populated dynamically -->
                 </pre>
+            </div>
+
+            <!-- Contenedor Flotante de Acciones Rápidas (Centrado Verticalmente a la Derecha) -->
+            <div id="pres-viewer-floating-container" class="fixed top-1/2 -translate-y-1/2 right-3 sm:right-5 z-40 flex items-center gap-3 pointer-events-none">
+                
+                <!-- Columna Izquierda: Ajustes de Tono y Letra (Ordenados Verticalmente, animación de derecha a izquierda) -->
+                <div id="pres-viewer-fab-adjustments" class="hidden flex flex-col items-center gap-2 pointer-events-auto animate-slide-in-left">
+                    <!-- 1. Botón Subir Tono -->
+                    <button type="button" id="btn-pres-transpose-up" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Subir medio tono (+)">
+                        <i class="fa-solid fa-plus text-xs pointer-events-none"></i>
+                    </button>
+
+                    <!-- 2. Botón Restablecer Tono (Sin nota ni texto medley) -->
+                    <button type="button" id="btn-pres-transpose-reset" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Restablecer tono original">
+                        <i class="fa-solid fa-rotate-left text-xs pointer-events-none"></i>
+                        <span id="pres-song-current-key" class="hidden"></span>
+                    </button>
+
+                    <!-- 3. Botón Bajar Tono -->
+                    <button type="button" id="btn-pres-transpose-down" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Bajar medio tono (-)">
+                        <i class="fa-solid fa-minus text-xs pointer-events-none"></i>
+                    </button>
+
+                    <!-- 4. Botón Aumentar Tipo (Letra) -->
+                    <button type="button" id="btn-pres-font-increase" onclick="adjustPresViewerFontSize(1)" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Aumentar tamaño de letra">
+                        <span class="font-bold text-xs font-mono pointer-events-none">A+</span>
+                    </button>
+
+                    <!-- 5. Botón Disminuir Tipo (Letra) con indicador de medida -->
+                    <div class="relative flex items-center justify-center">
+                        <button type="button" id="btn-pres-font-decrease" onclick="adjustPresViewerFontSize(-1)" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Disminuir tamaño de letra">
+                            <span class="font-bold text-xs font-mono pointer-events-none">A-</span>
+                        </button>
+                        <span id="pres-font-size-val" class="viewer-fab-badge absolute right-12 px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold whitespace-nowrap pointer-events-none">15 pt</span>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: 5 Botones FAB Principales (Centrados Verticalmente) -->
+                <div class="flex flex-col items-center gap-2.5 pointer-events-auto">
+                    <!-- 1. Botón Ver Canciones (Abre lista de canciones del repertorio) -->
+                    <button type="button" id="btn-toggle-presentation-songs" onclick="openMobileSongsModal()" class="viewer-fab-badge w-12 h-12 rounded-full flex items-center justify-center cursor-pointer" title="Ver lista de canciones del repertorio">
+                        <i class="fa-solid fa-list-ul text-sm pointer-events-none"></i>
+                    </button>
+
+                    <!-- 2. Botón Modo Solo Letra (Vocalistas) -->
+                    <button type="button" id="btn-pres-toggle-lyrics-mode" onclick="togglePresLyricsMode()" class="viewer-fab-badge w-12 h-12 rounded-full flex items-center justify-center cursor-pointer" title="Modo Solo Letra: oculta o muestra acordes">
+                        <i class="fa-solid fa-align-left text-sm pointer-events-none"></i>
+                    </button>
+
+                    <!-- 3. Botón Desplegador de Ajustes (Flecha izquierda para desplegar, flecha derecha para ocultar) -->
+                    <button type="button" id="btn-pres-fab-tuning" onclick="togglePresAdjustments()" class="viewer-fab-badge w-12 h-12 rounded-full flex items-center justify-center cursor-pointer" title="Desplegar ajustes de tono y letra">
+                        <i id="pres-fab-tuning-icon" class="fa-solid fa-chevron-left text-sm pointer-events-none"></i>
+                    </button>
+
+                    <!-- 4. Selector de Velocidad de Scroll (Circular 1x / 2x / 3x) -->
+                    <button type="button" id="btn-pres-fab-speed" onclick="cyclePresScrollSpeed()" class="viewer-fab-badge w-12 h-12 rounded-full font-bold text-xs flex items-center justify-center cursor-pointer" title="Velocidad de scroll">
+                        <span id="pres-scroll-speed-val" class="pointer-events-none font-mono">2x</span>
+                    </button>
+
+                    <!-- 5. Play / Pause Auto Scroll (Circular Principal) -->
+                    <button type="button" id="btn-pres-scroll-toggle" onclick="togglePresScroll()" class="w-12 h-12 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-xl flex items-center justify-center hover:scale-105 active:scale-90 transition-all duration-200 cursor-pointer" title="Iniciar / Detener Scroll">
+                        <i id="pres-scroll-play-icon" class="fa-solid fa-play text-sm pointer-events-none"></i>
+                    </button>
+                </div>
             </div>
         </section>
     </div>

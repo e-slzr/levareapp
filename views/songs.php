@@ -39,73 +39,85 @@
 
 <!-- Subpanel 2: Visor de Letra y Acordes -->
 <div id="subpanel-song-detail" class="space-y-4 screen-fade hidden">
-    <!-- Header Controls Bar -->
-    <div class="p-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
-        <!-- Row 1: Back + Title/Artist (Left) + Media Links (Right) -->
-        <div class="flex items-center justify-between gap-3 w-full md:w-auto min-w-0 flex-1">
-            <div class="flex items-center gap-3 min-w-0 flex-1">
-                <button type="button" id="back-to-songs" class="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-1.5 transition flex-shrink-0">
-                    <i class="fa-solid fa-arrow-left text-xs"></i>
-                    <span>Volver</span>
-                </button>
-                <div class="min-w-0 flex-1">
-                    <h2 id="song-detail-title" class="font-bold text-base md:text-lg text-zinc-900 dark:text-zinc-100 truncate">...</h2>
-                    <p id="song-detail-artist" class="text-xs text-zinc-500 dark:text-zinc-400 truncate">...</p>
-                </div>
-            </div>
-
-            <div id="song-media-links" class="flex items-center gap-2 flex-shrink-0">
-                <!-- Dynamic Youtube/Spotify links -->
+    <!-- Header Bar (Clean & Minimal: Volver + Título/Artista + Audio/Video) -->
+    <div class="p-3 sm:p-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3 text-xs shadow-sm">
+        <!-- Back Button + Song Title & Artist -->
+        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+            <button type="button" id="back-to-songs" class="h-9 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-1.5 transition flex-shrink-0 cursor-pointer shadow-sm active:scale-95">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+                <span class="hidden sm:inline">Volver</span>
+            </button>
+            <div class="min-w-0 flex-1">
+                <h2 id="song-detail-title" class="font-serif font-bold text-sm sm:text-base md:text-lg text-zinc-900 dark:text-zinc-100 truncate leading-tight">...</h2>
+                <p id="song-detail-artist" class="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 truncate leading-tight mt-0.5">...</p>
             </div>
         </div>
 
-        <!-- Row 2: TONO (Left) + ZOOM LETRA + SCROLL (Right) -->
-        <div class="flex items-center justify-between md:justify-end gap-2.5 w-full md:w-auto flex-shrink-0 pt-1.5 md:pt-0 border-t md:border-t-0 border-zinc-200/60 dark:border-zinc-800/60 flex-wrap">
-            <!-- Tonality control widget -->
-            <div class="flex items-center gap-1.5">
-                <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Tono:</span>
-                <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
-                    <button type="button" id="btn-transpose-down" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm cursor-pointer">-</button>
-                    <span id="song-current-key" class="px-1.5 font-bold text-zinc-900 dark:text-zinc-100 min-w-[24px] text-center text-sm">-</span>
-                    <button type="button" id="btn-transpose-up" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm cursor-pointer">+</button>
-                </div>
-                <button type="button" id="btn-transpose-reset" class="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">
-                    Rest.
-                </button>
-            </div>
-
-            <!-- Text size zoom widget -->
-            <div class="flex items-center gap-1.5">
-                <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Letra:</span>
-                <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
-                    <button type="button" id="btn-font-decrease" onclick="adjustViewerFontSize(-1)" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-xs cursor-pointer" title="Reducir tamaño de letra">A-</button>
-                    <span id="font-size-val" class="px-1 font-bold text-zinc-700 dark:text-zinc-300 min-w-[20px] text-center text-xs font-mono">14</span>
-                    <button type="button" id="btn-font-increase" onclick="adjustViewerFontSize(1)" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-xs cursor-pointer" title="Aumentar tamaño de letra">A+</button>
-                </div>
-            </div>
-
-            <!-- Autoscroll widget -->
-            <div class="flex items-center gap-1.5">
-                <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Scroll:</span>
-                <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
-                    <button type="button" id="btn-scroll-toggle" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100 transition cursor-pointer" title="Iniciar / Detener Scroll">
-                        <i class="fa-solid fa-play text-[10px]"></i>
-                    </button>
-                    <select id="scroll-speed-select" class="px-2 py-1 rounded-lg bg-transparent text-xs text-zinc-900 dark:text-zinc-100 font-semibold focus:outline-none cursor-pointer border-0">
-                        <option value="1">x1</option>
-                        <option value="2" selected>x2</option>
-                        <option value="3">x3</option>
-                    </select>
-                </div>
-            </div>
+        <!-- Dynamic Youtube/Spotify Link (Icon Only) -->
+        <div id="song-media-links" class="flex items-center gap-2 flex-shrink-0">
+            <!-- Populated dynamically via JS -->
         </div>
     </div>
 
     <!-- Visor de Letra y Acordes -->
-    <div id="lyrics-container" class="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 font-mono text-sm leading-relaxed overflow-x-auto shadow-sm">
-        <pre id="chords-lyrics-content" class="whitespace-pre-wrap font-mono text-zinc-800 dark:text-zinc-200">
+    <div id="lyrics-container" class="p-3.5 sm:p-5 pb-32 sm:pb-28 rounded-2xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 font-mono leading-relaxed overflow-x-auto shadow-sm">
+        <pre id="chords-lyrics-content" class="whitespace-pre-wrap font-mono text-zinc-800 dark:text-zinc-200 pb-16">
             <!-- Dynamic Lyrics -->
         </pre>
+    </div>
+
+    <!-- Contenedor Flotante de Acciones Rápidas (Centrado Verticalmente a la Derecha) -->
+    <div id="song-viewer-floating-container" class="fixed top-1/2 -translate-y-1/2 right-3 sm:right-5 z-40 flex items-center gap-3 pointer-events-none">
+        
+        <!-- Columna Izquierda: Ajustes de Tono y Letra (Ordenados Verticalmente, animación de derecha a izquierda) -->
+        <div id="song-viewer-fab-adjustments" class="hidden flex flex-col items-center gap-2 pointer-events-auto animate-slide-in-left">
+            <!-- 1. Botón Subir Tono -->
+            <button type="button" id="btn-transpose-up" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Subir medio tono (+)">
+                <i class="fa-solid fa-plus text-xs pointer-events-none"></i>
+            </button>
+
+            <!-- 2. Botón Restablecer Tono (Sin nota ni texto medley) -->
+            <button type="button" id="btn-transpose-reset" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Restablecer tono original">
+                <i class="fa-solid fa-rotate-left text-xs pointer-events-none"></i>
+                <span id="song-current-key" class="hidden"></span>
+            </button>
+
+            <!-- 3. Botón Bajar Tono -->
+            <button type="button" id="btn-transpose-down" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Bajar medio tono (-)">
+                <i class="fa-solid fa-minus text-xs pointer-events-none"></i>
+            </button>
+
+            <!-- 4. Botón Aumentar Tipo (Letra) -->
+            <button type="button" id="btn-font-increase" onclick="adjustViewerFontSize(1)" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Aumentar tamaño de letra">
+                <span class="font-bold text-xs font-mono pointer-events-none">A+</span>
+            </button>
+
+            <!-- 5. Botón Disminuir Tipo (Letra) con indicador de medida -->
+            <div class="relative flex items-center justify-center">
+                <button type="button" id="btn-font-decrease" onclick="adjustViewerFontSize(-1)" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Disminuir tamaño de letra">
+                    <span class="font-bold text-xs font-mono pointer-events-none">A-</span>
+                </button>
+                <span id="font-size-val" class="viewer-fab-badge absolute right-12 px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold whitespace-nowrap pointer-events-none">14 pt</span>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: 3 Botones FAB Principales (Centrados Verticalmente) -->
+        <div class="flex flex-col items-center gap-2.5 pointer-events-auto">
+            <!-- Botón Desplegador de Ajustes (Flecha izquierda para desplegar, flecha derecha para ocultar) -->
+            <button type="button" id="btn-fab-tuning" onclick="toggleViewerAdjustments()" class="viewer-fab-badge w-12 h-12 rounded-full flex items-center justify-center cursor-pointer" title="Desplegar ajustes de tono y letra">
+                <i id="fab-tuning-icon" class="fa-solid fa-chevron-left text-sm pointer-events-none"></i>
+            </button>
+
+            <!-- Selector de Velocidad de Scroll (Circular 1x / 2x / 3x) -->
+            <button type="button" id="btn-fab-speed" onclick="cycleViewerScrollSpeed()" class="viewer-fab-badge w-12 h-12 rounded-full font-bold text-xs flex items-center justify-center cursor-pointer" title="Velocidad de scroll">
+                <span id="scroll-speed-val" class="pointer-events-none font-mono">2x</span>
+            </button>
+
+            <!-- Play / Pause Auto Scroll (Circular Principal) -->
+            <button type="button" id="btn-scroll-toggle" onclick="toggleViewerAutoScroll()" class="w-12 h-12 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-xl flex items-center justify-center hover:scale-105 active:scale-90 transition-all duration-200 cursor-pointer" title="Iniciar / Detener Scroll">
+                <i id="scroll-play-icon" class="fa-solid fa-play text-sm pointer-events-none"></i>
+            </button>
+        </div>
     </div>
 </div>
 

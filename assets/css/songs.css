@@ -346,7 +346,7 @@
 }
 
 .chord-el {
-    font-size: 0.88rem;
+    font-size: 0.9em;
     font-weight: 700;
     font-family: var(--font-secondary, monospace);
     color: var(--primary, #e11d48);
@@ -370,7 +370,7 @@
 
 .lyric-el {
     font-family: var(--font-mono);
-    font-size: 1rem;
+    font-size: 1em;
     color: var(--text-main);
     white-space: pre;
     user-select: text;
@@ -391,11 +391,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 38px;
-    height: 38px;
-    padding: 0 12px;
+    min-width: 2.2em;
+    height: 2.2em;
+    padding: 0 0.8em;
     border-radius: 8px;
-    font-size: 0.95rem;
+    font-size: 0.9em;
     font-weight: 800;
     font-family: var(--font-secondary, monospace);
     background-color: var(--primary-soft, rgba(244, 63, 94, 0.08));
@@ -1233,9 +1233,77 @@
 }
 
 .lyrics-only-mode .lyric-el {
-    font-size: 1.05rem !important;
+    font-size: 1.05em !important;
     letter-spacing: 0.01em;
 }
+
+/* ==========================================================================
+   Controles Flotantes del Visor de Canción (Centrado Vertical con Acento)
+   ========================================================================== */
+#song-viewer-floating-container {
+    top: 50%;
+    transform: translateY(-50%);
+    bottom: auto;
+    right: 12px;
+}
+
+@media (min-width: 640px) {
+    #song-viewer-floating-container {
+        right: 1.25rem;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-slide-in-left {
+    animation: slideInLeft 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.viewer-fab-badge {
+    background-color: var(--primary-soft) !important;
+    color: var(--primary) !important;
+    border: 1px solid var(--primary-soft) !important;
+    border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    font-weight: 800;
+}
+
+.viewer-fab-badge:hover {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 14px var(--primary-soft), 0 4px 14px rgba(0, 0, 0, 0.4);
+    transform: scale(1.08);
+}
+
+.viewer-fab-badge:active {
+    transform: scale(0.92);
+}
+
+#btn-fab-tuning.is-expanded,
+#btn-pres-fab-tuning.is-expanded {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 16px var(--primary-soft), 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.viewer-fab-badge.is-active-lyrics {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+    color: #f59e0b !important;
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
+}
+
+
 
 
 

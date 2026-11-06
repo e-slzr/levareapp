@@ -269,6 +269,8 @@ function setupVisorControls() {
     if (btnBackToSongs) {
         btnBackToSongs.onclick = () => {
             stopAutoScroll();
+            toggleViewerAdjustments(false);
+            document.querySelector('.app-content')?.classList.remove('song-detail-mode');
             document.getElementById('subpanel-song-detail')?.classList.add('hidden');
             document.getElementById('subpanel-song-wizard')?.classList.add('hidden');
             document.getElementById('subpanel-songs-list')?.classList.remove('hidden');
@@ -280,13 +282,20 @@ function setupVisorControls() {
     const btnScrollToggle = document.getElementById('btn-scroll-toggle');
     if (btnScrollToggle) {
         btnScrollToggle.onclick = () => {
-            if (isScrolling) {
-                stopAutoScroll();
-            } else {
-                startAutoScroll();
-            }
+            toggleViewerAutoScroll();
         };
     }
+
+    // Cerrar ajustes de tono y letra al hacer clic fuera del grupo o del botón activador
+    document.addEventListener('click', (e) => {
+        const group = document.getElementById('song-viewer-fab-adjustments');
+        const btn = document.getElementById('btn-fab-tuning');
+        if (group && !group.classList.contains('hidden')) {
+            if (!group.contains(e.target) && !btn?.contains(e.target)) {
+                toggleViewerAdjustments(false);
+            }
+        }
+    });
 }
 
 /**
@@ -541,9 +550,8 @@ function viewSongDetail(songId) {
         mediaWrap.innerHTML = '';
         if (song.url) {
             mediaWrap.innerHTML = `
-                <a href="${song.url}" target="_blank" class="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition inline-flex items-center gap-1.5">
-                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                    <span>Audio / Video</span>
+                <a href="${song.url}" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition flex items-center justify-center shadow-sm cursor-pointer" title="Abrir enlace de audio / video">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
                 </a>
             `;
         }
@@ -560,36 +568,103 @@ function viewSongDetail(songId) {
     if (pageTitleElem) pageTitleElem.textContent = 'Letra y Acordes';
 
     document.querySelector('.app-content')?.classList.add('song-detail-mode');
+    
+    // Sincronizar estado inicial de controles flotantes
+    toggleViewerAdjustments(false);
+    stopAutoScroll();
+    const speedValEl = document.getElementById('scroll-speed-val');
+    if (speedValEl) speedValEl.textContent = `${viewerScrollSpeed}x`;
     applyViewerFontSize(currentViewerFontSize);
 }
 window.viewSongDetail = viewSongDetail;
 
 let currentViewerFontSize = parseInt(localStorage.getItem('worship_lyrics_font_size')) || 14;
+let viewerScrollSpeed = parseInt(localStorage.getItem('worship_lyrics_scroll_speed')) || 2;
 
 /**
- * Ajusta el tamaño tipográfico de la letra en el visor.
- * @param {number} delta - Variación (+1 o -1)
+ * Alterna el despliegue vertical de los botones FAB de ajuste (tono y letra).
+ * @param {boolean|null} forceState
+ */
+function toggleViewerAdjustments(forceState) {
+    const group = document.getElementById('song-viewer-fab-adjustments');
+    const icon = document.getElementById('fab-tuning-icon');
+    const btn = document.getElementById('btn-fab-tuning');
+    if (!group) return;
+
+    const isCurrentlyHidden = group.classList.contains('hidden');
+    const shouldShow = typeof forceState === 'boolean' ? forceState : isCurrentlyHidden;
+
+    if (shouldShow) {
+        group.classList.remove('hidden');
+        if (icon) {
+            icon.className = 'fa-solid fa-chevron-right text-sm pointer-events-none';
+        }
+        btn?.setAttribute('title', 'Ocultar ajustes de tono y letra');
+        btn?.classList.add('is-expanded');
+    } else {
+        group.classList.add('hidden');
+        if (icon) {
+            icon.className = 'fa-solid fa-chevron-left text-sm pointer-events-none';
+        }
+        btn?.setAttribute('title', 'Desplegar ajustes de tono y letra');
+        btn?.classList.remove('is-expanded');
+    }
+}
+window.toggleViewerAdjustments = toggleViewerAdjustments;
+window.toggleViewerFloatingMenu = toggleViewerAdjustments; // Alias de retrocompatibilidad
+
+/**
+ * Cicla la velocidad de scroll vertical (1x -> 2x -> 3x -> 1x).
+ */
+function cycleViewerScrollSpeed() {
+    viewerScrollSpeed = (viewerScrollSpeed % 3) + 1;
+    localStorage.setItem('worship_lyrics_scroll_speed', viewerScrollSpeed);
+    
+    const speedValEl = document.getElementById('scroll-speed-val');
+    if (speedValEl) speedValEl.textContent = `${viewerScrollSpeed}x`;
+
+    if (isScrolling) {
+        startAutoScroll();
+    }
+}
+window.cycleViewerScrollSpeed = cycleViewerScrollSpeed;
+
+/**
+ * Alterna el inicio / pausa del desplazamiento automático vertical.
+ */
+function toggleViewerAutoScroll() {
+    if (isScrolling) {
+        stopAutoScroll();
+    } else {
+        startAutoScroll();
+    }
+}
+window.toggleViewerAutoScroll = toggleViewerAutoScroll;
+
+/**
+ * Ajusta el tamaño tipográfico de la letra en el visor en puntos (pt).
+ * @param {number} delta - Variación (+1 o -1 pt)
  */
 function adjustViewerFontSize(delta) {
-    currentViewerFontSize = Math.min(22, Math.max(11, currentViewerFontSize + delta));
+    currentViewerFontSize = Math.min(24, Math.max(8, currentViewerFontSize + delta));
     localStorage.setItem('worship_lyrics_font_size', currentViewerFontSize);
     applyViewerFontSize(currentViewerFontSize);
 }
 window.adjustViewerFontSize = adjustViewerFontSize;
 
 /**
- * Aplica el tamaño de fuente al contenedor de letra y acordes.
+ * Aplica el tamaño de fuente en puntos (pt) al contenedor de letra y acordes.
  * @param {number} size
  */
 function applyViewerFontSize(size) {
     const pre = document.getElementById('chords-lyrics-content');
     if (pre) {
-        pre.style.fontSize = `${size}px`;
+        pre.style.fontSize = `${size}pt`;
         pre.style.lineHeight = '1.75';
     }
     const indicator = document.getElementById('font-size-val');
     if (indicator) {
-        indicator.textContent = size;
+        indicator.textContent = `${size} pt`;
     }
 }
 window.applyViewerFontSize = applyViewerFontSize;
@@ -615,26 +690,37 @@ function renderTransposedLyrics() {
  * Inicia el desplazamiento automático vertical de la letra.
  */
 function startAutoScroll() {
+    if (scrollInterval) clearInterval(scrollInterval);
     isScrolling = true;
+
+    const playIcon = document.getElementById('scroll-play-icon');
     const toggleBtn = document.getElementById('btn-scroll-toggle');
-    if (toggleBtn) {
-        toggleBtn.innerHTML = `<i class="fa-solid fa-pause text-[10px]"></i>`;
-        toggleBtn.style.backgroundColor = "var(--primary-soft, rgba(245, 158, 11, 0.2))";
-        toggleBtn.style.color = "var(--primary, #f59e0b)";
+    if (playIcon) {
+        playIcon.className = 'fa-solid fa-pause text-sm pointer-events-none';
     }
-    
-    const speed = parseInt(document.getElementById('scroll-speed-select')?.value || '2');
-    let intervalMs = 100;
-    if (speed === 2) intervalMs = 50;
-    if (speed === 3) intervalMs = 30;
+    if (toggleBtn) {
+        toggleBtn.classList.remove('bg-zinc-900', 'dark:bg-zinc-100', 'text-white', 'dark:text-zinc-900');
+        toggleBtn.classList.add('bg-amber-500', 'text-white', 'dark:bg-amber-500', 'dark:text-white', 'ring-4', 'ring-amber-500/20');
+    }
+
+    let intervalMs = 90;
+    if (viewerScrollSpeed === 2) intervalMs = 45;
+    if (viewerScrollSpeed === 3) intervalMs = 25;
 
     const container = document.getElementById('lyrics-container');
-    if (!container) return;
 
     scrollInterval = setInterval(() => {
-        container.scrollTop += 1;
-        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 1) {
-            stopAutoScroll();
+        const canScrollContainer = container && (container.scrollHeight > container.clientHeight);
+        if (canScrollContainer) {
+            container.scrollTop += 1;
+            if (container.scrollTop + container.clientHeight >= container.scrollHeight - 1) {
+                stopAutoScroll();
+            }
+        } else {
+            window.scrollBy(0, 1);
+            if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 5)) {
+                stopAutoScroll();
+            }
         }
     }, intervalMs);
 }
@@ -646,11 +732,15 @@ window.startAutoScroll = startAutoScroll;
 function stopAutoScroll() {
     isScrolling = false;
     if (scrollInterval) clearInterval(scrollInterval);
+
+    const playIcon = document.getElementById('scroll-play-icon');
     const toggleBtn = document.getElementById('btn-scroll-toggle');
+    if (playIcon) {
+        playIcon.className = 'fa-solid fa-play text-sm pointer-events-none';
+    }
     if (toggleBtn) {
-        toggleBtn.innerHTML = `<i class="fa-solid fa-play text-[10px]"></i>`;
-        toggleBtn.style.backgroundColor = "";
-        toggleBtn.style.color = "";
+        toggleBtn.classList.remove('bg-amber-500', 'text-white', 'dark:bg-amber-500', 'dark:text-white', 'ring-4', 'ring-amber-500/20');
+        toggleBtn.classList.add('bg-zinc-900', 'dark:bg-zinc-100', 'text-white', 'dark:text-zinc-900');
     }
 }
 window.stopAutoScroll = stopAutoScroll;
