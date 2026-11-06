@@ -31,19 +31,42 @@
 
     <div class="setlist-presentation-layout flex h-full w-full overflow-hidden">
         <!-- Sidebar: Setlist info & songs (Left Panel) -->
-        <aside class="presentation-sidebar w-72 md:w-80 flex-shrink-0 border-r border-zinc-200 dark:border-zinc-800 flex flex-col bg-white dark:bg-zinc-900 overflow-hidden">
-            <div class="presentation-sidebar-header p-4 border-b border-zinc-100 dark:border-zinc-800 space-y-2.5 flex-shrink-0">
-                <button type="button" id="btn-presentation-back" class="inline-flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition">
-                    <i class="fa-solid fa-arrow-left text-xs"></i>
-                    <span>Cerrar Repertorio</span>
-                </button>
-                <div>
-                    <h3 id="presentation-setlist-title" class="font-bold text-base text-zinc-900 dark:text-zinc-100 truncate">Repertorio</h3>
-                    <p id="presentation-setlist-desc" class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">Sin descripción</p>
+        <aside id="presentation-sidebar" class="presentation-sidebar w-72 md:w-80 flex-shrink-0 border-r border-zinc-200 dark:border-zinc-800 flex flex-col bg-white dark:bg-zinc-900 overflow-hidden transition-[width] duration-200">
+            <!-- 1. Expanded view (Default) -->
+            <div id="presentation-sidebar-expanded" class="flex flex-col h-full w-full">
+                <div class="presentation-sidebar-header p-4 border-b border-zinc-100 dark:border-zinc-800 space-y-2.5 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <button type="button" id="btn-presentation-back" class="inline-flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                            <span>Cerrar Repertorio</span>
+                        </button>
+                        <button type="button" id="btn-collapse-pres-sidebar" onclick="togglePresentationSidebar(true)" class="w-8 h-8 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center justify-center transition cursor-pointer" title="Colapsar panel a riel de canciones">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <h3 id="presentation-setlist-title" class="font-bold text-base text-zinc-900 dark:text-zinc-100 truncate">Repertorio</h3>
+                        <p id="presentation-setlist-desc" class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">Sin descripción</p>
+                    </div>
+                </div>
+                <div id="presentation-songs-list-container" class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60 p-2 space-y-1">
+                    <!-- Populated dynamically -->
                 </div>
             </div>
-            <div id="presentation-songs-list-container" class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60 p-2 space-y-1">
-                <!-- Populated dynamically -->
+
+            <!-- 2. Compact Rail view (Numbered circular badges) -->
+            <div id="presentation-sidebar-rail" class="hidden flex-col items-center h-full w-full py-3 space-y-3">
+                <div class="flex flex-col items-center gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 w-full px-2">
+                    <button type="button" id="btn-expand-pres-sidebar" onclick="togglePresentationSidebar(false)" class="w-9 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center justify-center transition cursor-pointer" title="Expandir lista completa">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                    <button type="button" id="btn-rail-pres-back" onclick="closeSetlistPresentation()" class="w-9 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 flex items-center justify-center transition cursor-pointer" title="Cerrar Repertorio">
+                        <i class="fa-solid fa-arrow-left text-xs"></i>
+                    </button>
+                </div>
+                <div id="presentation-rail-songs-container" class="flex-1 overflow-y-auto flex flex-col items-center gap-2.5 w-full py-1 px-1">
+                    <!-- Populated dynamically with numbered badges 1, 2, 3... -->
+                </div>
             </div>
         </aside>
 
@@ -64,7 +87,7 @@
                     </button>
                 </div>
 
-                <!-- Row 2: Controls (Tonality, Lyrics Mode & Autoscroll) -->
+                <!-- Row 2: Controls (Tonality, Lyrics Mode, Zoom Letra & Autoscroll) -->
                 <div class="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto flex-shrink-0 pt-1.5 md:pt-0 border-t md:border-t-0 border-zinc-200/60 dark:border-zinc-800/60 flex-wrap">
                     <!-- Tonality control widget -->
                     <div id="pres-tonality-control-group" class="flex items-center gap-1.5 transition">
@@ -79,6 +102,16 @@
                         </button>
                     </div>
 
+                    <!-- Text size zoom widget -->
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Letra:</span>
+                        <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
+                            <button type="button" id="btn-pres-font-decrease" onclick="adjustPresViewerFontSize(-1)" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-xs cursor-pointer" title="Reducir tamaño de letra">A-</button>
+                            <span id="pres-font-size-val" class="px-1 font-bold text-zinc-700 dark:text-zinc-300 min-w-[20px] text-center text-xs font-mono">15</span>
+                            <button type="button" id="btn-pres-font-increase" onclick="adjustPresViewerFontSize(1)" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-xs cursor-pointer" title="Aumentar tamaño de letra">A+</button>
+                        </div>
+                    </div>
+
                     <!-- Solo Letra Mode Switch (Vocalistas) -->
                     <button type="button" id="btn-pres-toggle-lyrics-mode" class="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 transition cursor-pointer" title="Modo Solo Letra: oculta los acordes para mayor comodidad de los cantantes">
                         <i class="fa-solid fa-align-left text-xs pointer-events-none"></i>
@@ -88,14 +121,16 @@
                     <!-- Autoscroll widget -->
                     <div class="flex items-center gap-1.5">
                         <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Scroll:</span>
-                        <button type="button" id="btn-pres-scroll-toggle" class="w-8 h-8 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 transition cursor-pointer" style="width: 100px;">
-                            <i class="fa-solid fa-play text-[10px]"></i>
-                        </button>
-                        <select id="pres-scroll-speed-select" class="px-2 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs text-zinc-900 dark:text-zinc-100 font-semibold focus:outline-none cursor-pointer">
-                            <option value="1">x1</option>
-                            <option value="2" selected>x2</option>
-                            <option value="3">x3</option>
-                        </select>
+                        <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
+                            <button type="button" id="btn-pres-scroll-toggle" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100 transition cursor-pointer" title="Iniciar / Detener Scroll">
+                                <i class="fa-solid fa-play text-[10px]"></i>
+                            </button>
+                            <select id="pres-scroll-speed-select" class="px-2 py-1 rounded-lg bg-transparent text-xs text-zinc-900 dark:text-zinc-100 font-semibold focus:outline-none cursor-pointer border-0">
+                                <option value="1">x1</option>
+                                <option value="2" selected>x2</option>
+                                <option value="3">x3</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>

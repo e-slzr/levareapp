@@ -59,38 +59,50 @@
             </div>
         </div>
 
-        <!-- Row 2: TONO (Left) + SCROLL (Right) -->
-        <div class="flex items-center justify-between md:justify-end gap-2.5 w-full md:w-auto flex-shrink-0 pt-1.5 md:pt-0 border-t md:border-t-0 border-zinc-200/60 dark:border-zinc-800/60">
+        <!-- Row 2: TONO (Left) + ZOOM LETRA + SCROLL (Right) -->
+        <div class="flex items-center justify-between md:justify-end gap-2.5 w-full md:w-auto flex-shrink-0 pt-1.5 md:pt-0 border-t md:border-t-0 border-zinc-200/60 dark:border-zinc-800/60 flex-wrap">
             <!-- Tonality control widget -->
             <div class="flex items-center gap-1.5">
                 <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Tono:</span>
                 <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
-                    <button type="button" id="btn-transpose-down" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm">-</button>
+                    <button type="button" id="btn-transpose-down" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm cursor-pointer">-</button>
                     <span id="song-current-key" class="px-1.5 font-bold text-zinc-900 dark:text-zinc-100 min-w-[24px] text-center text-sm">-</span>
-                    <button type="button" id="btn-transpose-up" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm">+</button>
+                    <button type="button" id="btn-transpose-up" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-sm cursor-pointer">+</button>
                 </div>
-                <button type="button" id="btn-transpose-reset" class="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition">
+                <button type="button" id="btn-transpose-reset" class="px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition cursor-pointer">
                     Rest.
                 </button>
+            </div>
+
+            <!-- Text size zoom widget -->
+            <div class="flex items-center gap-1.5">
+                <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Letra:</span>
+                <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
+                    <button type="button" id="btn-font-decrease" onclick="adjustViewerFontSize(-1)" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-xs cursor-pointer" title="Reducir tamaño de letra">A-</button>
+                    <span id="font-size-val" class="px-1 font-bold text-zinc-700 dark:text-zinc-300 min-w-[20px] text-center text-xs font-mono">14</span>
+                    <button type="button" id="btn-font-increase" onclick="adjustViewerFontSize(1)" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center font-bold text-zinc-900 dark:text-zinc-100 text-xs cursor-pointer" title="Aumentar tamaño de letra">A+</button>
+                </div>
             </div>
 
             <!-- Autoscroll widget -->
             <div class="flex items-center gap-1.5">
                 <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Scroll:</span>
-                <button type="button" id="btn-scroll-toggle" class="w-8 h-8 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 transition" style="width: 100px;">
-                    <i class="fa-solid fa-play text-[10px]"></i>
-                </button>
-                <select id="scroll-speed-select" class="px-2 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs text-zinc-900 dark:text-zinc-100 font-semibold focus:outline-none">
-                    <option value="1">x1</option>
-                    <option value="2" selected>x2</option>
-                    <option value="3">x3</option>
-                </select>
+                <div class="flex items-center rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5">
+                    <button type="button" id="btn-scroll-toggle" class="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100 transition cursor-pointer" title="Iniciar / Detener Scroll">
+                        <i class="fa-solid fa-play text-[10px]"></i>
+                    </button>
+                    <select id="scroll-speed-select" class="px-2 py-1 rounded-lg bg-transparent text-xs text-zinc-900 dark:text-zinc-100 font-semibold focus:outline-none cursor-pointer border-0">
+                        <option value="1">x1</option>
+                        <option value="2" selected>x2</option>
+                        <option value="3">x3</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Visor de Letra y Acordes -->
-    <div id="lyrics-container" class="p-5 rounded-2xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 font-mono text-sm leading-relaxed overflow-x-auto shadow-sm">
+    <div id="lyrics-container" class="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 font-mono text-sm leading-relaxed overflow-x-auto shadow-sm">
         <pre id="chords-lyrics-content" class="whitespace-pre-wrap font-mono text-zinc-800 dark:text-zinc-200">
             <!-- Dynamic Lyrics -->
         </pre>
@@ -98,7 +110,7 @@
 </div>
 
 <!-- Subpanel 3: Wizard de Creación / Edición de Canción (Pantalla Completa) -->
-<div id="subpanel-song-wizard" class="space-y-5 screen-fade hidden pb-36 md:pb-24">
+<div id="subpanel-song-wizard" class="space-y-5 screen-fade hidden">
     <!-- Header Controls Bar -->
     <div class="p-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -297,7 +309,7 @@
 </div>
 
 <!-- Subpanel 4: Catálogo de Canciones de la Comunidad -->
-<div id="subpanel-community-catalog" class="space-y-5 screen-fade hidden pb-24 md:pb-16">
+<div id="subpanel-community-catalog" class="space-y-5 screen-fade hidden">
     <header class="flex items-center justify-between pt-2">
         <div class="flex items-center gap-3 min-w-0 flex-1">
             <button type="button" id="btn-community-back-to-list" class="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-1.5 transition flex-shrink-0 cursor-pointer">

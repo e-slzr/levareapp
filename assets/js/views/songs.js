@@ -560,8 +560,39 @@ function viewSongDetail(songId) {
     if (pageTitleElem) pageTitleElem.textContent = 'Letra y Acordes';
 
     document.querySelector('.app-content')?.classList.add('song-detail-mode');
+    applyViewerFontSize(currentViewerFontSize);
 }
 window.viewSongDetail = viewSongDetail;
+
+let currentViewerFontSize = parseInt(localStorage.getItem('worship_lyrics_font_size')) || 14;
+
+/**
+ * Ajusta el tamaño tipográfico de la letra en el visor.
+ * @param {number} delta - Variación (+1 o -1)
+ */
+function adjustViewerFontSize(delta) {
+    currentViewerFontSize = Math.min(22, Math.max(11, currentViewerFontSize + delta));
+    localStorage.setItem('worship_lyrics_font_size', currentViewerFontSize);
+    applyViewerFontSize(currentViewerFontSize);
+}
+window.adjustViewerFontSize = adjustViewerFontSize;
+
+/**
+ * Aplica el tamaño de fuente al contenedor de letra y acordes.
+ * @param {number} size
+ */
+function applyViewerFontSize(size) {
+    const pre = document.getElementById('chords-lyrics-content');
+    if (pre) {
+        pre.style.fontSize = `${size}px`;
+        pre.style.lineHeight = '1.75';
+    }
+    const indicator = document.getElementById('font-size-val');
+    if (indicator) {
+        indicator.textContent = size;
+    }
+}
+window.applyViewerFontSize = applyViewerFontSize;
 
 /**
  * Renderiza la letra con acordes transposicionados según el transposeOffset actual.
@@ -573,6 +604,7 @@ function renderTransposedLyrics() {
     
     const parsedHTML = parseChordsToHTML(currentViewingSong.content, transposeOffset);
     lyricsContent.innerHTML = parsedHTML;
+    applyViewerFontSize(currentViewerFontSize);
 
     const currentKey = currentViewingSong.is_medley ? 'Medley' : transposeChord(currentViewingSong.key, transposeOffset);
     const keyEl = document.getElementById('song-current-key');

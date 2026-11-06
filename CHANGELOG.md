@@ -8,6 +8,24 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased] - Próximamente
 
+- **Zoom tipográfico interactivo en Visor de Canciones y Modo Presentación de Repertorios**:
+  - En `views/songs.php`, `views/setlists.php`, `assets/js/views/songs.js` y `assets/js/views/setlists.js`, se incorporó un widget minimalista de control de tamaño de letra (`[ A- 15 A+ ]`) con rango ajustable de 11px a 24px.
+  - La preferencia tipográfica se sincroniza y almacena de forma persistente en `localStorage` (`worship_lyrics_font_size`), permitiendo a cada músico reducir el tamaño en versos y párrafos extensos para erradicar el scroll horizontal en ensayos o toques en vivo, o aumentarlo según su distancia física frente al dispositivo.
+  - Se ajustó el padding móvil de `#lyrics-container` a `p-3.5 sm:p-5` para optimizar al máximo el ancho de lectura útil en pantallas compactas.
+
+- **Corrección de desborde horizontal del selector de autoscroll en móviles**:
+  - En `views/songs.php` y `views/setlists.php`, se eliminó el estilo en línea `style="width: 100px;"` hardcodeado en `#btn-scroll-toggle` y `#btn-pres-scroll-toggle`, el cual forzaba al selector `<select>` a extenderse más allá del ancho de pantalla en smartphones, provocando un corte visual antiestético a la derecha.
+
+- **Riel vertical colapsable con badges numerados en Modo Presentación de Repertorio (Tablet y PC)**:
+  - En `views/setlists.php`, `assets/css/main.css` y `assets/js/views/setlists.js`, se implementó la capacidad de colapsar la barra lateral de canciones a un ancho compacto de 64px (`.presentation-sidebar.collapsed`) mediante un botón de alternancia interactivo (`<i class="fa-solid fa-chevron-left"></i>` / `<i class="fa-solid fa-chevron-right"></i>`).
+  - Al colapsar la lista, se activa un riel vertical (`#presentation-sidebar-rail`) con badges circulares numerados (`1`, `2`, `3`...) de estilo translúcido adaptativo basados en las variables `--primary` y `--primary-soft` del tema de acento del usuario (`yellow`, `purple`, etc.).
+  - Los badges permiten cambiar directamente de canción con un solo clic sin necesidad de reabrir el menú lateral completo, resaltando activamente la canción en reproducción y recordando el estado de colapso en `localStorage` (`worship_pres_sidebar_collapsed`).
+
+- **Centralización del margen seguro inferior frente al menú de navegación móvil**:
+  - En `index.php`, se trasladó el padding de seguridad directamente al contenedor maestro `<main id="main-content">` (`pb-28 md:pb-20`), asegurando que cualquier vista pre-renderizada o navegada en la SPA mantenga una separación despejada y limpia de más de 35px por encima del menú inferior (`#app-bottom-nav`) al llegar al fondo del scroll.
+  - En `views/members.php`, se normalizó la vista envolviéndola en el contenedor estándar (`space-y-5 screen-fade`) y se eliminó el estilo en línea `margin-bottom: 30px;` en la cuadrícula de miembros, resolviendo el problema donde el último integrante («Oscar Torres») quedaba parcialmente cubierto por la barra de navegación en pantallas móviles.
+  - Se depuraron paddings inferiores redundantes en `views/dashboard.php`, `views/profile.php`, `views/announcements.php`, `views/songs.php`, `views/feedback.php` y `views/admin.php` para unificar el espaciado vertical sin acumulación de áreas vacías dobles.
+
 - **Corrección de resolución canónica de URLs en notificaciones Web Push**:
   - En `sw.js` (evento `notificationclick`), se corrigió la resolución de la URL objetivo para que siempre se resuelva contra el ámbito raíz registrado de la aplicación (`self.registration.scope`) mediante `new URL(rawUrl, self.registration.scope).href` en lugar de resolver de forma relativa contra el script (`self.location.href`). Esto erradica el problema en navegadores móviles (iOS PWA) donde hacer clic en una notificación con destino `#suggestions`, `#events` o `#songs` resolvía a `https://dominio/sw.js#...` y abría el código fuente plano del Service Worker en pantalla completa.
   - En `api_native/services/NotificationService.php` y controladores de eventos, canciones, sugerencias y anuncios, se normalizaron todas las URLs de retorno al formato canónico relativo `./#vista`.

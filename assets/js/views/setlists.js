@@ -113,6 +113,30 @@ function initSetlistsView() {
     const btnPresToggleSongs = document.getElementById('btn-toggle-presentation-songs');
     if (btnPresToggleSongs) btnPresToggleSongs.onclick = openMobileSongsModal;
 
+    // Sidebar collapse and expand triggers (Desktop / Tablet)
+    const btnCollapsePresSidebar = document.getElementById('btn-collapse-pres-sidebar');
+    if (btnCollapsePresSidebar) {
+        btnCollapsePresSidebar.onclick = () => togglePresentationSidebar(true);
+    }
+    const btnExpandPresSidebar = document.getElementById('btn-expand-pres-sidebar');
+    if (btnExpandPresSidebar) {
+        btnExpandPresSidebar.onclick = () => togglePresentationSidebar(false);
+    }
+    const btnRailPresBack = document.getElementById('btn-rail-pres-back');
+    if (btnRailPresBack) {
+        btnRailPresBack.onclick = closeSetlistPresentation;
+    }
+
+    // Font size controls
+    const btnPresFontDec = document.getElementById('btn-pres-font-decrease');
+    if (btnPresFontDec) {
+        btnPresFontDec.onclick = () => adjustPresViewerFontSize(-1);
+    }
+    const btnPresFontInc = document.getElementById('btn-pres-font-increase');
+    if (btnPresFontInc) {
+        btnPresFontInc.onclick = () => adjustPresViewerFontSize(1);
+    }
+
     // Solo Letra mode switch (Vocalistas)
     const btnPresLyricsMode = document.getElementById('btn-pres-toggle-lyrics-mode');
     if (btnPresLyricsMode) {
@@ -314,9 +338,12 @@ function openSetlistPresentation(setlist) {
     document.getElementById('presentation-setlist-title').textContent = setlist.name;
     document.getElementById('presentation-setlist-desc').textContent = setlist.description || 'Sin notas o descripción asociada.';
 
-    // Populate songs sidebar list and mobile modal list
+    // Populate songs sidebar list, mobile modal list and compact rail badges
     const sidebarList = document.getElementById('presentation-songs-list-container');
     if (sidebarList) sidebarList.innerHTML = '';
+    
+    const railList = document.getElementById('presentation-rail-songs-container');
+    if (railList) railList.innerHTML = '';
     
     const mobileList = document.getElementById('mobile-presentation-songs-container');
     if (mobileList) mobileList.innerHTML = '';
@@ -325,7 +352,7 @@ function openSetlistPresentation(setlist) {
     if (mobileTitle) mobileTitle.textContent = setlist.name;
 
     if (setlist.songs && setlist.songs.length > 0) {
-        setlist.songs.forEach(song => {
+        setlist.songs.forEach((song, index) => {
             if (sidebarList) {
                 const item = document.createElement('button');
                 item.className = 'presentation-song-item';
@@ -339,6 +366,17 @@ function openSetlistPresentation(setlist) {
                 `;
                 item.onclick = () => selectPresentationSong(song);
                 sidebarList.appendChild(item);
+            }
+
+            if (railList) {
+                const railBadge = document.createElement('button');
+                railBadge.type = 'button';
+                railBadge.className = 'presentation-rail-badge';
+                railBadge.setAttribute('data-song-id', song.id);
+                railBadge.title = `${index + 1}. ${song.title} (${song.key})`;
+                railBadge.textContent = String(index + 1);
+                railBadge.onclick = () => selectPresentationSong(song);
+                railList.appendChild(railBadge);
             }
 
             if (mobileList) {
@@ -360,10 +398,15 @@ function openSetlistPresentation(setlist) {
             }
         });
 
+        // Restore collapsed state from preferences
+        const isCollapsed = localStorage.getItem('worship_pres_sidebar_collapsed') === 'true';
+        togglePresentationSidebar(isCollapsed);
+
         // Load first song by default
         selectPresentationSong(setlist.songs[0]);
     } else {
         if (sidebarList) sidebarList.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:20px;">Sin canciones en este repertorio.</div>';
+        if (railList) railList.innerHTML = '';
         if (mobileList) mobileList.innerHTML = '<div class="text-xs text-zinc-400 text-center p-4">Sin canciones en este repertorio.</div>';
 
         document.getElementById('pres-song-title').textContent = 'Sin canciones';
@@ -371,6 +414,10 @@ function openSetlistPresentation(setlist) {
         document.getElementById('pres-song-current-key').textContent = '-';
         document.getElementById('pres-chords-lyrics-content').innerHTML = '<div style="color:var(--text-muted); text-align:center; padding: 40px;">Agrega canciones al repertorio para presentarlo.</div>';
     }
+
+    // Apply font size preference
+    const savedFontSize = parseInt(localStorage.getItem('worship_lyrics_font_size')) || 15;
+    applyPresViewerFontSize(savedFontSize);
 }
 
 function closeSetlistPresentation() {
@@ -508,12 +555,20 @@ function selectPresentationSong(song) {
     presTransposeOffset = 0;
     stopPresScroll();
 
-    // Toggle active classes in sidebar and mobile modal items
+    // Toggle active classes in sidebar, compact rail badges and mobile modal items
     document.querySelectorAll('.presentation-song-item').forEach(item => {
         if (item.getAttribute('data-song-id') == song.id) {
             item.classList.add('active');
         } else {
             item.classList.remove('active');
+        }
+    });
+
+    document.querySelectorAll('.presentation-rail-badge').forEach(badge => {
+        if (badge.getAttribute('data-song-id') == song.id) {
+            badge.classList.add('active');
+        } else {
+            badge.classList.remove('active');
         }
     });
 
@@ -547,7 +602,56 @@ function renderPresTransposedLyrics() {
     } else {
         document.getElementById('pres-chords-lyrics-content').textContent = currentPresentationSong.content;
     }
+
+    const savedFontSize = parseInt(localStorage.getItem('worship_lyrics_font_size')) || 15;
+    applyPresViewerFontSize(savedFontSize);
 }
+
+function togglePresentationSidebar(collapse) {
+    const sidebar = document.getElementById('presentation-sidebar');
+    if (!sidebar) return;
+
+    let willCollapse = collapse;
+    if (typeof willCollapse !== 'boolean') {
+        willCollapse = !sidebar.classList.contains('collapsed');
+    }
+
+    if (willCollapse) {
+        sidebar.classList.add('collapsed');
+        localStorage.setItem('worship_pres_sidebar_collapsed', 'true');
+    } else {
+        sidebar.classList.remove('collapsed');
+        localStorage.setItem('worship_pres_sidebar_collapsed', 'false');
+    }
+}
+
+function adjustPresViewerFontSize(delta) {
+    const currentSize = parseInt(localStorage.getItem('worship_lyrics_font_size')) || 15;
+    let newSize = currentSize + delta;
+    if (newSize < 11) newSize = 11;
+    if (newSize > 24) newSize = 24;
+    applyPresViewerFontSize(newSize);
+    if (typeof applyViewerFontSize === 'function') {
+        applyViewerFontSize(newSize);
+    }
+}
+
+function applyPresViewerFontSize(size) {
+    localStorage.setItem('worship_lyrics_font_size', size);
+    const contentEl = document.getElementById('pres-chords-lyrics-content');
+    const indicatorEl = document.getElementById('pres-font-size-val');
+    if (contentEl) {
+        contentEl.style.fontSize = `${size}px`;
+        contentEl.style.lineHeight = '1.7';
+    }
+    if (indicatorEl) {
+        indicatorEl.textContent = size;
+    }
+}
+
+window.togglePresentationSidebar = togglePresentationSidebar;
+window.adjustPresViewerFontSize = adjustPresViewerFontSize;
+window.applyPresViewerFontSize = applyPresViewerFontSize;
 
 function transposePresSong(semitones) {
     if (!currentPresentationSong) return;
