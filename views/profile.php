@@ -39,30 +39,30 @@
         </div>
     </div>
 
-    <!-- Active Band / Group Management Section -->
+    <!-- Active Band & Group Options (Secundaria en Perfil) -->
     <div id="profile-band-management-section" class="space-y-3">
-        <h3 class="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase">GESTIÓN DE BANDAS</h3>
+        <h3 class="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase">AGRUPACIÓN MUSICAL</h3>
         
-        <div class="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3.5 shadow-sm">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h4 class="text-sm font-semibold text-zinc-900 dark:text-zinc-200">Banda Activa</h4>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Selecciona con cuál banda trabajar</p>
+        <div class="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <h4 class="text-sm font-semibold text-zinc-900 dark:text-zinc-200 truncate">Banda Activa</h4>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">Agrupación con la que estás trabajando</p>
                 </div>
-                <div class="relative">
-                    <select id="group-active-select-profile" onchange="handleActiveGroupChangeSelect(event)" class="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition cursor-pointer pr-8">
+                <div class="relative flex-shrink-0">
+                    <select id="group-active-select-profile" onchange="handleActiveGroupChangeSelect(event)" class="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition cursor-pointer pr-7">
                         <!-- Populated dynamically via JS -->
                     </select>
                 </div>
             </div>
 
-            <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 grid grid-cols-2 gap-2">
-                <button type="button" onclick="openCreateGroupModal()" class="w-full py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-plus text-xs"></i>
+            <div class="pt-2.5 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-end gap-2">
+                <button type="button" onclick="openCreateGroupModal()" class="py-1.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-plus text-[10px]"></i>
                     <span>Crear Banda</span>
                 </button>
-                <button type="button" onclick="openJoinGroupModal()" class="w-full py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-user-plus text-xs"></i>
+                <button type="button" onclick="openJoinGroupModal()" class="py-1.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-user-plus text-[10px]"></i>
                     <span>Unirme a Banda</span>
                 </button>
             </div>
@@ -150,15 +150,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Band Members Link -->
-            <button type="button" id="profile-band-members-row" onclick="navigateTo('members')" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left border-t border-zinc-100 dark:border-zinc-800/60 cursor-pointer">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-users text-zinc-500 dark:text-zinc-400 text-sm"></i>
-                    <span class="text-sm font-medium text-zinc-900 dark:text-zinc-200">Miembros de la Banda</span>
-                </div>
-                <i class="fa-solid fa-chevron-right text-zinc-400 dark:text-zinc-500 text-xs"></i>
-            </button>
 
             <!-- Feedback & Bug Report -->
             <button type="button" id="profile-feedback-row" onclick="navigateTo('feedback')" class="w-full p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition text-left border-t border-zinc-100 dark:border-zinc-800/60 cursor-pointer">

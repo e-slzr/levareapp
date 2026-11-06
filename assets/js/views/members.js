@@ -3,93 +3,234 @@
    ========================================================================== */
 
 let cachedMembers = [];
+let memberModalsEventsBound = false;
+
+/**
+ * Vincula los event listeners de los modales globales de integrantes y roles.
+ * Se ejecuta de forma idempotente para funcionar desde cualquier vista (Directorio o Gestión de Banda).
+ */
+function bindMemberModalsEvents() {
+    if (memberModalsEventsBound) return;
+
+    // 1. Cerrar Modal Integrante
+    document.querySelectorAll('#modal-member .btn-close-modal').forEach(btn => {
+        btn.onclick = () => {
+            const m = document.getElementById('modal-member');
+            if (m) m.classList.add('hidden');
+        };
+    });
+    const closeMemberX = document.getElementById('btn-close-member-modal-x');
+    if (closeMemberX) {
+        closeMemberX.onclick = () => {
+            const m = document.getElementById('modal-member');
+            if (m) m.classList.add('hidden');
+        };
+    }
+
+    // 2. Cerrar Modal Reset Password
+    document.querySelectorAll('#modal-reset-password .btn-close-modal').forEach(btn => {
+        btn.onclick = () => {
+            const m = document.getElementById('modal-reset-password');
+            if (m) m.classList.add('hidden');
+        };
+    });
+    const closeResetPwX = document.getElementById('btn-close-reset-password-modal-x');
+    if (closeResetPwX) {
+        closeResetPwX.onclick = () => {
+            const m = document.getElementById('modal-reset-password');
+            if (m) m.classList.add('hidden');
+        };
+    }
+    const closeResetPwSuccess = document.getElementById('btn-close-reset-password-success-modal');
+    if (closeResetPwSuccess) {
+        closeResetPwSuccess.onclick = () => {
+            const m = document.getElementById('modal-reset-password');
+            if (m) m.classList.add('hidden');
+        };
+    }
+    const btnConfirmResetPw = document.getElementById('btn-confirm-reset-password');
+    if (btnConfirmResetPw) btnConfirmResetPw.onclick = handleResetPasswordSubmit;
+
+    const btnCopyPw = document.getElementById('btn-copy-member-generated-password');
+    if (btnCopyPw) btnCopyPw.onclick = copyGeneratedMemberPassword;
+
+    // 3. Cerrar Modal Roles
+    document.querySelectorAll('#modal-manage-roles .btn-close-modal').forEach(btn => {
+        btn.onclick = () => {
+            const m = document.getElementById('modal-manage-roles');
+            if (m) m.classList.add('hidden');
+        };
+    });
+    const closeRolesX = document.getElementById('btn-close-manage-roles-modal-x');
+    if (closeRolesX) {
+        closeRolesX.onclick = () => {
+            const m = document.getElementById('modal-manage-roles');
+            if (m) m.classList.add('hidden');
+        };
+    }
+
+    // 4. Cerrar Modal Confirm Regenerar Código
+    document.querySelectorAll('#modal-confirm-reset-invite-code .btn-close-modal').forEach(btn => {
+        btn.onclick = () => {
+            const m = document.getElementById('modal-confirm-reset-invite-code');
+            if (m) m.classList.add('hidden');
+        };
+    });
+    const closeResetInviteX = document.getElementById('btn-close-reset-invite-code-modal-x');
+    if (closeResetInviteX) {
+        closeResetInviteX.onclick = () => {
+            const m = document.getElementById('modal-confirm-reset-invite-code');
+            if (m) m.classList.add('hidden');
+        };
+    }
+
+    // 5. Cerrar Modal Confirm Remover Integrante
+    document.querySelectorAll('#modal-confirm-delete-member .btn-close-modal').forEach(btn => {
+        btn.onclick = () => {
+            const m = document.getElementById('modal-confirm-delete-member');
+            if (m) m.classList.add('hidden');
+        };
+    });
+    const closeDeleteMemberX = document.getElementById('btn-close-delete-member-modal-x');
+    if (closeDeleteMemberX) {
+        closeDeleteMemberX.onclick = () => {
+            const m = document.getElementById('modal-confirm-delete-member');
+            if (m) m.classList.add('hidden');
+        };
+    }
+    const btnConfirmDeleteMember = document.getElementById('btn-confirm-delete-member');
+    if (btnConfirmDeleteMember) btnConfirmDeleteMember.onclick = confirmDeleteMember;
+
+    // 6. Cerrar Modal Confirm Eliminar Rol
+    document.querySelectorAll('#modal-confirm-delete-role .btn-close-modal').forEach(btn => {
+        btn.onclick = () => {
+            const m = document.getElementById('modal-confirm-delete-role');
+            if (m) m.classList.add('hidden');
+        };
+    });
+    const closeDeleteRoleX = document.getElementById('btn-close-delete-role-modal-x');
+    if (closeDeleteRoleX) {
+        closeDeleteRoleX.onclick = () => {
+            const m = document.getElementById('modal-confirm-delete-role');
+            if (m) m.classList.add('hidden');
+        };
+    }
+    const btnConfirmDeleteRole = document.getElementById('btn-confirm-delete-role');
+    if (btnConfirmDeleteRole) btnConfirmDeleteRole.onclick = confirmDeleteRole;
+
+    // Cierre por clic en el fondo de los modales
+    ['modal-confirm-delete-member', 'modal-confirm-delete-role', 'modal-confirm-reset-invite-code'].forEach(id => {
+        const m = document.getElementById(id);
+        if (m) {
+            m.onclick = (e) => {
+                if (e.target === m) m.classList.add('hidden');
+            };
+        }
+    });
+
+    // Form Submissions
+    const memberForm = document.getElementById('member-form');
+    if (memberForm) memberForm.onsubmit = handleMemberFormSubmit;
+
+    const addRoleForm = document.getElementById('add-role-form');
+    if (addRoleForm) addRoleForm.onsubmit = handleAddRoleSubmit;
+
+    // Real-time username validation in Members Modal
+    const memberUsernameInput = document.getElementById('member-form-username');
+    const memberUsernameFeedback = document.getElementById('member-username-feedback');
+    const memberSubmitBtn = document.getElementById('btn-member-submit');
+    let memberUsernameCheckTimeout;
+
+    if (memberUsernameInput && memberUsernameFeedback && memberSubmitBtn) {
+        memberUsernameInput.oninput = function() {
+            if (this.disabled) return;
+            clearTimeout(memberUsernameCheckTimeout);
+            const username = this.value.trim().toLowerCase().replace('@', '');
+            if (username === '') {
+                memberUsernameFeedback.style.display = 'none';
+                memberUsernameFeedback.className = 'field-feedback';
+                memberSubmitBtn.disabled = false;
+                return;
+            }
+            memberUsernameFeedback.style.display = 'flex';
+            memberUsernameFeedback.className = 'field-feedback';
+            memberUsernameFeedback.style.color = 'var(--text-muted)';
+            memberUsernameFeedback.innerHTML = `<span>Verificando disponibilidad...</span>`;
+            memberSubmitBtn.disabled = true;
+
+            memberUsernameCheckTimeout = setTimeout(async () => {
+                try {
+                    const data = await apiFetch(`/auth/check-username?username=${encodeURIComponent(username)}`);
+                    if (data.available) {
+                        memberUsernameFeedback.className = 'field-feedback available';
+                        memberUsernameFeedback.style.color = '';
+                        memberUsernameFeedback.innerHTML = `
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span>${data.message}</span>
+                        `;
+                        memberSubmitBtn.disabled = false;
+                    } else {
+                        memberUsernameFeedback.className = 'field-feedback unavailable';
+                        memberUsernameFeedback.style.color = '';
+                        memberUsernameFeedback.innerHTML = `
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <span>${data.message}</span>
+                        `;
+                        memberSubmitBtn.disabled = true;
+                    }
+                } catch (err) {
+                    memberUsernameFeedback.className = 'field-feedback unavailable';
+                    memberUsernameFeedback.style.color = '';
+                    memberUsernameFeedback.innerHTML = `<span>Error al verificar disponibilidad.</span>`;
+                    memberSubmitBtn.disabled = false;
+                }
+            }, 400);
+        };
+    }
+
+    memberModalsEventsBound = true;
+}
+
+// Vincular modales al cargar la página
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindMemberModalsEvents);
+} else {
+    bindMemberModalsEvents();
+}
 
 function initMembersView() {
+    bindMemberModalsEvents();
+
     const currentUser = getData('currentUser');
     const currentGroupId = getData('currentGroupId');
     if (!currentUser || !currentGroupId) return;
 
     const editAllowed = canEdit();
 
+    // Toggle aviso de líder hacia Gestión de Banda
+    const leaderNotice = document.getElementById('members-leader-notice');
+    if (leaderNotice) {
+        if (editAllowed) leaderNotice.classList.remove('hidden');
+        else leaderNotice.classList.add('hidden');
+    }
+
     // Toggle actions buttons visibility
     const addMemberBtn = document.getElementById('btn-add-member');
     const manageRolesBtn = document.getElementById('btn-manage-roles');
     
     if (editAllowed) {
-        addMemberBtn.style.display = 'inline-flex';
-        addMemberBtn.onclick = () => openAddMemberModal();
-
-        manageRolesBtn.style.display = 'inline-flex';
-        manageRolesBtn.onclick = openManageRolesModal;
+        if (addMemberBtn) {
+            addMemberBtn.style.display = 'inline-flex';
+            addMemberBtn.onclick = () => openAddMemberModal();
+        }
+        if (manageRolesBtn) {
+            manageRolesBtn.style.display = 'inline-flex';
+            manageRolesBtn.onclick = openManageRolesModal;
+        }
     } else {
-        addMemberBtn.style.display = 'none';
-        manageRolesBtn.style.display = 'none';
+        if (addMemberBtn) addMemberBtn.style.display = 'none';
+        if (manageRolesBtn) manageRolesBtn.style.display = 'none';
     }
-
-    // Close buttons for modals
-    document.querySelectorAll('#modal-member .btn-close-modal').forEach(btn => {
-        btn.onclick = () => document.getElementById('modal-member').classList.add('hidden');
-    });
-    document.getElementById('btn-close-member-modal-x').onclick = () => {
-        document.getElementById('modal-member').classList.add('hidden');
-    };
-
-    document.querySelectorAll('#modal-reset-password .btn-close-modal').forEach(btn => {
-        btn.onclick = () => document.getElementById('modal-reset-password').classList.add('hidden');
-    });
-    document.getElementById('btn-close-reset-password-modal-x').onclick = () => {
-        document.getElementById('modal-reset-password').classList.add('hidden');
-    };
-    document.getElementById('btn-close-reset-password-success-modal').onclick = () => {
-        document.getElementById('modal-reset-password').classList.add('hidden');
-    };
-    document.getElementById('btn-confirm-reset-password').onclick = handleResetPasswordSubmit;
-    document.getElementById('btn-copy-member-generated-password').onclick = copyGeneratedMemberPassword;
-
-    document.querySelectorAll('#modal-manage-roles .btn-close-modal').forEach(btn => {
-        btn.onclick = () => document.getElementById('modal-manage-roles').classList.add('hidden');
-    });
-    document.getElementById('btn-close-manage-roles-modal-x').onclick = () => {
-        document.getElementById('modal-manage-roles').classList.add('hidden');
-    };
-
-    // Close buttons for reset invite code confirmation modal
-    document.querySelectorAll('#modal-confirm-reset-invite-code .btn-close-modal').forEach(btn => {
-        btn.onclick = () => document.getElementById('modal-confirm-reset-invite-code').classList.add('hidden');
-    });
-    document.getElementById('btn-close-reset-invite-code-modal-x').onclick = () => {
-        document.getElementById('modal-confirm-reset-invite-code').classList.add('hidden');
-    };
-
-    // Close buttons for confirm delete member modal
-    document.querySelectorAll('#modal-confirm-delete-member .btn-close-modal').forEach(btn => {
-        btn.onclick = () => document.getElementById('modal-confirm-delete-member').classList.add('hidden');
-    });
-    document.getElementById('btn-close-delete-member-modal-x').onclick = () => {
-        document.getElementById('modal-confirm-delete-member').classList.add('hidden');
-    };
-    document.getElementById('btn-confirm-delete-member').onclick = confirmDeleteMember;
-
-    // Close buttons for confirm delete role modal
-    document.querySelectorAll('#modal-confirm-delete-role .btn-close-modal').forEach(btn => {
-        btn.onclick = () => document.getElementById('modal-confirm-delete-role').classList.add('hidden');
-    });
-    document.getElementById('btn-close-delete-role-modal-x').onclick = () => {
-        document.getElementById('modal-confirm-delete-role').classList.add('hidden');
-    };
-    document.getElementById('btn-confirm-delete-role').onclick = confirmDeleteRole;
-
-    // Close on backdrop clicks
-    document.getElementById('modal-confirm-delete-member').onclick = (e) => {
-        if (e.target === document.getElementById('modal-confirm-delete-member')) {
-            document.getElementById('modal-confirm-delete-member').classList.add('hidden');
-        }
-    };
-    document.getElementById('modal-confirm-delete-role').onclick = (e) => {
-        if (e.target === document.getElementById('modal-confirm-delete-role')) {
-            document.getElementById('modal-confirm-delete-role').classList.add('hidden');
-        }
-    };
 
     // --- Invite Code Card (visible only for Líderes) ---
     const userGroups = getData('userGroups') || [];
@@ -99,50 +240,56 @@ function initMembersView() {
 
     if (editAllowed && activeGroup && activeGroup.invite_code) {
         const code = activeGroup.invite_code;
-        inviteCodeDisplay.textContent = code;
-        inviteCodeCard.classList.remove('hidden');
+        if (inviteCodeDisplay) inviteCodeDisplay.textContent = code;
+        if (inviteCodeCard) inviteCodeCard.classList.remove('hidden');
 
         // Copy to clipboard
-        document.getElementById('btn-copy-invite-code').onclick = async () => {
-            try {
-                await navigator.clipboard.writeText(code);
-                showToast('¡Código copiado al portapapeles!', 'success');
-            } catch {
-                // Fallback for older browsers / non-HTTPS
-                const el = document.createElement('textarea');
-                el.value = code;
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand('copy');
-                document.body.removeChild(el);
-                showToast('¡Código copiado!', 'success');
-            }
-        };
+        const copyBtn = document.getElementById('btn-copy-invite-code');
+        if (copyBtn) {
+            copyBtn.onclick = async () => {
+                try {
+                    await navigator.clipboard.writeText(code);
+                    showToast('¡Código copiado al portapapeles!', 'success');
+                } catch {
+                    const el = document.createElement('textarea');
+                    el.value = code;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    showToast('¡Código copiado!', 'success');
+                }
+            };
+        }
 
         // Web Share API (mobile) or fallback to copy
-        document.getElementById('btn-share-invite-code').onclick = async () => {
-            const shareText = `Únete a mi grupo "${activeGroup.name}" en WorshipApp con el código: ${activeGroup.invite_code}`;
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: 'Invitación WorshipApp', text: shareText });
-                } catch (err) {
-                    if (err.name !== 'AbortError') showToast('No se pudo compartir.', 'danger');
+        const shareBtn = document.getElementById('btn-share-invite-code');
+        if (shareBtn) {
+            shareBtn.onclick = async () => {
+                const shareText = `Únete a mi grupo "${activeGroup.name}" en Levare con el código: ${activeGroup.invite_code}`;
+                if (navigator.share) {
+                    try {
+                        await navigator.share({ title: 'Invitación Levare', text: shareText });
+                    } catch (err) {
+                        if (err.name !== 'AbortError') showToast('No se pudo compartir.', 'danger');
+                    }
+                } else {
+                    try {
+                        await navigator.clipboard.writeText(shareText);
+                        showToast('¡Mensaje de invitación copiado!', 'success');
+                    } catch {
+                        showToast('Tu navegador no soporta compartir. Copia el código manualmente.', 'warning');
+                    }
                 }
-            } else {
-                try {
-                    await navigator.clipboard.writeText(shareText);
-                    showToast('¡Mensaje de invitación copiado!', 'success');
-                } catch {
-                    showToast('Tu navegador no soporta compartir. Copia el código manualmente.', 'warning');
-                }
-            }
-        };
+            };
+        }
 
         // Reset invite code
         const btnResetCode = document.getElementById('btn-reset-invite-code');
         if (btnResetCode) {
             btnResetCode.onclick = () => {
-                document.getElementById('modal-confirm-reset-invite-code').classList.remove('hidden');
+                const m = document.getElementById('modal-confirm-reset-invite-code');
+                if (m) m.classList.remove('hidden');
             };
         }
 
@@ -158,14 +305,13 @@ function initMembersView() {
                         method: 'POST'
                     });
                     
-                    // Update layout display
-                    inviteCodeDisplay.textContent = res.invite_code;
+                    if (inviteCodeDisplay) inviteCodeDisplay.textContent = res.invite_code;
                     
-                    // Update cached userGroups array
                     activeGroup.invite_code = res.invite_code;
                     setData('userGroups', userGroups);
                     
-                    document.getElementById('modal-confirm-reset-invite-code').classList.add('hidden');
+                    const m = document.getElementById('modal-confirm-reset-invite-code');
+                    if (m) m.classList.add('hidden');
                     showToast(res.message || 'Código de invitación regenerado.', 'success');
                 } catch (e) {
                     showToast(e.message || 'Error al regenerar código de invitación.', 'danger');
@@ -176,71 +322,12 @@ function initMembersView() {
             };
         }
     } else {
-        inviteCodeCard.classList.add('hidden');
+        if (inviteCodeCard) inviteCodeCard.classList.add('hidden');
     }
 
-    // Form Submissions
-    document.getElementById('member-form').onsubmit = handleMemberFormSubmit;
-    document.getElementById('add-role-form').onsubmit = handleAddRoleSubmit;
-
-    // Real-time username validation in Members Modal
-    const memberUsernameInput = document.getElementById('member-form-username');
-    const memberUsernameFeedback = document.getElementById('member-username-feedback');
-    const memberSubmitBtn = document.getElementById('btn-member-submit');
-    let memberUsernameCheckTimeout;
-
-    memberUsernameInput.oninput = function() {
-        if (this.disabled) return; // No validar si está deshabilitado (edición)
-
-        clearTimeout(memberUsernameCheckTimeout);
-        const username = this.value.trim().toLowerCase().replace('@', '');
-        
-        if (username === '') {
-            memberUsernameFeedback.style.display = 'none';
-            memberUsernameFeedback.className = 'field-feedback';
-            memberSubmitBtn.disabled = false;
-            return;
-        }
-
-        // Mostrar estado de carga
-        memberUsernameFeedback.style.display = 'flex';
-        memberUsernameFeedback.className = 'field-feedback';
-        memberUsernameFeedback.style.color = 'var(--text-muted)';
-        memberUsernameFeedback.innerHTML = `<span>Verificando disponibilidad...</span>`;
-        memberSubmitBtn.disabled = true;
-
-        memberUsernameCheckTimeout = setTimeout(async () => {
-            try {
-                const data = await apiFetch(`/auth/check-username?username=${encodeURIComponent(username)}`);
-                
-                if (data.available) {
-                    memberUsernameFeedback.className = 'field-feedback available';
-                    memberUsernameFeedback.style.color = '';
-                    memberUsernameFeedback.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span>${data.message}</span>
-                    `;
-                    memberSubmitBtn.disabled = false;
-                } else {
-                    memberUsernameFeedback.className = 'field-feedback unavailable';
-                    memberUsernameFeedback.style.color = '';
-                    memberUsernameFeedback.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        <span>${data.message}</span>
-                    `;
-                    memberSubmitBtn.disabled = true;
-                }
-            } catch (err) {
-                memberUsernameFeedback.className = 'field-feedback unavailable';
-                memberUsernameFeedback.style.color = '';
-                memberUsernameFeedback.innerHTML = `<span>Error al verificar disponibilidad.</span>`;
-                memberSubmitBtn.disabled = false;
-            }
-        }, 400);
-    };
-
-    renderMembers(true); // force first reload
+    renderMembers(true);
 }
+
 
 
 async function renderMembers(forceRefresh = false) {
@@ -440,6 +527,10 @@ function renderMemberRolesSelector() {
 }
 
 async function openAddMemberModal() {
+    bindMemberModalsEvents();
+    const modal = document.getElementById('modal-member');
+    if (!modal) return;
+
     document.getElementById('member-modal-title').textContent = "Agregar Integrante";
     document.getElementById('member-form-id').value = "";
     document.getElementById('member-form').reset();
@@ -462,17 +553,51 @@ async function openAddMemberModal() {
 
     // Reset username validation feedback
     const memberFeedback = document.getElementById('member-username-feedback');
-    memberFeedback.style.display = 'none';
-    memberFeedback.className = 'field-feedback';
-    memberFeedback.innerHTML = '';
-    document.getElementById('btn-member-submit').disabled = false;
+    if (memberFeedback) {
+        memberFeedback.style.display = 'none';
+        memberFeedback.className = 'field-feedback';
+        memberFeedback.innerHTML = '';
+    }
+    const submitBtn = document.getElementById('btn-member-submit');
+    if (submitBtn) submitBtn.disabled = false;
 
-    document.getElementById('modal-member').classList.remove('hidden');
+    modal.classList.remove('hidden');
 }
 
 async function openEditMemberModal(userId) {
-    const u = cachedMembers.find(x => x.id === userId);
-    if (!u) return;
+    bindMemberModalsEvents();
+
+    // 1. Buscar en cachedMembers o en la vista de banda
+    let u = cachedMembers.find(x => x.id === userId);
+    if (!u && typeof currentBandMembers !== 'undefined' && Array.isArray(currentBandMembers)) {
+        u = currentBandMembers.find(x => x.id === userId);
+    }
+    if (!u && typeof window.currentBandMembers !== 'undefined' && Array.isArray(window.currentBandMembers)) {
+        u = window.currentBandMembers.find(x => x.id === userId);
+    }
+
+    // 2. Si no se encontró en caché, consultar API
+    if (!u) {
+        try {
+            const all = await apiFetch('/members');
+            if (Array.isArray(all)) {
+                cachedMembers = all;
+                u = all.find(x => x.id === userId);
+            }
+        } catch (e) {
+            console.error("Error buscando integrante:", e);
+        }
+    }
+
+    if (!u) {
+        if (typeof showToast === 'function') {
+            showToast("No se encontraron los datos del integrante.", "warning");
+        }
+        return;
+    }
+
+    const modal = document.getElementById('modal-member');
+    if (!modal) return;
 
     document.getElementById('member-modal-title').textContent = "Editar Integrante";
     document.getElementById('member-form-id').value = u.id;
@@ -505,6 +630,7 @@ async function openEditMemberModal(userId) {
     systemRoleSelect.value = (systemRole === 'leader' || systemRole === 'superadmin') ? 'leader' : 'member';
     
     // Protect self-demotion or modifying superadmin from the member modal
+    const currentUser = typeof getData === 'function' ? getData('currentUser') : null;
     if (currentUser && u.id == currentUser.id) {
         systemRoleSelect.disabled = true;
         systemRoleSelect.title = "No puedes cambiar tu propio rol de sistema.";
@@ -522,12 +648,15 @@ async function openEditMemberModal(userId) {
 
     // Reset username validation feedback
     const memberFeedback = document.getElementById('member-username-feedback');
-    memberFeedback.style.display = 'none';
-    memberFeedback.className = 'field-feedback';
-    memberFeedback.innerHTML = '';
-    document.getElementById('btn-member-submit').disabled = false;
+    if (memberFeedback) {
+        memberFeedback.style.display = 'none';
+        memberFeedback.className = 'field-feedback';
+        memberFeedback.innerHTML = '';
+    }
+    const submitBtn = document.getElementById('btn-member-submit');
+    if (submitBtn) submitBtn.disabled = false;
 
-    document.getElementById('modal-member').classList.remove('hidden');
+    modal.classList.remove('hidden');
 }
 
 async function handleMemberFormSubmit(e) {
@@ -561,23 +690,63 @@ async function handleMemberFormSubmit(e) {
             showToast("Integrante sumado con éxito", "success");
         }
 
-        document.getElementById('modal-member').classList.add('hidden');
-        await renderMembers(true); // force refresh list
+        const modal = document.getElementById('modal-member');
+        if (modal) modal.classList.add('hidden');
+
+        // Refrescar ambas vistas (Directorio y Gestión de Banda)
+        if (document.getElementById('team-members-list')) {
+            await renderMembers(true);
+        }
+        if (typeof window.loadBandMembers === 'function') {
+            await window.loadBandMembers(true);
+        }
     } catch (err) {
         showToast(err.message, "danger");
     }
 }
 
 function removeMemberFromGroup(userId, memberName) {
+    bindMemberModalsEvents();
+    const modal = document.getElementById('modal-confirm-delete-member');
+    if (!modal) return;
     document.getElementById('delete-member-user-id').value = userId;
     document.getElementById('delete-member-user-name').textContent = memberName;
-    document.getElementById('modal-confirm-delete-member').classList.remove('hidden');
+    modal.classList.remove('hidden');
 }
 
 // RESTORE PASSWORD FLOWS
-function openResetPasswordModal(userId) {
-    const u = cachedMembers.find(x => x.id === userId);
-    if (!u) return;
+async function openResetPasswordModal(userId) {
+    bindMemberModalsEvents();
+
+    let u = cachedMembers.find(x => x.id === userId);
+    if (!u && typeof currentBandMembers !== 'undefined' && Array.isArray(currentBandMembers)) {
+        u = currentBandMembers.find(x => x.id === userId);
+    }
+    if (!u && typeof window.currentBandMembers !== 'undefined' && Array.isArray(window.currentBandMembers)) {
+        u = window.currentBandMembers.find(x => x.id === userId);
+    }
+
+    if (!u) {
+        try {
+            const all = await apiFetch('/members');
+            if (Array.isArray(all)) {
+                cachedMembers = all;
+                u = all.find(x => x.id === userId);
+            }
+        } catch (e) {
+            console.error("Error buscando integrante:", e);
+        }
+    }
+
+    if (!u) {
+        if (typeof showToast === 'function') {
+            showToast("No se encontraron los datos del integrante.", "warning");
+        }
+        return;
+    }
+
+    const modal = document.getElementById('modal-reset-password');
+    if (!modal) return;
 
     document.getElementById('reset-password-user-id').value = u.id;
     document.getElementById('reset-password-user-name').textContent = `${u.name} ${u.lastname || ''}`;
@@ -586,7 +755,7 @@ function openResetPasswordModal(userId) {
     document.getElementById('reset-password-confirm-step').classList.remove('hidden');
     document.getElementById('reset-password-success-step').classList.add('hidden');
 
-    document.getElementById('modal-reset-password').classList.remove('hidden');
+    modal.classList.remove('hidden');
 }
 
 async function handleResetPasswordSubmit() {
@@ -632,13 +801,17 @@ async function copyGeneratedMemberPassword() {
 
 // CUSTOM ROLES MANAGEMENT
 function openManageRolesModal() {
+    bindMemberModalsEvents();
     renderGroupRolesList();
-    document.getElementById('new-role-input').value = '';
-    document.getElementById('modal-manage-roles').classList.remove('hidden');
+    const input = document.getElementById('new-role-input');
+    if (input) input.value = '';
+    const modal = document.getElementById('modal-manage-roles');
+    if (modal) modal.classList.remove('hidden');
 }
 
 async function renderGroupRolesList() {
     const listContainer = document.getElementById('roles-list-container');
+    if (!listContainer) return;
     listContainer.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding: 10px;">Cargando roles...</div>';
 
     try {
@@ -656,7 +829,8 @@ async function renderGroupRolesList() {
             `;
 
             if (!isLider) {
-                div.querySelector('.btn-delete-role-link').onclick = () => deleteRoleFromGroup(role);
+                const delLink = div.querySelector('.btn-delete-role-link');
+                if (delLink) delLink.onclick = () => deleteRoleFromGroup(role);
             }
 
             listContainer.appendChild(div);
@@ -679,17 +853,26 @@ async function handleAddRoleSubmit(e) {
         });
 
         document.getElementById('new-role-input').value = '';
-        showToast("Rol musical añadido");
+        showToast("Rol musical añadido", "success");
         await renderGroupRolesList();
+        
+        // Refrescar selector de roles en modales y lista de banda si aplica
+        await loadGroupRoles(true);
+        if (typeof window.loadBandMembers === 'function') {
+            window.loadBandMembers(true);
+        }
     } catch (err) {
         showToast(err.message, "danger");
     }
 }
 
 function deleteRoleFromGroup(roleName) {
+    bindMemberModalsEvents();
+    const modal = document.getElementById('modal-confirm-delete-role');
+    if (!modal) return;
     document.getElementById('delete-role-name-input').value = roleName;
     document.getElementById('delete-role-name-display').textContent = roleName;
-    document.getElementById('modal-confirm-delete-role').classList.remove('hidden');
+    modal.classList.remove('hidden');
 }
 
 async function confirmDeleteMember() {
@@ -703,9 +886,16 @@ async function confirmDeleteMember() {
         await apiFetch(`/members/${userId}`, {
             method: 'DELETE'
         });
-        showToast("Miembro eliminado del grupo");
-        document.getElementById('modal-confirm-delete-member').classList.add('hidden');
-        await renderMembers(true);
+        showToast("Miembro eliminado del grupo", "success");
+        const modal = document.getElementById('modal-confirm-delete-member');
+        if (modal) modal.classList.add('hidden');
+
+        if (document.getElementById('team-members-list')) {
+            await renderMembers(true);
+        }
+        if (typeof window.loadBandMembers === 'function') {
+            await window.loadBandMembers(true);
+        }
     } catch (err) {
         showToast(err.message, "danger");
     } finally {
@@ -726,9 +916,15 @@ async function confirmDeleteRole() {
             method: 'DELETE'
         });
 
-        showToast("Rol musical eliminado");
-        document.getElementById('modal-confirm-delete-role').classList.add('hidden');
+        showToast("Rol musical eliminado", "success");
+        const modal = document.getElementById('modal-confirm-delete-role');
+        if (modal) modal.classList.add('hidden');
         await renderGroupRolesList();
+        await loadGroupRoles(true);
+
+        if (typeof window.loadBandMembers === 'function') {
+            window.loadBandMembers(true);
+        }
     } catch (err) {
         showToast(err.message, "danger");
     } finally {
@@ -736,5 +932,15 @@ async function confirmDeleteRole() {
         btn.textContent = "Eliminar Rol";
     }
 }
+
+// Exportar helpers para uso en Gestión de Banda y módulos modulares
+window.initMembersView = initMembersView;
+window.renderMembers = renderMembers;
+window.openAddMemberModal = openAddMemberModal;
+window.openManageRolesModal = openManageRolesModal;
+window.openEditMemberModal = openEditMemberModal;
+window.openResetPasswordModal = openResetPasswordModal;
+window.removeMemberFromGroup = removeMemberFromGroup;
+
 
 

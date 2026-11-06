@@ -37,6 +37,18 @@
         <span class="pointer-events-none truncate">Eventos</span>
     </button>
 
+    <!-- Banda (Exclusivo para Líderes / Superadmins — Desktop / Tablet) -->
+    <button type="button" id="desktop-nav-btn-band" data-view="band" onclick="navigateTo('band')" class="app-nav-btn user-only-nav desktop-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
+        <i class="fa-solid fa-users-gear text-base pointer-events-none"></i>
+        <span class="pointer-events-none truncate">Banda</span>
+    </button>
+
+    <!-- Miembros (Músicos regulares — Desktop / Tablet) -->
+    <button type="button" id="desktop-nav-btn-members" data-view="members" onclick="navigateTo('members')" class="app-nav-btn user-only-nav desktop-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
+        <i class="fa-solid fa-users text-base pointer-events-none"></i>
+        <span class="pointer-events-none truncate">Miembros</span>
+    </button>
+
     <!-- Sugerencias (Miembros/Líderes — Desktop / Tablet) -->
     <button type="button" data-view="suggestions" onclick="navigateTo('suggestions')" class="app-nav-btn user-only-nav desktop-only-nav cursor-pointer flex flex-col md:flex-row items-center gap-1 md:gap-1.5 text-xs min-w-0">
         <i class="fa-regular fa-lightbulb text-base pointer-events-none"></i>
@@ -87,9 +99,16 @@
                 <span class="text-xs font-semibold">Sugerencias</span>
             </button>
 
-            <!-- Miembros -->
-            <button type="button" onclick="closeMoreMenu(); navigateTo('members');"
-                class="more-menu-item flex flex-col items-center gap-2 p-3.5 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-sm hover:shadow-md hover:scale-105 transition active:scale-95">
+            <!-- Banda (Exclusivo para Líderes / Superadmins) -->
+            <button type="button" id="more-menu-btn-band" onclick="closeMoreMenu(); navigateTo('band');"
+                class="more-menu-item hidden flex flex-col items-center gap-2 p-3.5 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-sm hover:shadow-md hover:scale-105 transition active:scale-95 cursor-pointer">
+                <i class="fa-solid fa-users-gear text-xl"></i>
+                <span class="text-xs font-semibold">Banda</span>
+            </button>
+
+            <!-- Miembros (Músicos comunes - Solo lectura) -->
+            <button type="button" id="more-menu-btn-members" onclick="closeMoreMenu(); navigateTo('members');"
+                class="more-menu-item flex flex-col items-center gap-2 p-3.5 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 text-white shadow-sm hover:shadow-md hover:scale-105 transition active:scale-95 cursor-pointer">
                 <i class="fa-solid fa-users text-xl"></i>
                 <span class="text-xs font-semibold">Miembros</span>
             </button>

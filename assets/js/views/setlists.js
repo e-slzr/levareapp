@@ -378,7 +378,7 @@ function openSetlistPresentation(setlist) {
                     </div>
                     <span class="song-key">${song.key}</span>
                 `;
-                item.onclick = () => selectPresentationSong(song);
+                item.onclick = () => selectPresentationSongManual(song);
                 sidebarList.appendChild(item);
             }
 
@@ -389,7 +389,7 @@ function openSetlistPresentation(setlist) {
                 railBadge.setAttribute('data-song-id', song.id);
                 railBadge.title = `${index + 1}. ${song.title} (${song.key})`;
                 railBadge.textContent = String(index + 1);
-                railBadge.onclick = () => selectPresentationSong(song);
+                railBadge.onclick = () => selectPresentationSongManual(song);
                 railList.appendChild(railBadge);
             }
 
@@ -400,7 +400,7 @@ function openSetlistPresentation(setlist) {
                 hBadge.setAttribute('data-song-id', song.id);
                 hBadge.title = `${index + 1}. ${song.title} (${song.key})`;
                 hBadge.textContent = String(index + 1);
-                hBadge.onclick = () => selectPresentationSong(song);
+                hBadge.onclick = () => selectPresentationSongManual(song);
                 horizontalRail.appendChild(hBadge);
             }
 
@@ -416,7 +416,7 @@ function openSetlistPresentation(setlist) {
                     <span class="px-2.5 py-1 rounded-xl text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 ml-2 flex-shrink-0">${song.key}</span>
                 `;
                 mobileItem.onclick = () => {
-                    selectPresentationSong(song);
+                    selectPresentationSongManual(song);
                     closeMobileSongsModal();
                 };
                 mobileList.appendChild(mobileItem);
@@ -444,9 +444,33 @@ function openSetlistPresentation(setlist) {
     // Apply font size preference
     const savedFontSize = parseInt(localStorage.getItem('worship_lyrics_font_size')) || 15;
     applyPresViewerFontSize(savedFontSize);
+
+    // Inicializar Live Sync para este repertorio
+    if (typeof initLiveSyncForPresentation === 'function') {
+        initLiveSyncForPresentation(setlist);
+    }
 }
 
 function closeSetlistPresentation() {
+    // Protección contra salida accidental si la Emisión está activa o el músico está enlazado
+    if (typeof liveSyncState !== 'undefined') {
+        if (liveSyncState.isDirector) {
+            if (typeof showToast === 'function') {
+                showToast('Tienes una Emisión activa. Debes finalizar la emisión antes de salir.', 'warning');
+            }
+            if (typeof confirmStopLiveSync === 'function') {
+                confirmStopLiveSync();
+            }
+            return false;
+        }
+        if (liveSyncState.isFollowerConnected) {
+            if (typeof showToast === 'function') {
+                showToast('Estás enlazado a la sesión en vivo del Director. Pulsa "Desconectar" antes de salir.', 'warning');
+            }
+            return false;
+        }
+    }
+
     stopPresScroll();
     togglePresAdjustments(false);
     closeMobileSongsModal();
@@ -460,6 +484,11 @@ function closeSetlistPresentation() {
     // Reset Solo Letra mode
     if (presIsLyricsOnly) {
         togglePresLyricsMode();
+    }
+
+    // Limpiar estados y sondeo de Live Sync
+    if (typeof teardownLiveSyncForPresentation === 'function') {
+        teardownLiveSyncForPresentation();
     }
 }
 
@@ -568,6 +597,10 @@ function goToSetlistModalStep(step) {
 }
 
 function openMobileSongsModal() {
+    if (typeof isMusicianControlLocked === 'function' && isMusicianControlLocked()) {
+        showMusicianLockedFeedback();
+        return;
+    }
     const modal = document.getElementById('modal-presentation-songs-mobile');
     if (modal) modal.classList.remove('hidden');
 }
@@ -580,6 +613,18 @@ function closeMobileSongsModal() {
 window.openMobileSongsModal = openMobileSongsModal;
 window.closeMobileSongsModal = closeMobileSongsModal;
 
+function selectPresentationSongManual(song) {
+    if (typeof isMusicianControlLocked === 'function' && isMusicianControlLocked()) {
+        showMusicianLockedFeedback();
+        return;
+    }
+    selectPresentationSong(song);
+
+    // Si es el Director activo en Live Sync, transmitir el cambio a los seguidores
+    if (typeof notifyDirectorSongChange === 'function' && song) {
+        notifyDirectorSongChange(song.id, presTransposeOffset || 0);
+    }
+}
 
 function selectPresentationSong(song) {
     currentPresentationSong = song;
@@ -733,6 +778,12 @@ function cyclePresScrollSpeed() {
 
 function transposePresSong(semitones) {
     if (!currentPresentationSong) return;
+
+    if (typeof isMusicianControlLocked === 'function' && isMusicianControlLocked()) {
+        showMusicianLockedFeedback();
+        return;
+    }
+
     presTransposeOffset += semitones;
 
     // Calculate resulting key
@@ -744,15 +795,41 @@ function transposePresSong(semitones) {
     if (keyEl) keyEl.textContent = resultingKey;
 
     renderPresTransposedLyrics();
+
+    if (typeof notifyDirectorSongChange === 'function' && currentPresentationSong) {
+        notifyDirectorSongChange(currentPresentationSong.id, presTransposeOffset);
+    }
 }
 
 function resetPresSongTranspose() {
     if (!currentPresentationSong) return;
+
+    if (typeof isMusicianControlLocked === 'function' && isMusicianControlLocked()) {
+        showMusicianLockedFeedback();
+        return;
+    }
+
     presTransposeOffset = 0;
     const keyEl = document.getElementById('pres-song-current-key');
     if (keyEl) keyEl.textContent = currentPresentationSong.key;
     renderPresTransposedLyrics();
+
+    if (typeof notifyDirectorSongChange === 'function' && currentPresentationSong) {
+        notifyDirectorSongChange(currentPresentationSong.id, 0);
+    }
 }
+
+window.setPresTransposeDirect = function(offset) {
+    if (!currentPresentationSong) return;
+    presTransposeOffset = offset;
+    let resultingKey = currentPresentationSong.key;
+    if (typeof transposeChord === 'function') {
+        resultingKey = transposeChord(currentPresentationSong.key, presTransposeOffset);
+    }
+    const keyEl = document.getElementById('pres-song-current-key');
+    if (keyEl) keyEl.textContent = resultingKey;
+    renderPresTransposedLyrics();
+};
 
 function togglePresScroll() {
     if (presIsScrolling) {

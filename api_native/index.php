@@ -25,6 +25,7 @@ require_once __DIR__ . '/controllers/PushController.php';
 require_once __DIR__ . '/controllers/AnnouncementController.php';
 require_once __DIR__ . '/controllers/AdminController.php';
 require_once __DIR__ . '/controllers/FeedbackController.php';
+require_once __DIR__ . '/controllers/LiveSyncController.php';
 
 
 
@@ -112,6 +113,12 @@ switch ($path) {
     case '/setlists':
         if ($method === 'GET') SetlistController::index();
         if ($method === 'POST') SetlistController::store();
+        break;
+
+    // Quick Cues (Atajos personales del líder)
+    case '/quick-cues':
+        if ($method === 'GET') LiveSyncController::getPersonalQuickCues();
+        if ($method === 'POST') LiveSyncController::savePersonalQuickCue();
         break;
 
     // Events
@@ -234,6 +241,22 @@ switch ($path) {
             break;
         }
 
+        // Check for parameterized /groups/{id}/leave
+        if (preg_match('#^/groups/(\d+)/leave$#', $path, $matches)) {
+            $groupId = (int)$matches[1];
+            if ($method === 'POST') GroupController::leave($groupId);
+            break;
+        }
+
+        // Check for parameterized /groups/{id}
+        if (preg_match('#^/groups/(\d+)$#', $path, $matches)) {
+            $groupId = (int)$matches[1];
+            if ($method === 'GET') GroupController::show($groupId);
+            if ($method === 'PUT') GroupController::update($groupId);
+            if ($method === 'DELETE') GroupController::destroy($groupId);
+            break;
+        }
+
         // Check for parameterized /suggestions/{id}/vote
 
         if (preg_match('#^/suggestions/(\d+)/vote$#', $path, $matches)) {
@@ -284,6 +307,37 @@ switch ($path) {
             $setlistId = (int)$matches[1];
             if ($method === 'PUT' || $method === 'POST') SetlistController::update($setlistId);
             if ($method === 'DELETE') SetlistController::destroy($setlistId);
+            break;
+        }
+
+        // Check for parameterized /setlists/{id}/live-session routes
+        if (preg_match('#^/setlists/(\d+)/live-session(?:/([a-z0-9_-]+)(?:/([a-z0-9_-]+))?)?$#', $path, $matches)) {
+            $setlistId = (int)$matches[1];
+            $action = $matches[2] ?? '';
+            $subAction = $matches[3] ?? '';
+
+            if (empty($action)) {
+                if ($method === 'GET') LiveSyncController::getSessionState($setlistId);
+            } else if ($action === 'start') {
+                if ($method === 'POST') LiveSyncController::startSession($setlistId);
+            } else if ($action === 'stop') {
+                if ($method === 'POST') LiveSyncController::stopSession($setlistId);
+            } else if ($action === 'sync') {
+                if ($method === 'POST') LiveSyncController::syncState($setlistId);
+            } else if ($action === 'cue') {
+                if ($subAction === 'clear') {
+                    if ($method === 'POST') LiveSyncController::clearCue($setlistId);
+                } else {
+                    if ($method === 'POST') LiveSyncController::sendCue($setlistId);
+                }
+            }
+            break;
+        }
+
+        // Check for parameterized /quick-cues/{id}
+        if (preg_match('#^/quick-cues/(\d+)$#', $path, $matches)) {
+            $cueId = (int)$matches[1];
+            if ($method === 'DELETE') LiveSyncController::deletePersonalQuickCue($cueId);
             break;
         }
 

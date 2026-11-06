@@ -173,6 +173,141 @@ class GroupController {
         ]);
     }
 
+    public static function show(int $groupId): void {
+        $user = requireAuth();
+        $pdo = DB::getConnection();
+
+        // Verificar pertenencia o superadmin
+        if ($user['account_type'] !== 'superadmin') {
+            $stmtCheck = $pdo->prepare("SELECT role FROM group_user WHERE user_id = ? AND group_id = ? LIMIT 1");
+            $stmtCheck->execute([$user['id'], $groupId]);
+            $membership = $stmtCheck->fetch();
+            if (!$membership) {
+                jsonResponse(['message' => 'No tienes acceso a esta banda o grupo.'], 403);
+            }
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT g.*, 
+                   CONCAT(u.name, ' ', u.lastname) AS creator_name,
+                   (SELECT COUNT(*) FROM group_user WHERE group_id = g.id) AS members_count,
+                   (SELECT COUNT(*) FROM songs WHERE group_id = g.id) AS songs_count,
+                   (SELECT COUNT(*) FROM setlists WHERE group_id = g.id) AS setlists_count
+            FROM groups g
+            LEFT JOIN users u ON u.id = g.created_by
+            WHERE g.id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$groupId]);
+        $group = $stmt->fetch();
+
+        if (!$group) {
+            jsonResponse(['message' => 'Grupo no encontrado.'], 404);
+        }
+
+        $group['is_creator'] = ((int)$group['created_by'] === (int)$user['id']) || ($user['account_type'] === 'superadmin');
+        jsonResponse($group);
+    }
+
+    public static function update(int $groupId): void {
+        $user = requireLeaderOrAdmin($groupId);
+        $rawInput = file_get_contents('php://input');
+        if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
+            $rawInput = $GLOBALS['rawInput'];
+        }
+        $input = json_decode($rawInput, true) ?? $_POST;
+
+        $name = trim($input['name'] ?? '');
+        $description = trim($input['description'] ?? '');
+
+        if (empty($name)) {
+            jsonResponse(['message' => 'El nombre de la banda es obligatorio.'], 422);
+        }
+
+        $pdo = DB::getConnection();
+        $stmt = $pdo->prepare("UPDATE groups SET name = ?, description = ?, updated_at = NOW() WHERE id = ?");
+        $stmt->execute([$name, $description, $groupId]);
+
+        jsonResponse([
+            'message' => 'Información de la banda actualizada exitosamente.',
+            'group' => [
+                'id' => $groupId,
+                'name' => $name,
+                'description' => $description
+            ]
+        ]);
+    }
+
+    public static function destroy(int $groupId): void {
+        $user = requireLeaderOrAdmin($groupId);
+        $pdo = DB::getConnection();
+
+        // Obtener datos del grupo
+        $stmt = $pdo->prepare("SELECT * FROM groups WHERE id = ? LIMIT 1");
+        $stmt->execute([$groupId]);
+        $group = $stmt->fetch();
+
+        if (!$group) {
+            jsonResponse(['message' => 'Banda no encontrada.'], 404);
+        }
+
+        // Solo el creador o superadmin puede eliminar la banda completa
+        $isCreator = ((int)$group['created_by'] === (int)$user['id']) || ($user['account_type'] === 'superadmin');
+        if (!$isCreator) {
+            jsonResponse(['message' => 'Solo el creador o administrador principal de la banda puede eliminarla.'], 403);
+        }
+
+        $rawInput = file_get_contents('php://input');
+        if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
+            $rawInput = $GLOBALS['rawInput'];
+        }
+        $input = json_decode($rawInput, true) ?? $_POST;
+        $confirmationName = trim($input['confirmation_name'] ?? '');
+
+        if (mb_strtolower($confirmationName) !== mb_strtolower(trim($group['name']))) {
+            jsonResponse(['message' => 'El nombre ingresado no coincide con el nombre de la banda.'], 422);
+        }
+
+        // Eliminar grupo (ON DELETE CASCADE limpia tablas hijas)
+        $stmtDel = $pdo->prepare("DELETE FROM groups WHERE id = ?");
+        $stmtDel->execute([$groupId]);
+
+        jsonResponse([
+            'message' => 'La banda "' . $group['name'] . '" ha sido eliminada correctamente.'
+        ]);
+    }
+
+    public static function leave(int $groupId): void {
+        $user = requireAuth();
+        $pdo = DB::getConnection();
+
+        $stmt = $pdo->prepare("SELECT * FROM groups WHERE id = ? LIMIT 1");
+        $stmt->execute([$groupId]);
+        $group = $stmt->fetch();
+
+        if (!$group) {
+            jsonResponse(['message' => 'Banda no encontrada.'], 404);
+        }
+
+        // Si es el creador y hay más miembros, no puede abandonar sin transferir o eliminar
+        if ((int)$group['created_by'] === (int)$user['id']) {
+            $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM group_user WHERE group_id = ?");
+            $stmtCount->execute([$groupId]);
+            $totalMembers = (int)$stmtCount->fetchColumn();
+
+            if ($totalMembers > 1) {
+                jsonResponse(['message' => 'Como creador de la banda no puedes abandonarla mientras haya otros integrantes. Puedes eliminar la banda desde la Zona de Peligro.'], 422);
+            }
+        }
+
+        $stmtDel = $pdo->prepare("DELETE FROM group_user WHERE group_id = ? AND user_id = ?");
+        $stmtDel->execute([$groupId, $user['id']]);
+
+        jsonResponse([
+            'message' => 'Has salido de la banda exitosamente.'
+        ]);
+    }
+
     private static function generateUniqueInviteCode(PDO $pdo): string {
         while (true) {
             $code = sprintf('%06d', rand(100000, 999999));

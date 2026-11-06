@@ -48,6 +48,13 @@
                         <h3 id="presentation-setlist-title" class="font-bold text-base text-zinc-900 dark:text-zinc-100 truncate">Repertorio</h3>
                         <p id="presentation-setlist-desc" class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">Sin descripción</p>
                     </div>
+                    <!-- Botón de Emisión para Tablet/PC (Sidebar Expandido) -->
+                    <div class="pt-1">
+                        <button type="button" id="btn-sidebar-pres-live-sync" onclick="toggleDirectorLiveSync()" class="hidden w-full items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-zinc-950 transition cursor-pointer" title="Iniciar o gestionar Emisión en Vivo">
+                            <i class="fa-solid fa-tower-broadcast text-xs pointer-events-none"></i>
+                            <span id="pres-sidebar-live-sync-text" class="pointer-events-none">Emisión en Vivo</span>
+                        </button>
+                    </div>
                 </div>
                 <div id="presentation-songs-list-container" class="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60 p-2 space-y-1">
                     <!-- Populated dynamically -->
@@ -63,6 +70,10 @@
                     <button type="button" id="btn-rail-pres-back" onclick="closeSetlistPresentation()" class="w-9 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 flex items-center justify-center transition cursor-pointer" title="Cerrar Repertorio">
                         <i class="fa-solid fa-arrow-left text-xs"></i>
                     </button>
+                    <!-- Botón de Emisión para Tablet/PC (Riel Colapsado) -->
+                    <button type="button" id="btn-rail-pres-live-sync" onclick="toggleDirectorLiveSync()" class="hidden w-9 h-9 rounded-xl border border-amber-500/30 bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-zinc-950 flex items-center justify-center transition cursor-pointer" title="Emisión en Vivo">
+                        <i class="fa-solid fa-tower-broadcast text-xs pointer-events-none"></i>
+                    </button>
                 </div>
                 <div id="presentation-rail-songs-container" class="flex-1 overflow-y-auto flex flex-col items-center gap-2.5 w-full py-1 px-1">
                     <!-- Populated dynamically with numbered badges 1, 2, 3... -->
@@ -72,16 +83,80 @@
 
         <!-- Right Side: Song Viewer (Main Content Panel) -->
         <section class="presentation-song-viewer flex-1 min-w-0 flex flex-col overflow-hidden h-full relative">
-            <!-- Controls bar (Cabecera minimalista: Título, Artista y Riel horizontal de badges numéricos en móvil) -->
+            <!-- Controls bar (Cabecera minimalista: Título, Artista, Botón Live Sync y Riel horizontal) -->
             <div class="presentation-viewer-header px-3.5 py-2.5 sm:p-3 border-b border-zinc-200 dark:border-zinc-800 flex flex-col justify-center bg-zinc-50 dark:bg-zinc-900/90 flex-shrink-0">
-                <div class="min-w-0 w-full">
-                    <h2 id="pres-song-title" class="font-bold text-base md:text-lg text-zinc-900 dark:text-zinc-100 truncate">Cargando canción...</h2>
-                    <p id="pres-song-artist" class="text-xs text-zinc-500 dark:text-zinc-400 truncate">...</p>
+                <div class="min-w-0 w-full flex items-center justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                        <h2 id="pres-song-title" class="font-bold text-base md:text-lg text-zinc-900 dark:text-zinc-100 truncate">Cargando canción...</h2>
+                        <p id="pres-song-artist" class="text-xs text-zinc-500 dark:text-zinc-400 truncate">...</p>
+                    </div>
+
+                    <!-- Indicadores y Controles Live Sync en Cabecera -->
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <!-- Badge indicador LIVE en esquina para seguidores enlazados -->
+                        <span id="pres-corner-live-badge" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-500/10 text-red-500 border border-red-500/30">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                            <span>LIVE</span>
+                        </span>
+
+                        <!-- Botón para Iniciar o Gestionar Live Sync (Solo visible para Líderes de la banda) -->
+                        <button type="button" id="btn-pres-live-sync-toggle" onclick="toggleDirectorLiveSync()" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-amber-500 hover:text-zinc-950 transition cursor-pointer" title="Gestionar modo Live Sync">
+                            <i class="fa-solid fa-tower-broadcast text-xs pointer-events-none"></i>
+                            <span id="pres-live-sync-btn-text" class="pointer-events-none">Live Sync</span>
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Barra de Notificación de Sesión Activa para Integrantes (Seguidores) -->
+                <div id="pres-follower-live-bar" class="hidden w-full mt-2.5 py-1.5 px-3 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300 screen-fade">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <i class="fa-solid fa-tower-broadcast text-amber-500"></i>
+                        <span class="truncate"><strong id="pres-follower-director-name">El Director</strong> inició Live Sync</span>
+                    </div>
+                    <button type="button" id="btn-pres-join-live" onclick="joinLiveSync()" class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-amber-500 hover:bg-amber-400 text-zinc-950 transition cursor-pointer flex-shrink-0 ml-2">
+                        Conectarme
+                    </button>
+                </div>
+
+                <!-- Barra de Integrante Conectado con Botón Desconectar -->
+                <div id="pres-follower-connected-bar" class="hidden w-full mt-2.5 py-1.5 px-3 rounded-xl bg-red-500/10 dark:bg-red-500/15 border border-red-500/30 flex items-center justify-between text-xs text-red-700 dark:text-red-300 screen-fade">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                        <span class="truncate">Enlazado al Director (<strong id="pres-connected-director-label">Director</strong>)</span>
+                    </div>
+                    <button type="button" id="btn-pres-leave-live" onclick="leaveLiveSync()" class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-red-500/20 text-red-600 dark:text-red-300 hover:bg-red-500 hover:text-white border border-red-500/40 transition cursor-pointer flex-shrink-0 ml-2">
+                        Desconectar
+                    </button>
+                </div>
+
                 <!-- Riel horizontal de badges numéricos de canciones (Móvil / Pantallas compactas) -->
                 <div class="flex md:hidden w-full overflow-x-auto no-scrollbar pt-2">
                     <div id="presentation-horizontal-songs-container" class="flex items-center gap-1.5 min-w-full w-max justify-center px-2">
                         <!-- Populated dynamically with numbered badges 1, 2, 3... -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Franja de Indicación en Vivo (Live Cue Slot en la posición exacta del recuadro rojo) -->
+            <div id="pres-live-cue-slot" class="w-full px-3.5 pt-2 pb-1 hidden cue-slot-transition">
+                <div id="pres-live-cue-card" class="w-full rounded-xl bg-zinc-900 border border-amber-500/70 text-amber-300 p-2.5 sm:p-3 shadow-xl shadow-amber-500/10 relative overflow-hidden screen-fade">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-shrink-0 text-amber-400">
+                                <i id="pres-live-cue-icon" class="fa-solid fa-music text-xs"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <span id="pres-live-cue-type" class="text-[10px] font-bold uppercase tracking-wider text-amber-400/80 block">Indicación en Vivo</span>
+                                <span id="pres-live-cue-text" class="text-xs sm:text-sm font-bold text-amber-200 truncate block">Tono: Fa#m</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="dismissLiveCue()" class="text-zinc-400 hover:text-zinc-200 p-1 flex-shrink-0 cursor-pointer" title="Cerrar aviso">
+                            <i class="fa-solid fa-xmark text-xs pointer-events-none"></i>
+                        </button>
+                    </div>
+                    <!-- Barra de progreso decreciente -->
+                    <div id="pres-live-cue-progress-box" class="w-full bg-zinc-800 h-1 rounded-full mt-2 overflow-hidden">
+                        <div id="pres-live-cue-progress-bar" class="bg-amber-400 h-full w-full transition-all duration-100 ease-linear"></div>
                     </div>
                 </div>
             </div>
@@ -128,8 +203,13 @@
                     </div>
                 </div>
 
-                <!-- Columna Derecha: 5 Botones FAB Principales (Centrados Verticalmente) -->
+                <!-- Columna Derecha: Botones FAB Principales (Centrados Verticalmente) -->
                 <div class="flex flex-col items-center gap-2.5 pointer-events-auto">
+                    <!-- 0. Botón Flotante de Emisión / Cues (Líder en Móvil y Tablet) -->
+                    <button type="button" id="btn-pres-cue-pad-trigger" onclick="openDirectorCuePad()" class="viewer-fab-badge w-12 h-12 rounded-full flex items-center justify-center cursor-pointer hidden bg-zinc-800 text-amber-400 border border-zinc-700 hover:bg-zinc-700 shadow-xl transition-transform active:scale-90" title="Indicaciones en Vivo (Abrir pad de mensajes)">
+                        <i class="fa-solid fa-tower-broadcast text-sm pointer-events-none"></i>
+                    </button>
+
                     <!-- 1. Botón Ver Canciones (Abre lista de canciones del repertorio) -->
                     <button type="button" id="btn-toggle-presentation-songs" onclick="openMobileSongsModal()" class="viewer-fab-badge w-12 h-12 rounded-full flex items-center justify-center cursor-pointer" title="Ver lista de canciones del repertorio">
                         <i class="fa-solid fa-list-ul text-sm pointer-events-none"></i>
@@ -283,6 +363,168 @@
         </div>
         <div id="mobile-presentation-songs-container" class="overflow-y-auto flex-1 p-3 space-y-1 divide-y divide-zinc-100 dark:divide-zinc-800/60">
             <!-- Populated dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- MODAL / BOTTOM SHEET: Despacho de Indicaciones en Vivo (Solo Director) -->
+<div id="modal-director-cue-pad" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-zinc-950/70 backdrop-blur-sm hidden px-0 sm:px-4">
+    <div class="w-full sm:max-w-lg bg-white dark:bg-zinc-900 border-t sm:border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden screen-fade flex flex-col max-h-[85vh]">
+        
+        <!-- Cabecera del Panel Táctil -->
+        <div class="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-2">
+                <span id="modal-cue-status-dot" class="w-2.5 h-2.5 rounded-full bg-zinc-400"></span>
+                <div>
+                    <h3 class="font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100">Indicador en Vivo a la Banda</h3>
+                    <p id="modal-cue-status-desc" class="text-[11px] text-zinc-500 dark:text-zinc-400">Emisión inactiva • Abre mensajes o inicia para transmitir</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeDirectorCuePad()" class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">
+                <i class="fa-solid fa-xmark text-sm pointer-events-none"></i>
+            </button>
+        </div>
+
+        <!-- Pestañas de Navegación -->
+        <div class="grid grid-cols-4 gap-1 p-1.5 mx-4 mt-3 bg-zinc-100 dark:bg-zinc-950 rounded-xl text-xs font-semibold flex-shrink-0">
+            <button type="button" onclick="switchDirectorCueTab('keys')" id="tab-cue-btn-keys" class="py-1.5 rounded-lg bg-white dark:bg-zinc-800 text-amber-600 dark:text-amber-400 shadow-sm transition">Tonos</button>
+            <button type="button" onclick="switchDirectorCueTab('dynamics')" id="tab-cue-btn-dynamics" class="py-1.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition">Dinámica</button>
+            <button type="button" onclick="switchDirectorCueTab('custom')" id="tab-cue-btn-custom" class="py-1.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition">Mis Atajos</button>
+            <button type="button" onclick="switchDirectorCueTab('text')" id="tab-cue-btn-text" class="py-1.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition">Libre</button>
+        </div>
+
+        <!-- Contenedor de Pestañas Scrollable -->
+        <div class="overflow-y-auto flex-1 p-4 space-y-3">
+            
+            <!-- Pestaña 1: Selector Rápido de Tonalidades -->
+            <div id="tab-cue-content-keys" class="space-y-2.5">
+                <div class="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                    Nota Base para Improvisación
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                    <button type="button" onclick="dispatchKeyCue('Do', 'C')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-center font-bold text-sm text-zinc-900 dark:text-zinc-100 active:scale-95 transition">C</button>
+                    <button type="button" onclick="dispatchKeyCue('Re', 'D')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-center font-bold text-sm text-zinc-900 dark:text-zinc-100 active:scale-95 transition">D</button>
+                    <button type="button" onclick="dispatchKeyCue('Mi', 'E')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-center font-bold text-sm text-zinc-900 dark:text-zinc-100 active:scale-95 transition">E</button>
+                    <button type="button" onclick="dispatchKeyCue('Fa', 'F')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-center font-bold text-sm text-zinc-900 dark:text-zinc-100 active:scale-95 transition">F</button>
+                    <button type="button" onclick="dispatchKeyCue('Sol', 'G')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-center font-bold text-sm text-zinc-900 dark:text-zinc-100 active:scale-95 transition">G</button>
+                    <button type="button" onclick="dispatchKeyCue('La', 'A')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-center font-bold text-sm text-zinc-900 dark:text-zinc-100 active:scale-95 transition">A</button>
+                    <button type="button" onclick="dispatchKeyCue('Si', 'B')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-center font-bold text-sm text-zinc-900 dark:text-zinc-100 active:scale-95 transition">B</button>
+                    <button type="button" onclick="toggleDirectorCueSharp()" id="btn-cue-sharp-toggle" class="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 font-bold text-sm transition">#</button>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button type="button" onclick="setDirectorCueQuality('Mayor')" id="btn-cue-quality-maj" class="py-2.5 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40 text-xs font-bold transition">Mayor</button>
+                    <button type="button" onclick="setDirectorCueQuality('Menor')" id="btn-cue-quality-min" class="py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-950 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 text-xs font-bold hover:text-zinc-900 dark:hover:text-zinc-200 transition">Menor (m)</button>
+                </div>
+            </div>
+
+            <!-- Pestaña 2: Dinámicas & Estructura -->
+            <div id="tab-cue-content-dynamics" class="hidden grid grid-cols-2 gap-2.5">
+                <button type="button" onclick="dispatchDirectCue('Ir a Coro', 'Estructura')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 text-left transition active:scale-95">
+                    <div class="font-bold text-xs text-blue-600 dark:text-blue-400">Ir a Coro</div>
+                    <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">Transición</div>
+                </button>
+                <button type="button" onclick="dispatchDirectCue('Ir a Puente', 'Estructura')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 text-left transition active:scale-95">
+                    <div class="font-bold text-xs text-purple-600 dark:text-purple-400">Ir a Puente</div>
+                    <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">Subida</div>
+                </button>
+                <button type="button" onclick="dispatchDirectCue('Bajar a Suave', 'Dinámica')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 text-left transition active:scale-95">
+                    <div class="font-bold text-xs text-emerald-600 dark:text-emerald-400">Bajar Intensidad</div>
+                    <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">Piano / Acústico</div>
+                </button>
+                <button type="button" onclick="dispatchDirectCue('Subir con Fuerza', 'Dinámica')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 text-left transition active:scale-95">
+                    <div class="font-bold text-xs text-red-600 dark:text-red-400">Fuerza / Toda la banda</div>
+                    <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">Fortissimo</div>
+                </button>
+                <button type="button" onclick="dispatchDirectCue('A Capella / Solo Voces', 'Dinámica')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 text-left transition active:scale-95">
+                    <div class="font-bold text-xs text-amber-600 dark:text-amber-400">A Capella</div>
+                    <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">Solo voces</div>
+                </button>
+                <button type="button" onclick="dispatchDirectCue('Corte / Final', 'Estructura')" class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-800 text-left transition active:scale-95">
+                    <div class="font-bold text-xs text-zinc-700 dark:text-zinc-300">Corte / Final</div>
+                    <div class="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">Terminar compás</div>
+                </button>
+            </div>
+
+            <!-- Pestaña 3: Mis Atajos Privados -->
+            <div id="tab-cue-content-custom" class="hidden space-y-3">
+                <div id="director-personal-cues-list" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                    <div class="text-xs text-zinc-400 text-center py-4">Cargando tus atajos...</div>
+                </div>
+
+                <!-- Formulario para agregar atajo privado -->
+                <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2">
+                    <input type="text" id="input-new-personal-cue" placeholder="Nuevo atajo personal (ej. Salida a batería)" class="flex-1 px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500">
+                    <button type="button" onclick="addPersonalQuickCue()" class="px-3.5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-bold transition hover:opacity-90 flex-shrink-0 cursor-pointer">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pestaña 4: Mensaje Libre de Texto -->
+            <div id="tab-cue-content-text" class="hidden space-y-2.5">
+                <p class="text-[11px] text-zinc-500 dark:text-zinc-400">Escribe un aviso puntual no previsto para que aparezca en las pantallas de la banda:</p>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="input-free-text-cue" placeholder="Ej. Repetir coro 2 veces..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500">
+                    <button type="button" onclick="dispatchFreeTextCue()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs transition cursor-pointer flex-shrink-0">
+                        Transmitir
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Acciones Inferiores del Director -->
+        <div class="p-3.5 border-t border-zinc-100 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-900/60 flex items-center justify-between gap-2 flex-shrink-0">
+            <button type="button" onclick="clearLiveCueBroadcast()" class="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-eraser text-xs"></i>
+                <span>Despejar Pantalla</span>
+            </button>
+            <div class="flex items-center gap-2">
+                <button type="button" id="btn-modal-stop-live" onclick="confirmStopLiveSync()" class="hidden px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-power-off text-xs"></i>
+                    <span>Finalizar Emisión</span>
+                </button>
+                <button type="button" id="btn-modal-start-live" onclick="startDirectorFromPad()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-tower-broadcast text-xs"></i>
+                    <span>Iniciar Emisión</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Personalizado: Confirmar Finalizar Emisión en Vivo -->
+<div id="modal-confirm-stop-live" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden px-4">
+    <div class="w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden screen-fade">
+        <div class="p-5 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
+            <h3 class="font-serif text-lg font-bold text-zinc-900 dark:text-zinc-100">Finalizar Emisión</h3>
+            <button type="button" onclick="closeStopLiveSyncModal()" class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center text-sm font-bold transition">&times;</button>
+        </div>
+        <div class="p-5 space-y-4">
+            <p class="text-xs text-zinc-600 dark:text-zinc-400">¿Deseas finalizar la Emisión en Vivo? Todos los integrantes se desconectarán y volverán a su navegación libre.</p>
+            <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeStopLiveSyncModal()" class="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">Cancelar</button>
+                <button type="button" onclick="executeStopLiveSync()" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow transition">Finalizar Emisión</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Personalizado: Confirmar Eliminar Atajo Personal -->
+<div id="modal-confirm-delete-cue" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden px-4">
+    <div class="w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden screen-fade">
+        <div class="p-5 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
+            <h3 class="font-serif text-lg font-bold text-zinc-900 dark:text-zinc-100">Eliminar Atajo</h3>
+            <button type="button" onclick="closeDeleteCueModal()" class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center text-sm font-bold transition">&times;</button>
+        </div>
+        <div class="p-5 space-y-4">
+            <p class="text-xs text-zinc-600 dark:text-zinc-400">¿Deseas eliminar este atajo personal? Podrás volver a crearlo cuando lo necesites.</p>
+            <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeDeleteCueModal()" class="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">Cancelar</button>
+                <button type="button" id="btn-confirm-delete-cue-action" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow transition">Eliminar</button>
+            </div>
         </div>
     </div>
 </div>

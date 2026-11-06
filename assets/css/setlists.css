@@ -91,3 +91,25 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* ==========================================================================
+   Live Sync & Tally Frame Styles
+   ========================================================================== */
+.tally-frame-active {
+    box-shadow: inset 0 0 16px rgba(239, 68, 68, 0.28), 0 0 15px rgba(239, 68, 68, 0.18) !important;
+    border: 2px solid rgba(239, 68, 68, 0.5) !important;
+}
+
+@keyframes live-haptic-pulse {
+    0% { transform: scale(0.98); opacity: 0.8; }
+    50% { transform: scale(1.01); opacity: 1; box-shadow: 0 0 15px rgba(245, 158, 11, 0.45); }
+    100% { transform: scale(0.98); opacity: 0.8; }
+}
+
+.live-haptic-feedback {
+    animation: live-haptic-pulse 0.3s ease-in-out 2;
+}
+
+.cue-slot-transition {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}

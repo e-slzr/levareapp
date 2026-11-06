@@ -101,7 +101,7 @@ function initApp() {
 
             syncUserGroupsAndValidateMembership().then((syncResult) => {
                 const currentView = window.location.hash.replace('#', '') || 'dashboard';
-                const restrictedViews = ['songs', 'community', 'songs-community', 'setlists', 'events', 'suggestions', 'members'];
+                const restrictedViews = ['songs', 'community', 'songs-community', 'setlists', 'events', 'suggestions', 'members', 'band'];
 
                 // 1. Si el usuario fue expulsado de todas sus bandas y está en una vista restringida
                 if (syncResult && syncResult.hasNoGroups && restrictedViews.includes(currentView)) {
@@ -265,6 +265,9 @@ async function updateShellVisibility() {
         }
     });
 
+    // Adaptar dinámicamente el botón de "Banda" (líder) vs "Miembros" (músico) en Desktop y Móvil
+    updateBandNavVisibility();
+
     // Contador de solicitudes pendientes para Superadmin
     if (isSuperAdmin) {
         apiFetch('/superadmin/requests').then(reqs => {
@@ -321,17 +324,45 @@ async function updateShellVisibility() {
 function navigateTo(viewId) {
     if (!viewId) return;
 
+    // Bloquear cambio de vista si el Modo Emisión o el enlace de seguidor está activo
+    if (document.body.classList.contains('setlist-presentation-mode') && typeof liveSyncState !== 'undefined') {
+        if (liveSyncState.isDirector) {
+            if (typeof showToast === 'function') {
+                showToast('Tienes una Emisión activa. Debes finalizar la emisión antes de cambiar de sección.', 'warning');
+            }
+            if (typeof confirmStopLiveSync === 'function') {
+                confirmStopLiveSync();
+            }
+            return;
+        }
+        if (liveSyncState.isFollowerConnected) {
+            if (typeof showToast === 'function') {
+                showToast('Estás enlazado a la sesión en vivo del Director. Pulsa "Desconectar" antes de salir.', 'warning');
+            }
+            return;
+        }
+    }
+
     const isSuperAdmin = currentUser && currentUser.account_type === 'superadmin';
     const userGroups = getData('userGroups') || [];
     const hasNoGroups = !isSuperAdmin && (!Array.isArray(userGroups) || userGroups.length === 0);
-    const restrictedViews = ['songs', 'setlists', 'events', 'suggestions', 'members', 'announcements'];
+    const restrictedViews = ['songs', 'setlists', 'events', 'suggestions', 'members', 'band', 'announcements'];
 
     if (hasNoGroups && restrictedViews.includes(viewId)) {
         openNoGroupAlertModal();
         return;
     }
 
-    window.location.hash = `#${viewId}`;
+    // Si un músico regular intenta navegar a Banda, redirigir a Miembros
+    if (viewId === 'band' && !(typeof canEdit === 'function' && canEdit())) {
+        viewId = 'members';
+    }
+
+    if (window.location.hash === `#${viewId}`) {
+        handleHashRouting();
+    } else {
+        window.location.hash = `#${viewId}`;
+    }
 }
 
 /**
@@ -340,10 +371,37 @@ function navigateTo(viewId) {
 async function handleHashRouting() {
     if (!currentUser) return;
     
+    // Si está en presentación con Live Sync activo, bloquear cambio de hash
+    if (document.body.classList.contains('setlist-presentation-mode') && typeof liveSyncState !== 'undefined') {
+        if (liveSyncState.isDirector || liveSyncState.isFollowerConnected) {
+            const currentHash = window.location.hash.replace('#', '');
+            if (currentHash !== 'setlists') {
+                if (liveSyncState.isDirector) {
+                    if (typeof showToast === 'function') {
+                        showToast('Tienes una Emisión activa. Finaliza la emisión para poder salir.', 'warning');
+                    }
+                    if (typeof confirmStopLiveSync === 'function') {
+                        confirmStopLiveSync();
+                    }
+                } else if (liveSyncState.isFollowerConnected) {
+                    if (typeof showToast === 'function') {
+                        showToast('Estás enlazado a la sesión en vivo del Director. Pulsa "Desconectar" antes de salir.', 'warning');
+                    }
+                }
+                window.location.hash = '#setlists';
+                return;
+            }
+        }
+    }
+
     // Cerrar modo presentación si estaba activo
     if (document.body.classList.contains('setlist-presentation-mode')) {
         if (typeof closeSetlistPresentation === 'function') {
-            closeSetlistPresentation();
+            const closed = closeSetlistPresentation();
+            if (closed === false) {
+                window.location.hash = '#setlists';
+                return;
+            }
         } else {
             document.body.classList.remove('setlist-presentation-mode');
             const pres = document.getElementById('subpanel-setlist-presentation');
@@ -357,7 +415,7 @@ async function handleHashRouting() {
     if (!viewId) viewId = 'dashboard';
 
     // Lista de rutas válidas
-    const pages = ['dashboard', 'songs', 'community', 'songs-community', 'setlists', 'events', 'suggestions', 'members', 'profile', 'feedback', 'announcements', 'admin'];
+    const pages = ['dashboard', 'songs', 'community', 'songs-community', 'setlists', 'events', 'suggestions', 'members', 'band', 'profile', 'feedback', 'announcements', 'admin'];
     if (!pages.includes(viewId)) {
         viewId = currentUser?.account_type === 'superadmin' ? 'admin' : 'dashboard';
         window.location.hash = `#${viewId}`;
@@ -374,7 +432,7 @@ async function handleHashRouting() {
 
     // Guardias según el rol del usuario
     if (currentUser?.account_type === 'superadmin') {
-        if (!['dashboard', 'admin', 'profile', 'feedback', 'announcements', 'songs'].includes(panelViewId)) {
+        if (!['dashboard', 'admin', 'profile', 'feedback', 'announcements', 'songs', 'band'].includes(panelViewId)) {
             viewId = 'dashboard';
             window.location.hash = `#${viewId}`;
             return;
@@ -386,8 +444,15 @@ async function handleHashRouting() {
             return;
         }
 
+        // Si es músico común e intenta ingresar a Gestión de Banda, redirigir a Miembros
+        if (panelViewId === 'band' && !(typeof canEdit === 'function' && canEdit())) {
+            viewId = 'members';
+            window.location.hash = `#${viewId}`;
+            return;
+        }
+
         const syncResult = await syncUserGroupsAndValidateMembership();
-        const restrictedViews = ['songs', 'setlists', 'events', 'suggestions', 'members'];
+        const restrictedViews = ['songs', 'setlists', 'events', 'suggestions', 'members', 'band'];
 
         if (syncResult.hasNoGroups && restrictedViews.includes(panelViewId)) {
             viewId = 'dashboard';
@@ -424,6 +489,9 @@ async function handleHashRouting() {
         triggerViewInitializer(viewId, true);
     }
 
+    // Adaptar dinámicamente visibilidad de Banda (líder) vs Miembros (músico)
+    updateBandNavVisibility();
+
     // Actualizar clases activas en la barra de navegación inferior
     const mainMobileViews = ['dashboard', 'songs', 'community', 'songs-community', 'setlists', 'events'];
     const isSecondaryView = !mainMobileViews.includes(viewId);
@@ -449,6 +517,7 @@ async function handleHashRouting() {
         'events': 'Calendario de Eventos',
         'suggestions': 'Caja de Sugerencias',
         'members': 'Directorio de Miembros',
+        'band': 'Banda',
         'profile': 'Editar Mi Perfil',
         'feedback': 'Feedback & Soporte',
         'announcements': 'Novedades y Anuncios',
@@ -474,6 +543,7 @@ function triggerViewInitializer(viewId, forceRefresh = true) {
     if (viewId === 'events' && typeof initEventsView === 'function') initEventsView(forceRefresh);
     if (viewId === 'suggestions' && typeof initSuggestionsView === 'function') initSuggestionsView(forceRefresh);
     if (viewId === 'members' && typeof initMembersView === 'function') initMembersView(forceRefresh);
+    if (viewId === 'band' && typeof initBandView === 'function') initBandView(forceRefresh);
     if (viewId === 'profile' && typeof initProfileView === 'function') initProfileView(forceRefresh);
     if (viewId === 'feedback' && typeof initFeedbackView === 'function') initFeedbackView(forceRefresh);
     if (viewId === 'announcements' && typeof initAnnouncementsView === 'function') initAnnouncementsView(forceRefresh);
@@ -506,7 +576,7 @@ async function syncCurrentUserProfile() {
         if (prevAccountType !== newAccountType) {
             updateShellVisibility();
             const currentView = window.location.hash.replace('#', '') || 'dashboard';
-            const permissionSensitiveViews = ['setlists', 'events', 'members', 'songs', 'dashboard'];
+            const permissionSensitiveViews = ['setlists', 'events', 'members', 'songs', 'dashboard', 'band'];
             if (permissionSensitiveViews.includes(currentView)) {
                 triggerViewInitializer(currentView, true);
             }
@@ -554,10 +624,48 @@ function openMoreMenu() {
         });
     }
 
+    // Adaptar dinámicamente accesos de Banda vs Miembros
+    updateBandNavVisibility();
+
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
 window.openMoreMenu = openMoreMenu;
+
+/**
+ * Adapta dinámicamente la visibilidad de los accesos de "Banda" (líderes) vs "Miembros" (músicos)
+ * tanto en la barra de navegación de escritorio/tablet como en el menú inferior "Más" móvil.
+ */
+function updateBandNavVisibility() {
+    const isLeader = typeof canEdit === 'function' && canEdit();
+
+    // Desktop / Tablet
+    const desktopBand = document.getElementById('desktop-nav-btn-band');
+    const desktopMembers = document.getElementById('desktop-nav-btn-members');
+    if (desktopBand && desktopMembers) {
+        if (isLeader) {
+            desktopBand.classList.remove('hidden');
+            desktopMembers.classList.add('hidden');
+        } else {
+            desktopBand.classList.add('hidden');
+            desktopMembers.classList.remove('hidden');
+        }
+    }
+
+    // Mobile Bottom Sheet
+    const mobileBand = document.getElementById('more-menu-btn-band');
+    const mobileMembers = document.getElementById('more-menu-btn-members');
+    if (mobileBand && mobileMembers) {
+        if (isLeader) {
+            mobileBand.classList.remove('hidden');
+            mobileMembers.classList.add('hidden');
+        } else {
+            mobileBand.classList.add('hidden');
+            mobileMembers.classList.remove('hidden');
+        }
+    }
+}
+window.updateBandNavVisibility = updateBandNavVisibility;
 
 /**
  * Cierra el menú modal inferior "Más".

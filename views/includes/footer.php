@@ -17,9 +17,11 @@
     <script src="<?= asset_v('assets/js/views/songs-community.js') ?>"></script>
     <script src="<?= asset_v('assets/js/views/songs.js') ?>"></script>
     <script src="<?= asset_v('assets/js/views/setlists.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/setlists-live.js') ?>"></script>
     <script src="<?= asset_v('assets/js/views/events.js') ?>"></script>
     <script src="<?= asset_v('assets/js/views/suggestions.js') ?>"></script>
     <script src="<?= asset_v('assets/js/views/members.js') ?>"></script>
+    <script src="<?= asset_v('assets/js/views/band.js') ?>"></script>
     <script src="<?= asset_v('assets/js/views/profile.js') ?>"></script>
     <script src="<?= asset_v('assets/js/views/feedback.js') ?>"></script>
     <script src="<?= asset_v('assets/js/views/admin.js') ?>"></script>
