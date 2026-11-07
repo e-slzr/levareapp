@@ -1,6 +1,6 @@
 <!-- Events & Calendar Screen (Minimalist UI - Dual Light & Dark Mode) -->
-<div class="space-y-5 screen-fade">
-    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+<div class="space-y-4 screen-fade flex flex-col flex-1">
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 flex-shrink-0">
         <div>
             <h1 class="font-serif text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Eventos</h1>
             <p class="text-xs text-zinc-500 dark:text-zinc-400">Programación de ensayos, conciertos y servicios</p>
@@ -52,19 +52,19 @@
         </div>
     </div>
 
-    <!-- WRAPPER 2: Calendar View -->
-    <div id="events-calendar-wrapper" class="hidden space-y-4">
+    <!-- WRAPPER 2: Calendar View (Elastic Vertical Layout) -->
+    <div id="events-calendar-wrapper" class="hidden [&:not(.hidden)]:flex flex-col space-y-3 flex-1">
         <!-- Month Navigation Bar -->
-        <div class="p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm">
-            <button type="button" id="btn-prev-month" class="w-8 h-8 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center font-bold transition">&larr;</button>
+        <div class="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm flex-shrink-0">
+            <button type="button" id="btn-prev-month" class="w-8 h-8 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center font-bold transition cursor-pointer">&larr;</button>
             <span id="calendar-month-year" class="font-bold text-base text-zinc-900 dark:text-zinc-100">Cargando mes...</span>
-            <button type="button" id="btn-next-month" class="w-8 h-8 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center font-bold transition">&rarr;</button>
+            <button type="button" id="btn-next-month" class="w-8 h-8 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center font-bold transition cursor-pointer">&rarr;</button>
         </div>
 
-        <!-- Calendar Grid Card -->
-        <div class="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+        <!-- Calendar Grid Card (Aprovechamiento elástico vertical) -->
+        <div id="calendar-card-container" class="p-3 sm:p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
             <!-- Weekday Headers -->
-            <div class="grid grid-cols-7 text-center font-bold text-xs text-zinc-400 dark:text-zinc-500 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 uppercase tracking-wider">
+            <div class="grid grid-cols-7 text-center font-bold text-xs text-zinc-400 dark:text-zinc-500 pb-2.5 border-b border-zinc-100 dark:border-zinc-800/80 uppercase tracking-wider flex-shrink-0">
                 <div>Dom</div>
                 <div>Lun</div>
                 <div>Mar</div>
@@ -75,7 +75,7 @@
             </div>
 
             <!-- Calendar Cells Grid -->
-            <div id="calendar-grid-cells" class="grid grid-cols-7 divide-x divide-y divide-zinc-100 dark:divide-zinc-800/60 border-b border-l border-zinc-100 dark:border-zinc-800/60">
+            <div id="calendar-grid-cells" class="grid grid-cols-7 gap-1 sm:gap-1.5 pt-1.5 flex-1 w-full h-full" style="display: grid !important; grid-template-columns: repeat(7, 1fr) !important;">
                 <!-- 42 cells rendered dynamically -->
             </div>
         </div>
@@ -91,7 +91,7 @@
         <!-- Header con indicador de pasos -->
         <div class="p-5 border-b border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between flex-shrink-0">
             <div>
-                <h3 class="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100">Programar Nuevo Evento</h3>
+                <h3 id="event-modal-title" class="font-serif text-xl font-bold text-zinc-900 dark:text-zinc-100">Programar Nuevo Evento</h3>
                 <div class="flex items-center gap-2 mt-1">
                     <span id="event-step-badge-1" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 transition">1. Información</span>
                     <i class="fa-solid fa-chevron-right text-[8px] text-zinc-400"></i>
@@ -110,16 +110,28 @@
                         class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
                     <div class="space-y-1.5">
                         <label for="event-form-date" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Fecha</label>
-                        <input type="date" id="event-form-date" required
-                            class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                        <div class="relative cursor-pointer" onclick="try{document.getElementById('event-form-date').showPicker()}catch(e){}">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+                                <i class="fa-regular fa-calendar-days text-sm"></i>
+                            </div>
+                            <input type="date" id="event-form-date" required
+                                onclick="try{this.showPicker()}catch(e){}"
+                                class="w-full !pl-10 pr-3.5 py-2.5 min-h-[44px] rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition cursor-pointer dark:[color-scheme:dark]" />
+                        </div>
                     </div>
                     <div class="space-y-1.5">
                         <label for="event-form-time" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Hora</label>
-                        <input type="time" id="event-form-time" required
-                            class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition" />
+                        <div class="relative cursor-pointer" onclick="try{document.getElementById('event-form-time').showPicker()}catch(e){}">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500">
+                                <i class="fa-regular fa-clock text-sm"></i>
+                            </div>
+                            <input type="time" id="event-form-time" required
+                                onclick="try{this.showPicker()}catch(e){}"
+                                class="w-full !pl-10 pr-3.5 py-2.5 min-h-[44px] rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition cursor-pointer dark:[color-scheme:dark]" />
+                        </div>
                     </div>
                 </div>
 
@@ -210,10 +222,15 @@
         </div>
 
         <div class="p-4 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between gap-2 flex-shrink-0">
-            <button type="button" id="btn-delete-event" class="px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/40 transition" style="display: none;">
-                <i class="fa-solid fa-trash-can mr-1"></i>Cancelar Evento
+            <button type="button" id="btn-delete-event" class="px-3.5 py-2 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/40 transition cursor-pointer" style="display: none;">
+                <i class="fa-solid fa-trash-can mr-1.5"></i>Cancelar Evento
             </button>
-            <button type="button" class="btn-close-modal px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition ml-auto">Cerrar</button>
+            <div class="flex items-center gap-2 ml-auto">
+                <button type="button" id="btn-edit-event" class="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition cursor-pointer" style="display: none;">
+                    <i class="fa-solid fa-pen-to-square mr-1.5"></i>Editar Evento
+                </button>
+                <button type="button" class="btn-close-modal px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer">Cerrar</button>
+            </div>
         </div>
     </div>
 </div>

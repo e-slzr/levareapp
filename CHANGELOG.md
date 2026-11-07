@@ -8,6 +8,27 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased] - Próximamente
 
+- **Aprovechamiento Vertical Elástico en la Vista de Modo Calendario (PC y Móvil)**:
+  - En `views/events.php`, se blindó la cuadrícula `#calendar-grid-cells` con las clases `grid grid-cols-7` y estilos en línea directos `display: grid !important; grid-template-columns: repeat(7, 1fr) !important;`, previniendo que en navegadores móviles (iOS Safari / Samsung Internet) colapse en 1 columna gigante por desfases de caché.
+  - En `assets/css/main.css`, se actualizó la importación `@import "events.css?v=3";` para forzar la invalidación inmediata de caché de submódulos en dispositivos móviles.
+  - En `assets/css/events.css`, se calibraron con precisión matemática las dimensiones de `#calendar-card-container` y `#calendar-grid-cells` para respetar estrictamente el margen de seguridad inferior de `#main-content`:
+    - En móvil: altura dinámica calibrada a `height: calc(100dvh - 310px)` con mínimo protegido de `380px`, asegurando que el borde inferior del calendario termine exactamente por encima del margen `pb-28` (112 px) y no quede oculto detrás del menú inferior flotante.
+    - En tabletas y PC: altura adaptativa `height: calc(100dvh - 235px)` respetando el margen `md:pb-20` (80 px), con mínimo protegido de `520px` y celdas de `min-height: 70px` a `76px` para evitar cualquier compresión o aspecto aplastado.
+  - En `assets/css/events.css`, se compactó el espaciado intercelular reduciendo los márgenes entre días a `2px` en móvil, `3px` en tabletas y `4px` en escritorio, suavizando el radio de borde de las celdas a `var(--radius-sm)` para una cuadrícula uniforme, cohesionada y sin separaciones excesivas.
+
+- **Edición Integral de Eventos y Roster de Músicos**:
+  - En `api_native/controllers/EventController.php`, se implementó el método `update(int $id)` con validación de roles (`requireLeaderOrAdmin`), actualización de datos del evento (`name`, `date`, `time`, `type`, `description`, `setlist_id`), sincronización atómica de músicos asignados en `event_musicians` y notificación automática al grupo de la banda.
+  - En `api_native/index.php`, se expuso la ruta `PUT /events/{id}` conectada a `EventController::update`.
+  - En `views/events.php`, se incorporó el botón «Editar Evento» (`#btn-edit-event`) en el modal de detalles y se dinamizó el título (`#event-modal-title`) y botón de envío (`#btn-submit-event`) del modal wizard para soportar fluidamente modos de creación y edición.
+  - En `assets/js/views/events.js`, se implementó `openEditEventModal(eventId)` con hidratación completa de campos y puestos de roster, botón de acceso rápido de edición en las tarjetas del listado y soporte reactivo en `handleEventScheduleFormSubmit` para enviar peticiones `PUT` al actualizar eventos existentes.
+
+- **Activación Interactiva de Datepicker y Timepicker en Programación de Eventos (PC y Móvil)**:
+  - En `views/events.php`, se actualizaron los campos de entrada de fecha y hora del modal de nuevo evento envolviéndolos en contenedores interactivos con iconos FontAwesome (`fa-regular fa-calendar-days` y `fa-regular fa-clock`), invocación automática del selector nativo mediante `showPicker()` al hacer clic en cualquier punto del campo o icono, y soporte de tema oscuro con `dark:[color-scheme:dark]`.
+  - En `views/events.php`, se adaptó la cuadrícula a `grid-cols-1 min-[420px]:grid-cols-2` con altura táctil mínima `min-h-[44px]`, garantizando amplio espacio táctil en pantallas móviles pequeñas sin comprimir los campos.
+  - En `assets/css/main.css`, se eliminó la directiva destructiva `appearance: none` y `-webkit-appearance: none` en `input[type="date"]` e `input[type="time"]` que ocultaba el botón nativo en navegadores Chromium de escritorio (PC), restituyendo la visibilidad de `::-webkit-calendar-picker-indicator` con estados interactivos, cursor pointer y adaptación nativa de `color-scheme: light / dark`.
+  - En `assets/js/views/events.js`, se añadieron escuchadores reactivos de clic a `#event-form-date` y `#event-form-time` para invocar de forma fluida el selector emergente nativo tanto en PC como en dispositivos móviles.
+  - En `views/announcements.php`, se retiró igualmente `appearance-none` y se añadió `dark:[color-scheme:dark]` para consistencia visual.
+
 - **Optimización Integral de Indicaciones en Vivo (Live Cues) e Iconografía Musical**:
   - En `api_native/controllers/LiveSyncController.php`, se estandarizó la vigencia de todas las indicaciones en vivo (Dinámicas, Mis Atajos, Libres y Tonos) a 8 segundos continuos, removiendo la persistencia indefinida previa de los mensajes de tipo Tonalidad.
   - En `assets/js/views/setlists-live.js`, se corrigió el rebote continuo de la barra decreciente al implementar una clave de control `currentCueKey`, permitiendo que el temporizador transcurra de forma fluida de 100% a 0% sin reiniciarse en cada consulta de sondeo.

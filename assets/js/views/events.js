@@ -6,6 +6,7 @@ let calendarCurrentYear = new Date().getFullYear();
 let calendarCurrentMonth = new Date().getMonth(); // 0-11
 let cachedEvents = [];
 let eventIdToDelete = null;
+let editingEventId = null;
 let eventsVisibleLimit = 12;
 const EVENTS_PAGE_SIZE = 12;
 let currentEventsTab = 'upcoming'; // 'upcoming' | 'past'
@@ -152,11 +153,17 @@ function initEventsView() {
     }
 
     document.querySelectorAll('#modal-schedule-event .btn-close-modal').forEach(btn => {
-        btn.onclick = () => document.getElementById('modal-schedule-event').classList.add('hidden');
+        btn.onclick = () => {
+            document.getElementById('modal-schedule-event').classList.add('hidden');
+            editingEventId = null;
+        };
     });
     const closeXSchedule = document.getElementById('btn-close-schedule-event-modal-x');
     if (closeXSchedule) {
-        closeXSchedule.onclick = () => document.getElementById('modal-schedule-event').classList.add('hidden');
+        closeXSchedule.onclick = () => {
+            document.getElementById('modal-schedule-event').classList.add('hidden');
+            editingEventId = null;
+        };
     }
 
     // Confirm Delete Event Modal triggers
@@ -198,6 +205,20 @@ function initEventsView() {
     const scheduleForm = document.getElementById('event-schedule-form');
     if (scheduleForm) {
         scheduleForm.onsubmit = handleEventScheduleFormSubmit;
+    }
+
+    // Setup interactive date & time pickers for desktop and mobile
+    const eventDateInput = document.getElementById('event-form-date');
+    const eventTimeInput = document.getElementById('event-form-time');
+    if (eventDateInput) {
+        eventDateInput.addEventListener('click', () => {
+            try { eventDateInput.showPicker(); } catch (e) {}
+        });
+    }
+    if (eventTimeInput) {
+        eventTimeInput.addEventListener('click', () => {
+            try { eventTimeInput.showPicker(); } catch (e) {}
+        });
     }
 
     eventsVisibleLimit = EVENTS_PAGE_SIZE;
@@ -293,16 +314,22 @@ function renderEventsListOnly() {
         const statusBadgeHTML = isPast 
             ? `<span class="px-2 py-0.5 rounded-xl text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 flex-shrink-0">Finalizado</span>` 
             : '';
+        const quickEditBtnHTML = (canEdit() && !isPast)
+            ? `<button type="button" class="btn-quick-edit-event w-8 h-8 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center text-xs transition shadow-sm flex-shrink-0 cursor-pointer" title="Editar evento">
+                <i class="fa-solid fa-pen-to-square"></i>
+               </button>`
+            : '';
 
         card.innerHTML = `
             <div class="flex items-start justify-between gap-2">
-                <div>
-                    <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100">${ev.name}</h3>
+                <div class="min-w-0 pr-1">
+                    <h3 class="font-bold text-base text-zinc-900 dark:text-zinc-100 truncate">${ev.name}</h3>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5"><i class="fa-regular fa-clock mr-1"></i>${evDate} • ${ev.time ? ev.time.substring(0, 5) : '18:00'} hs</p>
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0">
                     ${statusBadgeHTML}
                     ${typeBadgeHTML}
+                    ${quickEditBtnHTML}
                 </div>
             </div>
             <p class="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2">${ev.description || 'Sin notas adicionales'}</p>
@@ -332,6 +359,15 @@ function renderEventsListOnly() {
                 } else {
                     showToast("Este evento no tiene un repertorio asignado", "warning");
                 }
+            };
+        }
+
+        const quickEditBtn = card.querySelector('.btn-quick-edit-event');
+        if (quickEditBtn) {
+            quickEditBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                openEditEventModal(ev.id);
             };
         }
 
@@ -575,6 +611,20 @@ async function viewEventDetails(eventId) {
         }
     }
 
+    // Mostrar/ocultar botón de editar evento según permisos
+    const editBtn = document.getElementById('btn-edit-event');
+    if (editBtn) {
+        if (canEdit() && !isPast) {
+            editBtn.style.display = 'inline-flex';
+            editBtn.onclick = () => {
+                document.getElementById('modal-event-detail').classList.add('hidden');
+                openEditEventModal(ev.id);
+            };
+        } else {
+            editBtn.style.display = 'none';
+        }
+    }
+
     document.getElementById('modal-event-detail').classList.remove('hidden');
 }
 
@@ -610,6 +660,10 @@ function viewDayEventsDetails(dateStr, dayEvents) {
     const deleteBtn = document.getElementById('btn-delete-event');
     if (deleteBtn) {
         deleteBtn.style.display = 'none';
+    }
+    const editBtn = document.getElementById('btn-edit-event');
+    if (editBtn) {
+        editBtn.style.display = 'none';
     }
 
     document.getElementById('modal-event-detail').classList.remove('hidden');
@@ -791,6 +845,12 @@ function addEventRosterSlot(roleName, preselectedUserId = null) {
 }
 
 async function openScheduleEventModal(prefilledDate = null) {
+    editingEventId = null;
+    const modalTitle = document.getElementById('event-modal-title');
+    if (modalTitle) modalTitle.textContent = 'Programar Nuevo Evento';
+    const submitBtn = document.getElementById('btn-submit-event');
+    if (submitBtn) submitBtn.textContent = 'Programar Evento';
+
     // Fill setlists options
     const setlistSelect = document.getElementById('event-form-setlist');
     setlistSelect.innerHTML = '<option value="" disabled selected>Cargando repertorios...</option>';
@@ -861,6 +921,102 @@ async function openScheduleEventModal(prefilledDate = null) {
     }
 }
 
+async function openEditEventModal(eventId) {
+    editingEventId = eventId;
+    const modalTitle = document.getElementById('event-modal-title');
+    if (modalTitle) modalTitle.textContent = 'Editar Evento';
+    const submitBtn = document.getElementById('btn-submit-event');
+    if (submitBtn) submitBtn.textContent = 'Guardar Cambios';
+
+    const setlistSelect = document.getElementById('event-form-setlist');
+    setlistSelect.innerHTML = '<option value="" disabled selected>Cargando repertorios...</option>';
+    
+    const quickRolesBar = document.getElementById('event-quick-roles-bar');
+    const rosterSection = document.getElementById('event-form-roster-selection');
+    
+    if (quickRolesBar) quickRolesBar.innerHTML = '<span class="text-xs text-zinc-400 italic">Cargando roles...</span>';
+    if (rosterSection) rosterSection.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem; padding: 10px;">Cargando...</div>';
+
+    document.getElementById('event-schedule-form').reset();
+    goToEventModalStep(1);
+
+    try {
+        if (!cachedEvents || cachedEvents.length === 0) {
+            cachedEvents = await apiFetch('/events') || [];
+        }
+        const ev = cachedEvents.find(e => e.id === eventId);
+        if (!ev) {
+            showToast("No se encontró el evento solicitado.", "danger");
+            return;
+        }
+
+        const setlists = await apiFetch('/setlists') || [];
+        setlistSelect.innerHTML = '<option value="">-- Ninguno --</option>';
+
+        setlists.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = s.name;
+            if (ev.setlist_id && ev.setlist_id == s.id) {
+                opt.selected = true;
+            }
+            setlistSelect.appendChild(opt);
+        });
+
+        // Load roles and group members
+        const roles = await apiFetch('/members/roles') || [];
+        const members = await apiFetch('/members') || [];
+
+        eventGroupRoles = roles.length > 0 ? roles : ["Líder", "Voz Principal", "Coros", "Guitarra Acústica", "Teclado", "Bajo", "Batería"];
+        eventGroupRoles.sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+        eventGroupMembers = members;
+
+        // Render quick role buttons
+        if (quickRolesBar) {
+            quickRolesBar.innerHTML = '';
+            eventGroupRoles.forEach(role => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-semibold hover:bg-amber-500/20 hover:border-amber-500/50 transition flex items-center gap-1.5 cursor-pointer shadow-sm';
+                btn.innerHTML = `<i class="fa-solid fa-plus text-[10px] text-amber-500 dark:text-amber-400 font-bold"></i> <span>${role}</span>`;
+                btn.onclick = () => addEventRosterSlot(role);
+                quickRolesBar.appendChild(btn);
+            });
+        }
+
+        // Poblar datos generales del evento en el Paso 1
+        const nameInput = document.getElementById('event-form-name');
+        if (nameInput) nameInput.value = ev.name || '';
+        const dateInput = document.getElementById('event-form-date');
+        if (dateInput) dateInput.value = ev.date || '';
+        const timeInput = document.getElementById('event-form-time');
+        if (timeInput) timeInput.value = ev.time ? ev.time.substring(0, 5) : '18:00';
+        const typeSelect = document.getElementById('event-form-type');
+        if (typeSelect && ev.type) typeSelect.value = ev.type;
+        const descInput = document.getElementById('event-form-desc');
+        if (descInput) descInput.value = ev.description || '';
+
+        // Poblar puestos del Roster en el Paso 2
+        if (rosterSection) {
+            rosterSection.innerHTML = '';
+            if (ev.musicians && ev.musicians.length > 0) {
+                ev.musicians.forEach(mus => {
+                    const role = (mus.pivot && mus.pivot.role) ? mus.pivot.role : 'Músico';
+                    addEventRosterSlot(role, mus.id);
+                });
+            } else {
+                updateEventRosterCount();
+            }
+        }
+
+        document.getElementById('modal-schedule-event').classList.remove('hidden');
+
+    } catch (e) {
+        console.error("Error setting up edit event modal:", e);
+        showToast("Fallo al cargar información del evento para editar.", "danger");
+    }
+}
+
 async function handleEventScheduleFormSubmit(e) {
     e.preventDefault();
     const name = document.getElementById('event-form-name').value.trim();
@@ -887,19 +1043,25 @@ async function handleEventScheduleFormSubmit(e) {
         }
     });
 
+    const isEditing = Boolean(editingEventId);
+    const endpoint = isEditing ? `/events/${editingEventId}` : '/events';
+    const httpMethod = isEditing ? 'PUT' : 'POST';
+    const originalBtnText = isEditing ? 'Guardar Cambios' : 'Programar Evento';
+    const loadingMessage = isEditing ? 'Guardando cambios...' : 'Programando evento...';
+    const successToastMessage = isEditing ? 'Evento actualizado correctamente' : 'Evento programado correctamente';
+
     const submitBtn = document.getElementById('btn-submit-event');
-    const originalText = submitBtn ? submitBtn.textContent : 'Programar Evento';
     if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Guardando...';
     }
     if (typeof showLoadingOverlay === 'function') {
-        showLoadingOverlay('Programando evento...');
+        showLoadingOverlay(loadingMessage);
     }
 
     try {
-        await apiFetch('/events', {
-            method: 'POST',
+        await apiFetch(endpoint, {
+            method: httpMethod,
             body: { 
                 name, 
                 date, 
@@ -911,8 +1073,9 @@ async function handleEventScheduleFormSubmit(e) {
             }
         });
 
-        showToast("Evento programado correctamente", "success");
+        showToast(successToastMessage, "success");
         document.getElementById('modal-schedule-event').classList.add('hidden');
+        editingEventId = null;
         await renderEvents(true); // force reload
     } catch (err) {
         showToast(err.message, "danger");
@@ -922,7 +1085,7 @@ async function handleEventScheduleFormSubmit(e) {
         }
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            submitBtn.textContent = originalBtnText;
         }
     }
 }

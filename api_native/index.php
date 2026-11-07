@@ -344,6 +344,7 @@ switch ($path) {
         // Check for parameterized /events/{id}
         if (preg_match('#^/events/(\d+)$#', $path, $matches)) {
             $eventId = (int)$matches[1];
+            if ($method === 'PUT') EventController::update($eventId);
             if ($method === 'DELETE') EventController::destroy($eventId);
             break;
         }

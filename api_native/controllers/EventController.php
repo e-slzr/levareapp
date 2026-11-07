@@ -123,6 +123,80 @@ class EventController {
         jsonResponse(['message' => 'Evento programado correctamente.', 'id' => (int)$eventId], 201);
     }
 
+    public static function update(int $id): void {
+        $pdo = DB::getConnection();
+        $stmtCheck = $pdo->prepare("SELECT * FROM events WHERE id = ? LIMIT 1");
+        $stmtCheck->execute([$id]);
+        $ev = $stmtCheck->fetch();
+        if (!$ev) {
+            jsonResponse(['message' => 'Evento no encontrado.'], 404);
+        }
+
+        $groupId = (int)$ev['group_id'];
+        $user = requireLeaderOrAdmin($groupId);
+
+        $rawInput = file_get_contents('php://input');
+        if (empty($rawInput) && isset($GLOBALS['rawInput'])) {
+            $rawInput = $GLOBALS['rawInput'];
+        }
+        $input = json_decode($rawInput, true) ?? $_POST;
+
+        $name = trim($input['name'] ?? '');
+        $date = trim($input['date'] ?? '');
+        $time = trim($input['time'] ?? '18:00');
+        $type = trim($input['type'] ?? 'Ensayo');
+        $description = trim($input['description'] ?? '');
+        $setlistId = !empty($input['setlist_id']) ? (int)$input['setlist_id'] : null;
+        $musicians = $input['musicians'] ?? [];
+
+        if (empty($name) || empty($date)) {
+            jsonResponse(['message' => 'Nombre y Fecha del evento son obligatorios.'], 422);
+        }
+
+        $stmt = $pdo->prepare("
+            UPDATE events 
+            SET name = ?, type = ?, date = ?, time = ?, description = ?, setlist_id = ?, updated_at = NOW() 
+            WHERE id = ?
+        ");
+        $stmt->execute([$name, $type, $date, $time, $description, $setlistId, $id]);
+
+        // Sincronizar músicos / roster
+        $pdo->prepare("DELETE FROM event_musicians WHERE event_id = ?")->execute([$id]);
+
+        foreach ($musicians as $m) {
+            if (!empty($m['user_id']) && !empty($m['role'])) {
+                $stmtM = $pdo->prepare("INSERT IGNORE INTO event_musicians (event_id, user_id, role) VALUES (?, ?, ?)");
+                $stmtM->execute([$id, (int)$m['user_id'], $m['role']]);
+            }
+        }
+
+        // Obtener nombre de la banda
+        $stmtG = $pdo->prepare("SELECT name FROM groups WHERE id = ? LIMIT 1");
+        $stmtG->execute([$groupId]);
+        $bandName = $stmtG->fetchColumn() ?: 'Banda';
+
+        // Notificar actualización al grupo
+        NotificationService::notifyGroup((int)$groupId, (int)$user['id'], [
+            'type'     => 'blue',
+            'title'    => "Evento actualizado en {$bandName}",
+            'body'     => "{$user['name']} actualizó el evento \"{$name}\" programado para el {$date} ({$time} hs).",
+            'text'     => "{$user['name']} actualizó el evento: \"{$name}\" para el {$date} ({$time} hs).",
+            'category' => 'events',
+            'url'      => './#events',
+            'meta'     => [
+                'event_id'   => (int)$id,
+                'event_name' => $name,
+                'event_date' => $date,
+                'event_time' => $time,
+                'band_name'  => $bandName,
+                'actor_name' => $user['name'],
+                'source'     => 'band'
+            ]
+        ]);
+
+        jsonResponse(['message' => 'Evento actualizado correctamente.', 'id' => (int)$id]);
+    }
+
     public static function destroy(int $id): void {
         $pdo = DB::getConnection();
         $stmtCheck = $pdo->prepare("SELECT group_id FROM events WHERE id = ? LIMIT 1");

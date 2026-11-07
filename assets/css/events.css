@@ -109,7 +109,47 @@
     color: var(--primary);
 }
 
-/* Calendar Styling */
+/* Calendar Styling & Elastic Vertical Layout */
+#events-calendar-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+#events-calendar-wrapper.hidden {
+    display: none !important;
+}
+
+#calendar-card-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    /* En móvil: respeta el margen de seguridad pb-28 (112px) de main-content para no quedar detrás del menú */
+    height: calc(100dvh - 310px);
+    height: calc(100vh - 310px);
+    min-height: 380px;
+    box-sizing: border-box;
+}
+
+/* En tablets y laptops */
+@media (min-width: 768px) {
+    #calendar-card-container {
+        /* En PC/Tablet: respeta el margen md:pb-20 (80px) de main-content con altura proporcionada y espaciosa */
+        height: calc(100dvh - 235px);
+        height: calc(100vh - 235px);
+        min-height: 520px;
+    }
+}
+
+/* En pantallas de escritorio grandes (1080p+) */
+@media (min-width: 1024px) {
+    #calendar-card-container {
+        height: calc(100dvh - 225px);
+        height: calc(100vh - 225px);
+        min-height: 560px;
+    }
+}
+
 .calendar-card {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -162,18 +202,59 @@
     gap: 4px;
 }
 
+#calendar-grid-cells {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, minmax(46px, 1fr));
+    gap: 2px;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    #calendar-grid-cells {
+        grid-template-rows: repeat(6, minmax(70px, 1fr));
+        gap: 3px;
+    }
+}
+
+@media (min-width: 1024px) {
+    #calendar-grid-cells {
+        grid-template-rows: repeat(6, minmax(76px, 1fr));
+        gap: 4px;
+    }
+}
+
 .calendar-day-cell {
-    aspect-ratio: 1;
-    border-radius: var(--radius-md);
+    height: 100%;
+    min-height: 46px;
+    border-radius: var(--radius-sm);
     background-color: var(--bg-main);
     border: 1px solid var(--border-color);
-    padding: 4px;
+    padding: 4px 3px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     cursor: pointer;
     transition: all var(--transition-fast);
-    min-height: 48px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .calendar-day-cell {
+        min-height: 70px;
+        padding: 5px 6px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .calendar-day-cell {
+        min-height: 76px;
+        padding: 6px 8px;
+    }
 }
 .calendar-day-cell:hover {
     border-color: var(--primary);

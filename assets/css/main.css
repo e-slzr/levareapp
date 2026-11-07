@@ -7,7 +7,7 @@
 @import "dashboard.css";
 @import "songs.css";
 @import "setlists.css";
-@import "events.css";
+@import "events.css?v=3";
 @import "suggestions.css";
 @import "members.css";
 @import "profile.css";
@@ -444,15 +444,37 @@ textarea {
     transition: all var(--transition-fast);
 }
 
-/* Fix iOS WebKit date & time input sizing and inner value alignment */
+/* Date & Time Inputs: Soporte nativo para picker en PC y Móvil */
 input[type="date"],
 input[type="time"] {
-    -webkit-appearance: none;
-    appearance: none;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     min-height: 42px;
+    cursor: pointer;
+    color-scheme: light;
+}
+
+.dark input[type="date"],
+.dark input[type="time"] {
+    color-scheme: dark;
+}
+
+/* Indicador nativo de calendario/reloj en Chromium/WebKit */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    display: block;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    transition: opacity var(--transition-fast), background-color var(--transition-fast);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+    background-color: var(--bg-hover);
 }
 
 input[type="date"]::-webkit-date-and-time-value,
