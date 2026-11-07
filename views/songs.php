@@ -73,7 +73,14 @@
         <div id="song-viewer-fab-adjustments" class="hidden flex flex-col items-center gap-2 pointer-events-auto animate-slide-in-left">
             <!-- 1. Botón Subir Tono -->
             <button type="button" id="btn-transpose-up" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Subir medio tono (+)">
-                <i class="fa-solid fa-plus text-xs pointer-events-none"></i>
+                <div class="inline-flex items-center justify-center gap-0.5 pointer-events-none">
+                    <svg class="w-3 h-3 fill-current inline-block" viewBox="0 0 16 16">
+                        <path d="M9 13c0 1.105-1.12 2-2.5 2S4 14.105 4 13s1.12-2 2.5-2 2.5.895 2.5 2"/>
+                        <path fill-rule="evenodd" d="M9 3v10H8V3z"/>
+                        <path d="M8 2.82a1 1 0 0 1 .804-.98l3-.6A1 1 0 0 1 13 2.22V4L8 5z"/>
+                    </svg>
+                    <i class="fa-solid fa-plus text-[8px] -mt-0.5"></i>
+                </div>
             </button>
 
             <!-- 2. Botón Restablecer Tono (Sin nota ni texto medley) -->
@@ -84,7 +91,14 @@
 
             <!-- 3. Botón Bajar Tono -->
             <button type="button" id="btn-transpose-down" class="viewer-fab-badge w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" title="Bajar medio tono (-)">
-                <i class="fa-solid fa-minus text-xs pointer-events-none"></i>
+                <div class="inline-flex items-center justify-center gap-0.5 pointer-events-none">
+                    <svg class="w-3 h-3 fill-current inline-block" viewBox="0 0 16 16">
+                        <path d="M9 13c0 1.105-1.12 2-2.5 2S4 14.105 4 13s1.12-2 2.5-2 2.5.895 2.5 2"/>
+                        <path fill-rule="evenodd" d="M9 3v10H8V3z"/>
+                        <path d="M8 2.82a1 1 0 0 1 .804-.98l3-.6A1 1 0 0 1 13 2.22V4L8 5z"/>
+                    </svg>
+                    <i class="fa-solid fa-minus text-[8px] -mt-0.5"></i>
+                </div>
             </button>
 
             <!-- 4. Botón Aumentar Tipo (Letra) -->

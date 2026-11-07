@@ -14,10 +14,12 @@
 let liveSyncState = {
     setlistId: null,
     pollingInterval: null,
+    isPollingInProgress: false,
     isDirector: false,
     isFollowerConnected: false,
     activeSession: null,
     cueTimer: null,
+    currentCueKey: null,
     isSharp: false,
     selectedQuality: 'Mayor',
     lastReceivedCueText: null
@@ -181,17 +183,18 @@ function teardownLiveSyncForPresentation() {
 }
 
 /**
- * Inicia el sondeo de estado con pausa automática en segundo plano.
+ * Inicia el sondeo de estado con cadencia optimizada y pausa automática en segundo plano.
  */
 function startLiveSyncPolling() {
     stopLiveSyncPolling();
     pollLiveSyncState(); // Primera consulta inmediata
 
+    // Intervalo de alta responsividad (1.2 segundos) para sincronización cuasi-instantánea
     liveSyncState.pollingInterval = setInterval(() => {
         // Pausar si la pestaña del navegador no está activa para ahorrar recursos
         if (document.hidden) return;
         pollLiveSyncState();
-    }, 2500);
+    }, 1200);
 }
 
 /**
@@ -202,14 +205,17 @@ function stopLiveSyncPolling() {
         clearInterval(liveSyncState.pollingInterval);
         liveSyncState.pollingInterval = null;
     }
+    liveSyncState.isPollingInProgress = false;
 }
 
 /**
- * Consulta el estado actual de la sesión Live Sync al backend.
+ * Consulta el estado actual de la sesión Live Sync al backend con guardia de concurrencia.
  */
 async function pollLiveSyncState() {
     if (!liveSyncState.setlistId) return;
+    if (liveSyncState.isPollingInProgress) return;
 
+    liveSyncState.isPollingInProgress = true;
     try {
         const res = await apiFetch(`/setlists/${liveSyncState.setlistId}/live-session`, {
             method: 'GET'
@@ -220,6 +226,8 @@ async function pollLiveSyncState() {
         handleLiveSyncStateResponse(res);
     } catch (err) {
         console.warn('Live Sync polling error:', err);
+    } finally {
+        liveSyncState.isPollingInProgress = false;
     }
 }
 
@@ -277,19 +285,15 @@ function handleLiveSyncStateResponse(data) {
             if (presSubpanel) presSubpanel.classList.add('tally-frame-active');
             if (cornerBadge) cornerBadge.classList.remove('hidden');
 
-            // 1. Sincronización automática de canción
+            // 1. Sincronización automática de canción guiada por el Director
             if (session.current_song_id) {
                 synchronizeFollowerSong(session.current_song_id);
             }
 
-            // 2. Sincronización de transposición (si difiere)
-            if (typeof presTransposeOffset !== 'undefined' && session.current_transpose !== presTransposeOffset) {
-                if (typeof window.setPresTransposeDirect === 'function') {
-                    window.setPresTransposeDirect(session.current_transpose);
-                }
-            }
+            // Nota: La transposición de acordes se mantiene libre e individual para cada músico
+            // (e.g., guitarrista con capo, instrumentos transpositores) sin sobreescribir su vista local.
 
-            // 3. Procesar indicación en vivo (Cue)
+            // 2. Procesar indicación en vivo (Cue)
             if (session.active_cue) {
                 displayLiveCueBanner(session.active_cue, session.active_cue_type || 'Indicación en Vivo', session.cue_timestamp);
             } else {
@@ -335,43 +339,98 @@ function handleLiveSyncStateResponse(data) {
 }
 
 /**
- * Conecta al integrante a la sesión Live Sync como seguidor.
+ * Conecta al integrante a la sesión Live Sync como seguidor validando la conexión en tiempo real.
  */
-function joinLiveSync() {
-    liveSyncState.isFollowerConnected = true;
-    if (typeof showToast === 'function') {
-        showToast('Enlazado a la sesión en vivo del Director.', 'success');
-    }
-    // Forzar actualización inmediata de la UI
-    if (liveSyncState.activeSession) {
-        handleLiveSyncStateResponse({ is_active: true, session: liveSyncState.activeSession });
+async function joinLiveSync() {
+    const btn = document.getElementById('btn-pres-join-live');
+    const originalHtml = btn ? btn.innerHTML : 'Conectarme';
+
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-[10px] mr-1 pointer-events-none"></i><span>Conectando...</span>';
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+        }
+
+        if (!liveSyncState.setlistId) {
+            throw new Error('No se identificó el repertorio activo.');
+        }
+
+        // Validar sesión activa en tiempo real contra el backend
+        const res = await apiFetch(`/setlists/${liveSyncState.setlistId}/live-session`, {
+            method: 'GET'
+        });
+
+        if (res && res.is_active && res.session) {
+            liveSyncState.isFollowerConnected = true;
+            liveSyncState.activeSession = res.session;
+
+            // Actualizar la interfaz a conectado de inmediato (sin toast intrusivo)
+            handleLiveSyncStateResponse(res);
+        } else {
+            // La sesión ya no está activa
+            liveSyncState.isFollowerConnected = false;
+            handleLiveSyncStateResponse({ is_active: false });
+            if (typeof showToast === 'function') {
+                showToast('La sesión de Live Sync ya no se encuentra disponible.', 'warning');
+            }
+        }
+    } catch (err) {
+        console.error('Error al conectar a Live Sync:', err);
+        if (typeof showToast === 'function') {
+            showToast('No se pudo conectar a la sesión en vivo. Revisa tu conexión.', 'error');
+        }
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            btn.classList.remove('opacity-80', 'cursor-not-allowed');
+        }
     }
 }
 
 /**
- * Desconecta al integrante de la sesión Live Sync y lo regresa a modo autónomo.
+ * Desconecta al integrante de la sesión Live Sync con feedback visual y lo regresa a modo autónomo.
  */
-function leaveLiveSync() {
-    liveSyncState.isFollowerConnected = false;
-    const presSubpanel = document.getElementById('subpanel-setlist-presentation');
-    if (presSubpanel) presSubpanel.classList.remove('tally-frame-active');
+async function leaveLiveSync() {
+    const btn = document.getElementById('btn-pres-leave-live');
+    const originalHtml = btn ? btn.innerHTML : 'Desconectar';
 
-    const cornerBadge = document.getElementById('pres-corner-live-badge');
-    if (cornerBadge) cornerBadge.classList.add('hidden');
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-[10px] mr-1 pointer-events-none"></i><span>Desconectando...</span>';
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+        }
 
-    const connectedBar = document.getElementById('pres-follower-connected-bar');
-    if (connectedBar) connectedBar.classList.add('hidden');
+        // Breve pausa para una transición fluida y perceptible
+        await new Promise(resolve => setTimeout(resolve, 250));
 
-    dismissLiveCue();
+        liveSyncState.isFollowerConnected = false;
+        const presSubpanel = document.getElementById('subpanel-setlist-presentation');
+        if (presSubpanel) presSubpanel.classList.remove('tally-frame-active');
 
-    if (typeof showToast === 'function') {
-        showToast('Desconectado de Live Sync. Controles locales desbloqueados.', 'info');
-    }
+        const cornerBadge = document.getElementById('pres-corner-live-badge');
+        if (cornerBadge) cornerBadge.classList.add('hidden');
 
-    // Volver a mostrar la barra para unirse si la sesión sigue activa
-    if (liveSyncState.activeSession) {
-        const followerBar = document.getElementById('pres-follower-live-bar');
-        if (followerBar) followerBar.classList.remove('hidden');
+        const connectedBar = document.getElementById('pres-follower-connected-bar');
+        if (connectedBar) connectedBar.classList.add('hidden');
+
+        dismissLiveCue();
+
+        // Si la sesión sigue activa en el estado local, volver a mostrar la barra para unirse
+        if (liveSyncState.activeSession) {
+            const followerBar = document.getElementById('pres-follower-live-bar');
+            if (followerBar) followerBar.classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error('Error al desconectar de Live Sync:', err);
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            btn.classList.remove('opacity-80', 'cursor-not-allowed');
+        }
     }
 }
 
@@ -871,6 +930,7 @@ async function executeDeletePersonalQuickCue(cueId) {
 
 /**
  * Despliega la indicación en vivo en el slot reservado de la pantalla del integrante.
+ * Muestra barra decreciente uniforme durante 8 segundos sin reiniciar en cada sondeo.
  */
 function displayLiveCueBanner(cueText, cueType, timestamp) {
     const slot = document.getElementById('pres-live-cue-slot');
@@ -882,12 +942,21 @@ function displayLiveCueBanner(cueText, cueType, timestamp) {
 
     if (!slot || !textEl || !typeEl) return;
 
-    // Si es un cue nuevo, disparar vibración háptica y animación
+    const cueKey = `${cueText}|${cueType}|${timestamp || ''}`;
+
+    // Si ya estamos mostrando exactamente esta indicación y el temporizador está corriendo, no reiniciar
+    if (liveSyncState.currentCueKey === cueKey && liveSyncState.cueTimer) {
+        return;
+    }
+
+    liveSyncState.currentCueKey = cueKey;
+
+    // Si es un texto o indicación nueva, disparar vibración háptica sutil
     if (liveSyncState.lastReceivedCueText !== cueText) {
         liveSyncState.lastReceivedCueText = cueText;
 
         if (navigator.vibrate) {
-            navigator.vibrate([100, 50, 100]); // Pulsación háptica doble sutil
+            navigator.vibrate([100, 50, 100]);
         }
     }
 
@@ -906,39 +975,51 @@ function displayLiveCueBanner(cueText, cueType, timestamp) {
     }
 
     slot.classList.remove('hidden');
+    if (progressBox) progressBox.classList.remove('hidden');
 
-    // Manejar duración de la barra de progreso
-    if (cueType === 'Tonalidad') {
-        // Tonalidad se queda fija hasta cambio o despeje
-        if (progressBox) progressBox.classList.add('hidden');
-    } else {
-        if (progressBox) progressBox.classList.remove('hidden');
+    // Duración de 8 segundos para todos los tipos (incluido Tonalidad)
+    const durationSeconds = 8;
+    const totalDurationMs = durationSeconds * 1000;
+    const intervalMs = 100;
 
-        // Duración de 8 segundos con temporizador decreciente
-        const durationSeconds = 8;
-        if (liveSyncState.cueTimer) clearInterval(liveSyncState.cueTimer);
-        if (progressBar) progressBar.style.width = '100%';
-
-        let elapsed = 0;
-        const intervalMs = 100;
-        const totalSteps = (durationSeconds * 1000) / intervalMs;
-
-        liveSyncState.cueTimer = setInterval(() => {
-            elapsed++;
-            const pct = Math.max(0, 100 - (elapsed / totalSteps) * 100);
-            if (progressBar) progressBar.style.width = pct + '%';
-
-            if (elapsed >= totalSteps) {
-                clearInterval(liveSyncState.cueTimer);
-                liveSyncState.cueTimer = null;
-                dismissLiveCue();
-            }
-        }, intervalMs);
+    if (liveSyncState.cueTimer) {
+        clearInterval(liveSyncState.cueTimer);
+        liveSyncState.cueTimer = null;
     }
+
+    // Calcular desfase si el timestamp del servidor está disponible
+    let elapsedMs = 0;
+    if (timestamp) {
+        const cueTime = new Date(timestamp.replace(' ', 'T')).getTime();
+        const now = Date.now();
+        if (!isNaN(cueTime) && now > cueTime) {
+            elapsedMs = Math.min(totalDurationMs, now - cueTime);
+        }
+    }
+
+    if (elapsedMs >= totalDurationMs) {
+        dismissLiveCue();
+        return;
+    }
+
+    const initialPct = Math.max(0, 100 - (elapsedMs / totalDurationMs) * 100);
+    if (progressBar) progressBar.style.width = initialPct + '%';
+
+    liveSyncState.cueTimer = setInterval(() => {
+        elapsedMs += intervalMs;
+        const pct = Math.max(0, 100 - (elapsedMs / totalDurationMs) * 100);
+        if (progressBar) progressBar.style.width = pct + '%';
+
+        if (elapsedMs >= totalDurationMs) {
+            clearInterval(liveSyncState.cueTimer);
+            liveSyncState.cueTimer = null;
+            dismissLiveCue();
+        }
+    }, intervalMs);
 }
 
 /**
- * Oculta la indicación en vivo.
+ * Oculta la indicación en vivo y limpia el estado del temporizador.
  */
 function dismissLiveCue() {
     if (liveSyncState.cueTimer) {
@@ -948,6 +1029,7 @@ function dismissLiveCue() {
     const slot = document.getElementById('pres-live-cue-slot');
     if (slot) slot.classList.add('hidden');
     liveSyncState.lastReceivedCueText = null;
+    liveSyncState.currentCueKey = null;
 }
 
 // Exportar funciones y estado para uso global en ventanas y listeners HTML
@@ -980,3 +1062,10 @@ window.leaveLiveSync = leaveLiveSync;
 window.notifyDirectorSongChange = notifyDirectorSongChange;
 window.isMusicianControlLocked = isMusicianControlLocked;
 window.showMusicianLockedFeedback = showMusicianLockedFeedback;
+
+// Consulta inmediata al recuperar el foco de la pestaña si el visor de repertorio está activo
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && liveSyncState.setlistId) {
+        pollLiveSyncState();
+    }
+});

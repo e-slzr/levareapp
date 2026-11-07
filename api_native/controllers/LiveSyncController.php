@@ -177,11 +177,11 @@ class LiveSyncController {
 
         $isDirector = ((int)$session['director_id'] === (int)$user['id']);
 
-        // Calcular si el cue activo ha expirado si es dinámico (más de 12 segundos)
+        // Calcular si el cue activo ha expirado (más de 8 segundos para cualquier tipo de indicación)
         $cueExpired = false;
-        if (!empty($session['active_cue']) && $session['active_cue_type'] !== 'Tonalidad' && !empty($session['cue_timestamp'])) {
+        if (!empty($session['active_cue']) && !empty($session['cue_timestamp'])) {
             $cueTime = strtotime($session['cue_timestamp']);
-            if ((time() - $cueTime) > 12) {
+            if ((time() - $cueTime) >= 8) {
                 $cueExpired = true;
             }
         }

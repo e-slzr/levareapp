@@ -8,6 +8,39 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased] - Próximamente
 
+- **Optimización Integral de Indicaciones en Vivo (Live Cues) e Iconografía Musical**:
+  - En `api_native/controllers/LiveSyncController.php`, se estandarizó la vigencia de todas las indicaciones en vivo (Dinámicas, Mis Atajos, Libres y Tonos) a 8 segundos continuos, removiendo la persistencia indefinida previa de los mensajes de tipo Tonalidad.
+  - En `assets/js/views/setlists-live.js`, se corrigió el rebote continuo de la barra decreciente al implementar una clave de control `currentCueKey`, permitiendo que el temporizador transcurra de forma fluida de 100% a 0% sin reiniciarse en cada consulta de sondeo.
+  - En `views/setlists.php`, se eliminó el botón de cierre manual (icono «X») en la tarjeta de indicación en vivo (`#pres-live-cue-card`), dejándola en modo puramente informativo para que se oculte al finalizar los 8 segundos o cuando el Director despeje o emita una nueva indicación.
+  - En `views/setlists.php` y `views/songs.php`, se refinaron los botones FAB de transposición sustituyendo la doble corchea por un glifo vectorial SVG de corchea individual de una sola patita junto a los signos `+` y `-`.
+
+
+- **Iconografía Musical Intuitiva en Botones FAB de Transposición**:
+  - En `views/setlists.php` y `views/songs.php`, se actualizaron los botones flotantes de subir y bajar tono (`#btn-pres-transpose-up`, `#btn-pres-transpose-down`, `#btn-transpose-up` y `#btn-transpose-down`) incorporando una composición vectorial minimalista con el símbolo de nota musical (`fa-music`) acompañado de los indicadores de medio tono `+` (`fa-plus`) y `-` (`fa-minus`).
+  - Esto aclara de inmediato su propósito musical para diferenciarlo a simple vista de los botones adyacentes de tamaño de fuente (`A+` / `A-`) y restablecimiento (`fa-rotate-left`).
+
+
+- **Transposición Independiente y Desbloqueada de Acordes para Músicos en Live Sync**:
+  - En `assets/js/views/setlists.js`, se removió la restricción bloqueante `isMusicianControlLocked()` de `transposePresSong()` y `resetPresSongTranspose()`, permitiendo que cada integrante conectado ajuste libremente la tonalidad y acordes locales de su visor sin importar que la sesión esté enlazada al Director. Esto facilita el uso de capotrastes en guitarra acústica, instrumentos transpositores o afinaciones particulares.
+  - En `assets/js/views/setlists-live.js`, se eliminó la sobreescritura forzada periódica de la transposición en `handleLiveSyncStateResponse()`, preservando la tonalidad elegida localmente por el músico mientras la selección de canciones e indicaciones en vivo continúan gobernadas de manera sincronizada por el Director.
+
+- **Optimización de Cadencia de Sincronización en Vivo (Live Sync Polling)**:
+  - En `assets/js/views/setlists-live.js`, se redujo el intervalo de sondeo de `2500 ms` a `1200 ms` (1.2 segundos), reduciendo drásticamente la latencia de recepción y logrando una sincronización casi simultánea entre múltiples dispositivos de los integrantes.
+  - Se incorporó la bandera booleana `isPollingInProgress` como guardia de concurrencia para evitar peticiones solapadas si la red experimenta fluctuaciones de latencia.
+  - Se agregó un listener reactivo `visibilitychange` que despacha una consulta inmediata en cuanto la pestaña del navegador vuelve al primer plano.
+
+- **Validación Asíncrona, Animación de Carga y Supresión de Toasts Invasivos en Conexión/Desconexión de Live Sync**:
+  - En `assets/js/views/setlists-live.js`, se reescribió `joinLiveSync()` como función asíncrona que deshabilita el botón `#btn-pres-join-live` y muestra un spinner de carga («Conectando...») mientras valida en tiempo real con el backend (`GET /setlists/{id}/live-session`) que la sesión del Director siga activa.
+  - Si la conexión es exitosa, se actualiza la interfaz al estado enlazado sin emitir toasts de confirmación que obstaculicen los controles visuales.
+  - Si la sesión finalizó o surge un problema de red, el botón regresa intacto al estado «Conectarme» y se notifica con un mensaje toast de advertencia o error.
+  - En `leaveLiveSync()`, se añadió estado transicional de desconexión («Desconectando...») y se retiró el toast informativo de confirmación, priorizando la respuesta visual reactiva de la interfaz.
+  - En `views/setlists.php`, se actualizaron los botones `#btn-pres-join-live` y `#btn-pres-leave-live` con `inline-flex items-center justify-center` para una alineación equilibrada de iconos y texto.
+
+- **Corrección de Desbordamiento y Altura Elástica en Cabecera del Visor de Repertorio (Modo Live Sync)**:
+  - En `assets/css/main.css`, se eliminó la altura fija `height: 64px;` y la orientación `flex-direction: row;` en `.presentation-viewer-header` dentro del media query para pantallas medianas y grandes (`@media (min-width: 768px)`).
+  - Se configuró `min-height: 64px; height: auto;` y disposición vertical `flex-direction: column; justify-content: center;` con `padding: 10px 24px;`, permitiendo que la cabecera aloje armónicamente el título de la canción, el artista y las barras de notificación de Live Sync (`#pres-follower-live-bar` y `#pres-follower-connected-bar`) sin recortar ni expulsar el título fuera del borde superior de la ventana en Tablet y PC.
+
+
 - **Ajuste Ergonómico y Alineación en Modal de Restablecer Contraseña**:
   - En `views/includes/modals.php`, se simplificó el texto del botón principal de acción a solo «Restablecer» (removiendo «Confirmar»), evitando que su extensión desalinee o comprima el botón «Cancelar» en pantallas móviles.
   - Se homogeneizó el alineamiento vertical (`align-items: center`) y el espaciado flexible en el pie del modal (`#reset-password-confirm-step`).

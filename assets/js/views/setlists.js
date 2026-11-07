@@ -779,11 +779,7 @@ function cyclePresScrollSpeed() {
 function transposePresSong(semitones) {
     if (!currentPresentationSong) return;
 
-    if (typeof isMusicianControlLocked === 'function' && isMusicianControlLocked()) {
-        showMusicianLockedFeedback();
-        return;
-    }
-
+    // La transposición es libre e individual para cada músico (e.g. uso de capo o afinaciones particulares)
     presTransposeOffset += semitones;
 
     // Calculate resulting key
@@ -804,11 +800,7 @@ function transposePresSong(semitones) {
 function resetPresSongTranspose() {
     if (!currentPresentationSong) return;
 
-    if (typeof isMusicianControlLocked === 'function' && isMusicianControlLocked()) {
-        showMusicianLockedFeedback();
-        return;
-    }
-
+    // La transposición es libre e individual para cada músico
     presTransposeOffset = 0;
     const keyEl = document.getElementById('pres-song-current-key');
     if (keyEl) keyEl.textContent = currentPresentationSong.key;
