@@ -712,6 +712,28 @@ class SetlistController {
             $stmtSong->execute([$id, (int)$songId, $index]);
         }
 
+        // Fetch band name
+        $stmtG = $pdo->prepare("SELECT name FROM groups WHERE id = ? LIMIT 1");
+        $stmtG->execute([(int)$setlist['group_id']]);
+        $bandName = $stmtG->fetchColumn() ?: 'Banda';
+
+        // Notificar actualización de repertorio a la banda
+        NotificationService::notifyGroup((int)$setlist['group_id'], (int)$user['id'], [
+            'type'     => 'blue',
+            'title'    => "Repertorio actualizado en {$bandName}",
+            'body'     => "{$user['name']} actualizó el repertorio \"{$name}\".",
+            'text'     => "{$user['name']} actualizó el repertorio: \"{$name}\".",
+            'category' => 'setlists',
+            'url'      => './#setlists',
+            'meta'     => [
+                'setlist_id'   => (int)$id,
+                'setlist_name' => $name,
+                'band_name'    => $bandName,
+                'actor_name'   => $user['name'],
+                'source'       => 'band'
+            ]
+        ]);
+
         jsonResponse(['message' => 'Repertorio actualizado con éxito.']);
     }
 

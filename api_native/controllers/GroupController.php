@@ -2,6 +2,8 @@
 /**
  * Group Controller (Native PDO)
  */
+require_once __DIR__ . '/../services/NotificationService.php';
+
 class GroupController {
 
     public static function index(): void {
@@ -142,6 +144,43 @@ class GroupController {
         if ($user['account_type'] !== 'superadmin') {
             $stmtUser = $pdo->prepare("UPDATE users SET account_type = 'member' WHERE id = ?");
             $stmtUser->execute([$user['id']]);
+        }
+
+        // Notificar exclusivamente a los líderes y administradores de la banda
+        try {
+            $stmtLeaders = $pdo->prepare("
+                SELECT u.id 
+                FROM users u
+                JOIN group_user gu ON gu.user_id = u.id
+                WHERE gu.group_id = ? 
+                  AND (gu.role = 'leader' OR u.account_type IN ('leader', 'admin', 'superadmin'))
+                  AND u.id != ?
+            ");
+            $stmtLeaders->execute([$group['id'], $user['id']]);
+            $leaderIds = $stmtLeaders->fetchAll(PDO::FETCH_COLUMN);
+
+            $userName = trim($user['name'] . ' ' . ($user['lastname'] ?? ''));
+
+            foreach ($leaderIds as $lId) {
+                NotificationService::notifyUser((int)$lId, (int)$user['id'], [
+                    'type'     => 'blue',
+                    'title'    => "Nuevo integrante en {$group['name']}",
+                    'body'     => "{$userName} se ha unido a la banda.",
+                    'text'     => "{$userName} se ha unido a la banda.",
+                    'category' => 'band',
+                    'url'      => './#band',
+                    'tag'      => "levare-new-member-{$group['id']}-{$user['id']}",
+                    'meta'     => [
+                        'group_id'   => (int)$group['id'],
+                        'band_name'  => $group['name'],
+                        'user_id'    => (int)$user['id'],
+                        'actor_name' => $userName,
+                        'source'     => 'band'
+                    ]
+                ]);
+            }
+        } catch (\Throwable $e) {
+            error_log("Error notifying leaders of new group member: " . $e->getMessage());
         }
 
         jsonResponse([

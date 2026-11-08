@@ -163,8 +163,58 @@ class SuggestionController {
         }
 
         $pdo = DB::getConnection();
+
+        // Obtener datos actuales de la sugerencia
+        $stmtSug = $pdo->prepare("SELECT * FROM suggestions WHERE id = ? LIMIT 1");
+        $stmtSug->execute([$id]);
+        $sug = $stmtSug->fetch();
+        if (!$sug) {
+            jsonResponse(['message' => 'Sugerencia no encontrada.'], 404);
+        }
+
         $stmt = $pdo->prepare("UPDATE suggestions SET status = ?, updated_at = NOW() WHERE id = ?");
         $stmt->execute([$status, $id]);
+
+        // Notificar al integrante proponente si la sugerencia fue agregada o seleccionada para ensayo
+        $proposerId = (int)$sug['suggested_by'];
+        $groupId = (int)$sug['group_id'];
+        $title = $sug['title'];
+        $artist = $sug['artist'];
+
+        if ($proposerId && $proposerId !== (int)$user['id'] && in_array($status, ['agregada', 'ensayo'])) {
+            $stmtG = $pdo->prepare("SELECT name FROM groups WHERE id = ? LIMIT 1");
+            $stmtG->execute([$groupId]);
+            $bandName = $stmtG->fetchColumn() ?: 'Banda';
+
+            if ($status === 'agregada') {
+                $notifTitle = "Sugerencia aprobada en {$bandName}";
+                $notifBody = "¡Tu sugerencia \"{$title}\" de {$artist} fue agregada al repertorio de la banda!";
+                $targetUrl = './#songs';
+            } else {
+                $notifTitle = "Sugerencia en ensayo en {$bandName}";
+                $notifBody = "Tu sugerencia \"{$title}\" de {$artist} fue seleccionada para ensayar.";
+                $targetUrl = './#suggestions';
+            }
+
+            NotificationService::notifyUser($proposerId, (int)$user['id'], [
+                'type'     => 'purple',
+                'title'    => $notifTitle,
+                'body'     => $notifBody,
+                'text'     => $notifBody,
+                'category' => 'suggestions',
+                'url'      => $targetUrl,
+                'tag'      => "levare-suggestion-status-{$id}-{$status}",
+                'meta'     => [
+                    'suggestion_id' => $id,
+                    'song_title'    => $title,
+                    'artist'        => $artist,
+                    'status'        => $status,
+                    'band_name'     => $bandName,
+                    'actor_name'    => $user['name'],
+                    'source'        => 'band'
+                ]
+            ]);
+        }
 
         jsonResponse(['message' => 'Estado actualizado.']);
     }

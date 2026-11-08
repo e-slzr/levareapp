@@ -21,7 +21,15 @@ class NotificationService {
      *   - 'url': string (Target SPA route/view, e.g. '#songs', '#setlists', '#events', '#suggestions')
      *   - 'meta': array (Structured metadata: song_id, event_id, group_name, author_name, etc.)
      */
-    public static function notifyGroup(int $groupId, ?int $senderUserId, array $data): void {
+    /**
+     * Notify all members of a group/band (excluding the sender and optionally excluded users)
+     *
+     * @param int $groupId Active Group ID
+     * @param int|null $senderUserId User who triggered the action (excluded from push)
+     * @param array $data Notification details
+     * @param array $excludeUserIds Additional user IDs to exclude from receiving this push (e.g. users already receiving a personalized push)
+     */
+    public static function notifyGroup(int $groupId, ?int $senderUserId, array $data, array $excludeUserIds = []): void {
         $pdo = DB::getConnection();
 
         $type = $data['type'] ?? 'blue';
@@ -56,16 +64,22 @@ class NotificationService {
             error_log("Error saving group announcement: " . $e->getMessage());
         }
 
-        // 2. Fetch push subscriptions of group members (excluding sender)
+        // 2. Fetch push subscriptions of group members (excluding sender and additional excluded users)
         try {
-            if ($senderUserId) {
+            $allExcludes = array_values(array_filter(array_unique(array_merge(
+                $senderUserId ? [(int)$senderUserId] : [],
+                array_map('intval', $excludeUserIds)
+            ))));
+
+            if (!empty($allExcludes)) {
+                $placeholders = implode(',', array_fill(0, count($allExcludes), '?'));
                 $stmtSubs = $pdo->prepare("
                     SELECT ps.endpoint, ps.p256dh, ps.auth 
                     FROM push_subscriptions ps
                     JOIN group_user gu ON gu.user_id = ps.user_id
-                    WHERE gu.group_id = ? AND ps.user_id != ?
+                    WHERE gu.group_id = ? AND ps.user_id NOT IN ($placeholders)
                 ");
-                $stmtSubs->execute([$groupId, $senderUserId]);
+                $stmtSubs->execute(array_merge([$groupId], $allExcludes));
             } else {
                 $stmtSubs = $pdo->prepare("
                     SELECT ps.endpoint, ps.p256dh, ps.auth 

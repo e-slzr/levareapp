@@ -88,11 +88,18 @@ class EventController {
         $stmt->execute([$groupId, $name, $type, $date, $time, $description, $setlistId, $user['id']]);
         $eventId = $pdo->lastInsertId();
 
-        // Save musicians
+        // Save musicians & notify roster assignments individually
+        $assignedUserIds = [];
         foreach ($musicians as $m) {
             if (!empty($m['user_id']) && !empty($m['role'])) {
+                $muid = (int)$m['user_id'];
+                $mrole = trim($m['role']);
                 $stmtM = $pdo->prepare("INSERT IGNORE INTO event_musicians (event_id, user_id, role) VALUES (?, ?, ?)");
-                $stmtM->execute([$eventId, (int)$m['user_id'], $m['role']]);
+                $stmtM->execute([$eventId, $muid, $mrole]);
+
+                if ($muid !== (int)$user['id']) {
+                    $assignedUserIds[] = $muid;
+                }
             }
         }
 
@@ -101,7 +108,36 @@ class EventController {
         $stmtG->execute([$groupId]);
         $bandName = $stmtG->fetchColumn() ?: 'Banda';
 
-        // Dispatch Notification & Announcement
+        // 1. Notificar individualmente a cada músico convocado (push personalizada de convocatoria)
+        foreach ($musicians as $m) {
+            if (!empty($m['user_id']) && !empty($m['role'])) {
+                $muid = (int)$m['user_id'];
+                $mrole = trim($m['role']);
+                if ($muid !== (int)$user['id']) {
+                    NotificationService::notifyUser($muid, (int)$user['id'], [
+                        'type'     => 'green',
+                        'title'    => "Convocatoria en {$bandName}",
+                        'body'     => "Fuiste asignado(a) como {$mrole} en el evento \"{$name}\" ({$date} - {$time} hs).",
+                        'text'     => "Fuiste asignado(a) como {$mrole} en el evento: \"{$name}\" ({$date} - {$time} hs).",
+                        'category' => 'events',
+                        'url'      => './#events',
+                        'tag'      => "levare-event-roster-{$eventId}-{$muid}",
+                        'meta'     => [
+                            'event_id'   => (int)$eventId,
+                            'event_name' => $name,
+                            'event_date' => $date,
+                            'event_time' => $time,
+                            'role'       => $mrole,
+                            'band_name'  => $bandName,
+                            'actor_name' => $user['name'],
+                            'source'     => 'band'
+                        ]
+                    ]);
+                }
+            }
+        }
+
+        // 2. Dispatch Notification & Announcement a la banda (excluyendo a los músicos convocados de la push repetida)
         NotificationService::notifyGroup((int)$groupId, (int)$user['id'], [
             'type'     => 'green',
             'title'    => "Nuevo evento en {$bandName}",
@@ -118,7 +154,7 @@ class EventController {
                 'actor_name' => $user['name'],
                 'source'     => 'band'
             ]
-        ]);
+        ], $assignedUserIds);
 
         jsonResponse(['message' => 'Evento programado correctamente.', 'id' => (int)$eventId], 201);
     }
@@ -163,10 +199,17 @@ class EventController {
         // Sincronizar músicos / roster
         $pdo->prepare("DELETE FROM event_musicians WHERE event_id = ?")->execute([$id]);
 
+        $assignedUserIds = [];
         foreach ($musicians as $m) {
             if (!empty($m['user_id']) && !empty($m['role'])) {
+                $muid = (int)$m['user_id'];
+                $mrole = trim($m['role']);
                 $stmtM = $pdo->prepare("INSERT IGNORE INTO event_musicians (event_id, user_id, role) VALUES (?, ?, ?)");
-                $stmtM->execute([$id, (int)$m['user_id'], $m['role']]);
+                $stmtM->execute([$id, $muid, $mrole]);
+
+                if ($muid !== (int)$user['id']) {
+                    $assignedUserIds[] = $muid;
+                }
             }
         }
 
@@ -175,12 +218,41 @@ class EventController {
         $stmtG->execute([$groupId]);
         $bandName = $stmtG->fetchColumn() ?: 'Banda';
 
-        // Notificar modificación al grupo
+        // 1. Notificar individualmente a cada músico convocado
+        foreach ($musicians as $m) {
+            if (!empty($m['user_id']) && !empty($m['role'])) {
+                $muid = (int)$m['user_id'];
+                $mrole = trim($m['role']);
+                if ($muid !== (int)$user['id']) {
+                    NotificationService::notifyUser($muid, (int)$user['id'], [
+                        'type'     => 'blue',
+                        'title'    => "Convocatoria en {$bandName}",
+                        'body'     => "Fuiste asignado(a) como {$mrole} en el evento \"{$name}\" ({$date} - {$time} hs).",
+                        'text'     => "Fuiste asignado(a) como {$mrole} en el evento: \"{$name}\" ({$date} - {$time} hs).",
+                        'category' => 'events',
+                        'url'      => './#events',
+                        'tag'      => "levare-event-roster-{$id}-{$muid}",
+                        'meta'     => [
+                            'event_id'   => (int)$id,
+                            'event_name' => $name,
+                            'event_date' => $date,
+                            'event_time' => $time,
+                            'role'       => $mrole,
+                            'band_name'  => $bandName,
+                            'actor_name' => $user['name'],
+                            'source'     => 'band'
+                        ]
+                    ]);
+                }
+            }
+        }
+
+        // 2. Notificar actualización al grupo (excluyendo convocados de push repetida)
         NotificationService::notifyGroup((int)$groupId, (int)$user['id'], [
             'type'     => 'blue',
-            'title'    => "Evento modificado en {$bandName}",
-            'body'     => "{$user['name']} modificó el evento \"{$name}\" para el {$date} ({$time} hs).",
-            'text'     => "{$user['name']} modificó el evento: \"{$name}\" para el {$date} ({$time} hs).",
+            'title'    => "Evento actualizado en {$bandName}",
+            'body'     => "{$user['name']} actualizó el evento \"{$name}\" programado para el {$date} ({$time} hs).",
+            'text'     => "{$user['name']} actualizó el evento: \"{$name}\" para el {$date} ({$time} hs).",
             'category' => 'events',
             'url'      => './#events',
             'meta'     => [
@@ -192,14 +264,14 @@ class EventController {
                 'actor_name' => $user['name'],
                 'source'     => 'band'
             ]
-        ]);
+        ], $assignedUserIds);
 
         jsonResponse(['message' => 'Evento actualizado correctamente.', 'id' => (int)$id]);
     }
 
     public static function destroy(int $id): void {
         $pdo = DB::getConnection();
-        $stmtCheck = $pdo->prepare("SELECT group_id FROM events WHERE id = ? LIMIT 1");
+        $stmtCheck = $pdo->prepare("SELECT * FROM events WHERE id = ? LIMIT 1");
         $stmtCheck->execute([$id]);
         $ev = $stmtCheck->fetch();
         if (!$ev) {
@@ -207,8 +279,38 @@ class EventController {
         }
         $user = requireLeaderOrAdmin((int)$ev['group_id']);
 
+        $groupId = (int)$ev['group_id'];
+        $name = $ev['name'];
+        $date = $ev['date'];
+        $time = substr($ev['time'] ?? '00:00', 0, 5);
+
         $pdo->prepare("DELETE FROM event_musicians WHERE event_id = ?")->execute([$id]);
         $pdo->prepare("DELETE FROM events WHERE id = ?")->execute([$id]);
+
+        // Obtener nombre de la banda
+        $stmtG = $pdo->prepare("SELECT name FROM groups WHERE id = ? LIMIT 1");
+        $stmtG->execute([$groupId]);
+        $bandName = $stmtG->fetchColumn() ?: 'Banda';
+
+        // Notificar cancelación al grupo
+        NotificationService::notifyGroup($groupId, (int)$user['id'], [
+            'type'     => 'amber',
+            'title'    => "Evento cancelado en {$bandName}",
+            'body'     => "{$user['name']} canceló el evento \"{$name}\" programado para el {$date}.",
+            'text'     => "{$user['name']} canceló el evento: \"{$name}\" programado para el {$date}.",
+            'category' => 'events',
+            'url'      => './#events',
+            'meta'     => [
+                'event_id'   => $id,
+                'event_name' => $name,
+                'event_date' => $date,
+                'event_time' => $time,
+                'band_name'  => $bandName,
+                'actor_name' => $user['name'],
+                'source'     => 'band',
+                'action'     => 'cancelled'
+            ]
+        ]);
 
         jsonResponse(['message' => 'Evento cancelado y eliminado correctamente.']);
     }

@@ -2,6 +2,8 @@
 /**
  * Member Controller (Native PDO)
  */
+require_once __DIR__ . '/../services/NotificationService.php';
+
 class MemberController {
 
     public static function index(): void {
@@ -239,6 +241,47 @@ class MemberController {
 
         $stmtGU = $pdo->prepare("INSERT INTO group_user (user_id, group_id, role, roles, created_at) VALUES (?, ?, ?, ?, NOW())");
         $stmtGU->execute([$newUserId, $groupId, $primaryRole, $rolesJson]);
+
+        // Notificar exclusivamente a los demás líderes y administradores de la banda
+        try {
+            $stmtG = $pdo->prepare("SELECT name FROM groups WHERE id = ? LIMIT 1");
+            $stmtG->execute([$groupId]);
+            $bandName = $stmtG->fetchColumn() ?: 'Banda';
+
+            $stmtLeaders = $pdo->prepare("
+                SELECT u.id 
+                FROM users u
+                JOIN group_user gu ON gu.user_id = u.id
+                WHERE gu.group_id = ? 
+                  AND (gu.role = 'leader' OR u.account_type IN ('leader', 'admin', 'superadmin'))
+                  AND u.id != ?
+            ");
+            $stmtLeaders->execute([$groupId, $user['id']]);
+            $leaderIds = $stmtLeaders->fetchAll(PDO::FETCH_COLUMN);
+
+            $newMemberFullName = trim($name . ' ' . $lastname);
+
+            foreach ($leaderIds as $lId) {
+                NotificationService::notifyUser((int)$lId, (int)$user['id'], [
+                    'type'     => 'blue',
+                    'title'    => "Nuevo integrante en {$bandName}",
+                    'body'     => "{$user['name']} sumó a {$newMemberFullName} a la banda.",
+                    'text'     => "{$user['name']} sumó a {$newMemberFullName} a la banda.",
+                    'category' => 'band',
+                    'url'      => './#band',
+                    'tag'      => "levare-new-member-{$groupId}-{$newUserId}",
+                    'meta'     => [
+                        'group_id'   => (int)$groupId,
+                        'band_name'  => $bandName,
+                        'user_id'    => (int)$newUserId,
+                        'actor_name' => $user['name'],
+                        'source'     => 'band'
+                    ]
+                ]);
+            }
+        } catch (\Throwable $e) {
+            error_log("Error notifying leaders of manually added member: " . $e->getMessage());
+        }
 
         jsonResponse(['message' => 'Integrante sumado con éxito.'], 201);
     }

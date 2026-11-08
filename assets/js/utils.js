@@ -304,6 +304,42 @@ function getAnnouncementIconConfig(announcement) {
         };
     }
 
+    // 4.5. Evento cancelado -> Icono de calendario con equis
+    if (text.includes('canceló') || text.includes('cancelo') || meta.action === 'cancelled') {
+        return {
+            iconHtml: `<i class="fa-solid fa-calendar-xmark text-sm"></i>`,
+            badgeClass: 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50',
+            chipClass: 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900/60',
+            notifTypeClass: 'amber',
+            categoryLabel: meta.band_name || 'Banda',
+            isGlobal: false
+        };
+    }
+
+    // 4.6. Convocatoria personal al roster -> Icono de músico convocado
+    if (text.includes('asignado') || text.includes('asignada') || text.includes('convocad')) {
+        return {
+            iconHtml: `<i class="fa-solid fa-user-check text-sm"></i>`,
+            badgeClass: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50',
+            chipClass: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60',
+            notifTypeClass: 'green',
+            categoryLabel: meta.role ? `Roster • ${meta.role}` : (meta.band_name || 'Banda'),
+            isGlobal: false
+        };
+    }
+
+    // 4.7. Nuevo integrante en la banda -> Icono de usuario agregado
+    if (text.includes('unió') || text.includes('unio') || text.includes('sumó a') || text.includes('sumo a')) {
+        return {
+            iconHtml: `<i class="fa-solid fa-user-plus text-sm"></i>`,
+            badgeClass: 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50',
+            chipClass: 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900/60',
+            notifTypeClass: 'blue',
+            categoryLabel: meta.band_name || 'Banda',
+            isGlobal: false
+        };
+    }
+
     // 5. Eventos -> Icono de calendario
     if (text.includes('evento') || text.includes('programó') || text.includes('programo') || text.includes('culto') || text.includes('ensayo') || text.includes('concierto')) {
         return {
