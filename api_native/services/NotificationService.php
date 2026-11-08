@@ -28,6 +28,23 @@ class NotificationService {
         $text = $data['text'] ?? '';
         $meta = isset($data['meta']) ? json_encode($data['meta'], JSON_UNESCAPED_UNICODE) : null;
 
+        // 0. Protección contra anuncios duplicados por ráfaga (mismo grupo y texto en últimos 10 segundos)
+        try {
+            $stmtDup = $pdo->prepare("
+                SELECT id FROM announcements 
+                WHERE group_id = ? 
+                  AND text = ? 
+                  AND created_at >= (NOW() - INTERVAL 10 SECOND)
+                LIMIT 1
+            ");
+            $stmtDup->execute([$groupId, $text]);
+            if ($stmtDup->fetchColumn()) {
+                return;
+            }
+        } catch (\Throwable $e) {
+            // Ignorar fallo de verificación y continuar
+        }
+
         // 1. Insert announcement into database for the band feed
         try {
             $stmtAnn = $pdo->prepare("
@@ -67,11 +84,28 @@ class NotificationService {
                     $targetUrl = './' . $targetUrl;
                 }
 
+                $tag = $data['tag'] ?? null;
+                if (!$tag) {
+                    $metaData = $data['meta'] ?? [];
+                    if (!empty($metaData['suggestion_id'])) {
+                        $tag = 'levare-suggestion-' . $metaData['suggestion_id'];
+                    } elseif (!empty($metaData['event_id'])) {
+                        $tag = 'levare-event-' . $metaData['event_id'];
+                    } elseif (!empty($metaData['song_id'])) {
+                        $tag = 'levare-song-' . $metaData['song_id'];
+                    } elseif (!empty($metaData['setlist_id'])) {
+                        $tag = 'levare-setlist-' . $metaData['setlist_id'];
+                    } else {
+                        $tag = 'levare-group-' . $groupId . '-' . substr(md5($text), 0, 10);
+                    }
+                }
+
                 $pushPayload = [
                     'title' => $data['title'] ?? 'Levare',
                     'body'  => $data['body'] ?? $text,
                     'icon'  => './icon-levareapp.svg?v=2.0.1',
                     'badge' => './icon-levareapp.svg?v=2.0.1',
+                    'tag'   => $tag,
                     'data'  => [
                         'url'      => $targetUrl,
                         'groupId'  => $groupId,
@@ -112,6 +146,24 @@ class NotificationService {
         $text = $data['text'] ?? '';
         $meta = isset($data['meta']) ? json_encode($data['meta'], JSON_UNESCAPED_UNICODE) : null;
 
+        // 0. Protección contra anuncios personales duplicados por ráfaga (últimos 10 segundos)
+        try {
+            $stmtDup = $pdo->prepare("
+                SELECT id FROM announcements 
+                WHERE user_id = ? 
+                  AND group_id IS NULL
+                  AND text = ? 
+                  AND created_at >= (NOW() - INTERVAL 10 SECOND)
+                LIMIT 1
+            ");
+            $stmtDup->execute([$targetUserId, $text]);
+            if ($stmtDup->fetchColumn()) {
+                return;
+            }
+        } catch (\Throwable $e) {
+            // Ignorar
+        }
+
         // 1. Insert personal announcement into database
         try {
             $stmtAnn = $pdo->prepare("
@@ -139,11 +191,14 @@ class NotificationService {
                     $targetUrl = './' . $targetUrl;
                 }
 
+                $tag = $data['tag'] ?? ('levare-user-' . $targetUserId . '-' . substr(md5($text), 0, 10));
+
                 $pushPayload = [
                     'title' => $data['title'] ?? 'Levare • Comunidad',
                     'body'  => $data['body'] ?? $text,
                     'icon'  => './icon-levareapp.svg?v=2.0.1',
                     'badge' => './icon-levareapp.svg?v=2.0.1',
+                    'tag'   => $tag,
                     'data'  => [
                         'url'      => $targetUrl,
                         'category' => 'community',
@@ -203,11 +258,14 @@ class NotificationService {
                         $targetUrl = './' . $targetUrl;
                     }
 
+                    $tag = $data['tag'] ?? ('levare-global-' . ($announcementId ?: substr(md5($text), 0, 10)));
+
                     $pushPayload = [
                         'title' => $data['title'] ?? 'Levare • Anuncio',
                         'body'  => $data['body'] ?? $text,
                         'icon'  => './icon-levareapp.svg?v=2.0.1',
                         'badge' => './icon-levareapp.svg?v=2.0.1',
+                        'tag'   => $tag,
                         'data'  => [
                             'url'      => $targetUrl,
                             'category' => 'system',

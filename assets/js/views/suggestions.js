@@ -7,6 +7,7 @@ let filterSongQuery = "";
 let filterAuthorQuery = "";
 let filterStatus = "all";
 let suggestionIdToDelete = null;
+let isSubmittingSuggestion = false;
 let suggestionsVisibleLimit = 12;
 const SUGGESTIONS_PAGE_SIZE = 12;
 
@@ -377,8 +378,12 @@ async function confirmDeleteSuggestion() {
 
 async function handleSuggestionFormSubmit(e) {
     e.preventDefault();
+    if (isSubmittingSuggestion) return;
+
     const form = e.target;
-    const submitBtn = form.querySelector('button[type="submit"]');
+    const submitBtn = document.getElementById('btn-submit-suggestion') || 
+                      document.querySelector('button[type="submit"][form="suggestion-form"]') || 
+                      (form ? form.querySelector('button[type="submit"]') : null);
     const originalText = submitBtn ? submitBtn.textContent : 'Sugerir';
 
     const titleInput = document.getElementById('suggestion-form-title');
@@ -396,9 +401,13 @@ async function handleSuggestionFormSubmit(e) {
         return;
     }
 
+    isSubmittingSuggestion = true;
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Enviando...';
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Enviando...';
+    }
+    if (typeof showLoadingOverlay === 'function') {
+        showLoadingOverlay('Enviando sugerencia...');
     }
 
     try {
@@ -410,10 +419,15 @@ async function handleSuggestionFormSubmit(e) {
         showToast("Sugerencia compartida con el equipo", "success");
         const modal = document.getElementById('modal-suggestion');
         if (modal) modal.classList.add('hidden');
+        if (form) form.reset();
         await renderSuggestions(true); // force fresh list reload
     } catch (err) {
         showToast(err.message, "danger");
     } finally {
+        isSubmittingSuggestion = false;
+        if (typeof hideLoadingOverlay === 'function') {
+            hideLoadingOverlay();
+        }
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;

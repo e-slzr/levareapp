@@ -62,6 +62,35 @@ class SuggestionController {
         }
 
         $pdo = DB::getConnection();
+
+        // 1. Evitar sugerencias duplicadas en estado pendiente para la misma banda
+        $stmtCheck = $pdo->prepare("
+            SELECT id FROM suggestions 
+            WHERE group_id = ? 
+              AND LOWER(TRIM(title)) = LOWER(?) 
+              AND LOWER(TRIM(artist)) = LOWER(?) 
+              AND status = 'pendiente'
+            LIMIT 1
+        ");
+        $stmtCheck->execute([$groupId, $title, $artist]);
+        if ($stmtCheck->fetchColumn()) {
+            jsonResponse(['message' => 'Esta canción ya ha sido sugerida para la banda y se encuentra pendiente de revisión.'], 409);
+        }
+
+        // 2. Protección contra doble clic o reenvío por ráfaga (mismo usuario y canción en últimos 20 segundos)
+        $stmtBurst = $pdo->prepare("
+            SELECT id FROM suggestions 
+            WHERE group_id = ? 
+              AND suggested_by = ? 
+              AND LOWER(TRIM(title)) = LOWER(?) 
+              AND created_at >= (NOW() - INTERVAL 20 SECOND)
+            LIMIT 1
+        ");
+        $stmtBurst->execute([$groupId, $user['id'], $title]);
+        if ($stmtBurst->fetchColumn()) {
+            jsonResponse(['message' => 'Ya enviaste esta sugerencia hace un momento.'], 429);
+        }
+
         $stmt = $pdo->prepare("
             INSERT INTO suggestions (group_id, title, artist, notes, url, suggested_by, status, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, 'pendiente', NOW(), NOW())

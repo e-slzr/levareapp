@@ -8,6 +8,14 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased] - Próximamente
 
+- **Prevención de Duplicación en Sugerencias, Anuncios y Notificaciones Push**:
+  - En `views/suggestions.php`, se asignó el identificador `id="btn-submit-suggestion"` al botón de envío en el modal de sugerencias, resolviendo el problema donde el botón ubicado fuera de la etiqueta `<form>` no era localizado por `form.querySelector('button[type="submit"]')`.
+  - En `assets/js/views/suggestions.js`, se añadió una bandera de guardia booleana (`isSubmittingSuggestion`), deshabilitación inmediata del botón con icono de carga interactivo (`fa-spinner fa-spin`), overlay global de espera (`showLoadingOverlay`) y limpieza del formulario tras el registro exitoso, bloqueando múltiples envíos por doble clic o latencia de red.
+  - En `api_native/controllers/SuggestionController.php`, se implementó validación en el método `store()` para impedir la duplicación de sugerencias con el mismo título y artista en estado `pendiente` dentro de la banda (código HTTP 409), junto con una protección por ráfaga que rechaza peticiones repetidas del mismo usuario en un intervalo menor a 20 segundos (código HTTP 429).
+  - En `api_native/services/NotificationService.php`, se incorporó una salvaguarda anti-ráfaga en `notifyGroup()` y `notifyUser()` que descarta inserciones redundantes en la tabla `announcements` si ya existe un anuncio con idéntico texto registrado en los últimos 10 segundos para el mismo destinatario o grupo.
+  - En `api_native/services/NotificationService.php`, se configuró la propiedad `tag` semántica en el payload de notificaciones Web Push (`levare-suggestion-{id}`, `levare-event-{id}`, etc.) para que los navegadores y sistemas operativos (iOS/macOS/Android) colapsen y unifiquen notificaciones push del mismo evento en lugar de acumular alertas redundantes.
+  - En `api_native/controllers/AnnouncementController.php`, se añadió un filtro defensivo en `index()` que descarta registros idénticos contiguos generados con menos de 60 segundos de diferencia, garantizando un feed de novedades limpio tanto en el panel de inicio (`views/dashboard.php`) como en el historial completo (`views/announcements.php`).
+
 - **Aprovechamiento Vertical Elástico en la Vista de Modo Calendario (PC y Móvil)**:
   - En `views/events.php`, se blindó la cuadrícula `#calendar-grid-cells` con las clases `grid grid-cols-7` y estilos en línea directos `display: grid !important; grid-template-columns: repeat(7, 1fr) !important;`, previniendo que en navegadores móviles (iOS Safari / Samsung Internet) colapse en 1 columna gigante por desfases de caché.
   - En `assets/css/main.css`, se actualizó la importación `@import "events.css?v=3";` para forzar la invalidación inmediata de caché de submódulos en dispositivos móviles.

@@ -41,13 +41,34 @@ class AnnouncementController {
         }
 
         $rows = $stmt->fetchAll();
-        foreach ($rows as &$r) {
-            if (!empty($r['meta']) && is_string($r['meta'])) {
-                $r['meta'] = json_decode($r['meta'], true);
+        $deduped = [];
+        $lastAnn = null;
+
+        // Filtrado defensivo de anuncios idénticos contiguos generados por ráfaga (<= 60 segundos)
+        foreach ($rows as $r) {
+            $isDuplicate = false;
+            if ($lastAnn !== null) {
+                $sameGroup = ($r['group_id'] === $lastAnn['group_id']);
+                $sameText = ($r['text'] === $lastAnn['text']);
+                if ($sameGroup && $sameText) {
+                    $t1 = strtotime($lastAnn['created_at']);
+                    $t2 = strtotime($r['created_at']);
+                    if ($t1 && $t2 && abs($t1 - $t2) <= 60) {
+                        $isDuplicate = true;
+                    }
+                }
+            }
+
+            if (!$isDuplicate) {
+                if (!empty($r['meta']) && is_string($r['meta'])) {
+                    $r['meta'] = json_decode($r['meta'], true);
+                }
+                $deduped[] = $r;
+                $lastAnn = $r;
             }
         }
 
-        jsonResponse($rows);
+        jsonResponse($deduped);
     }
 
     /**
