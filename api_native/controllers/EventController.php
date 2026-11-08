@@ -175,12 +175,12 @@ class EventController {
         $stmtG->execute([$groupId]);
         $bandName = $stmtG->fetchColumn() ?: 'Banda';
 
-        // Notificar actualización al grupo
+        // Notificar modificación al grupo
         NotificationService::notifyGroup((int)$groupId, (int)$user['id'], [
             'type'     => 'blue',
-            'title'    => "Evento actualizado en {$bandName}",
-            'body'     => "{$user['name']} actualizó el evento \"{$name}\" programado para el {$date} ({$time} hs).",
-            'text'     => "{$user['name']} actualizó el evento: \"{$name}\" para el {$date} ({$time} hs).",
+            'title'    => "Evento modificado en {$bandName}",
+            'body'     => "{$user['name']} modificó el evento \"{$name}\" para el {$date} ({$time} hs).",
+            'text'     => "{$user['name']} modificó el evento: \"{$name}\" para el {$date} ({$time} hs).",
             'category' => 'events',
             'url'      => './#events',
             'meta'     => [

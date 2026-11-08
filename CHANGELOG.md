@@ -9,6 +9,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 ## [Unreleased] - Próximamente
 
 - **Prevención de Duplicación en Sugerencias, Anuncios y Notificaciones Push**:
+  - En `api_native/controllers/EventController.php`, se ajustó la redacción del anuncio y notificación Web Push al editar eventos para utilizar explícitamente «[Usuario] modificó el evento: [Nombre] para el [Fecha] ([Hora] hs)», diferenciándolo con claridad de la acción inicial de programación y manteniendo notificados a los miembros de la banda.
   - En `views/suggestions.php`, se asignó el identificador `id="btn-submit-suggestion"` al botón de envío en el modal de sugerencias, resolviendo el problema donde el botón ubicado fuera de la etiqueta `<form>` no era localizado por `form.querySelector('button[type="submit"]')`.
   - En `assets/js/views/suggestions.js`, se añadió una bandera de guardia booleana (`isSubmittingSuggestion`), deshabilitación inmediata del botón con icono de carga interactivo (`fa-spinner fa-spin`), overlay global de espera (`showLoadingOverlay`) y limpieza del formulario tras el registro exitoso, bloqueando múltiples envíos por doble clic o latencia de red.
   - En `api_native/controllers/SuggestionController.php`, se implementó validación en el método `store()` para impedir la duplicación de sugerencias con el mismo título y artista en estado `pendiente` dentro de la banda (código HTTP 409), junto con una protección por ráfaga que rechaza peticiones repetidas del mismo usuario en un intervalo menor a 20 segundos (código HTTP 429).
