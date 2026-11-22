@@ -8,6 +8,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1
 
 ## [Unreleased] - Próximamente
 
+- **Corrección de Zona Horaria UTC en Backend PHP y Sesión MySQL**:
+  - En `api_native/index.php` y `api_native/config/database.php`, se configuró `date_default_timezone_set('UTC')` y la directiva de sesión `SET time_zone = '+00:00'` al establecer la conexión PDO. Esto garantiza que `NOW()`, `CURRENT_TIMESTAMP` y `date()` almacenen marcas de tiempo reales en UTC, alineándose con `parseUtcDate()` en `assets/js/utils.js` y eliminando el desfase de 6 horas observado en el feed de novedades y anuncios.
+
 - **Ampliación Integral del Ecosistema de Notificaciones Web Push y Feed de Novedades**:
   - En `api_native/controllers/EventController.php`, se implementó la notificación por cancelación de eventos (`destroy`) alertando a la banda con tipo visual ámbar (`[Usuario] canceló el evento: [Nombre] programado para el [Fecha]`).
   - En `api_native/controllers/EventController.php` y `api_native/services/NotificationService.php`, se diseñó un esquema de segmentación inteligente para convocatorias al roster de músicos tanto al programar (`store`) como al actualizar (`update`): los músicos convocados reciben una única notificación push personalizada con su instrumento o rol (`Fuiste asignado(a) como [Rol] en el evento [Nombre]`), y se les excluye automáticamente del envío repetido de la push general del grupo, eliminando por completo la doble notificación en sus dispositivos.

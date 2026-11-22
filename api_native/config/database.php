@@ -4,6 +4,7 @@
  */
 require_once __DIR__ . '/../helpers/env.php';
 loadEnv();
+date_default_timezone_set('UTC');
 
 class DB {
     private static ?PDO $instance = null;
@@ -26,6 +27,8 @@ class DB {
 
             try {
                 self::$instance = new PDO($dsn, $user, $pass, $options);
+                // Garantizar almacenamiento y consultas de fechas en UTC (sincronizado con parseUtcDate en frontend)
+                self::$instance->exec("SET time_zone = '+00:00'");
             } catch (\PDOException $e) {
                 http_response_code(500);
                 echo json_encode([

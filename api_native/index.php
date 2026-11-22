@@ -3,6 +3,8 @@
  * Main Central Native Router (api_native/index.php)
  */
 
+date_default_timezone_set('UTC');
+
 // Enable CORS
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
